@@ -1,0 +1,246 @@
+/* ── Reset & base ─────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg:          #0b0f1a;
+  --surface:     #111827;
+  --card:        #1a2236;
+  --card-hover:  #1e283f;
+  --border:      #2a3550;
+  --accent:      #3b82f6;
+  --accent-glow: rgba(59,130,246,.25);
+  --accent-dark: #2563eb;
+  --success:     #10b981;
+  --danger:      #ef4444;
+  --text:        #e2e8f0;
+  --muted:       #64748b;
+  --radius:      12px;
+  --font: 'Inter', system-ui, sans-serif;
+}
+
+html { font-size: 16px; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ── Layout ───────────────────────────────────────────────── */
+.app {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.header-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  display: grid;
+  place-items: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  box-shadow: 0 0 20px var(--accent-glow);
+}
+
+.header h1 {
+  font-size: 1.6rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #e2e8f0, #94a3b8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.header p {
+  font-size: .82rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* ── Health badge ─────────────────────────────────────────── */
+.health-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: .4rem;
+  font-size: .75rem;
+  font-weight: 600;
+  padding: .25rem .7rem;
+  border-radius: 999px;
+  margin-bottom: 2rem;
+  letter-spacing: .02em;
+  transition: all .3s;
+}
+.health-badge.connected  { background: rgba(16,185,129,.15); color: var(--success); border: 1px solid rgba(16,185,129,.3); }
+.health-badge.disconnected { background: rgba(239,68,68,.12); color: var(--danger);  border: 1px solid rgba(239,68,68,.3); }
+.health-badge.checking   { background: rgba(100,116,139,.12); color: var(--muted);  border: 1px solid var(--border); }
+
+.dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.dot.pulse {
+  animation: pulse 1.4s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50%      { opacity: .3; }
+}
+
+/* ── Form card ────────────────────────────────────────────── */
+.form-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 24px rgba(0,0,0,.35);
+}
+
+.form-card label {
+  display: block;
+  font-size: .8rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: .5rem;
+}
+
+.input-row {
+  display: flex;
+  gap: .75rem;
+}
+
+.note-input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: .7rem 1rem;
+  font-family: var(--font);
+  font-size: .95rem;
+  color: var(--text);
+  transition: border-color .2s, box-shadow .2s;
+  outline: none;
+}
+.note-input::placeholder { color: var(--muted); }
+.note-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.char-count {
+  font-size: .72rem;
+  color: var(--muted);
+  text-align: right;
+  margin-top: .4rem;
+  transition: color .2s;
+}
+.char-count.warn { color: #f59e0b; }
+.char-count.over { color: var(--danger); }
+
+.save-btn {
+  background: linear-gradient(135deg, var(--accent), #6366f1);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: .7rem 1.4rem;
+  font-family: var(--font);
+  font-size: .9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity .2s, transform .15s, box-shadow .2s;
+  white-space: nowrap;
+  box-shadow: 0 0 18px var(--accent-glow);
+}
+.save-btn:hover:not(:disabled) { opacity: .9; transform: translateY(-1px); box-shadow: 0 4px 24px var(--accent-glow); }
+.save-btn:active:not(:disabled) { transform: translateY(0); }
+.save-btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* ── Feedback banner ──────────────────────────────────────── */
+.banner {
+  border-radius: 8px;
+  padding: .65rem 1rem;
+  font-size: .85rem;
+  font-weight: 500;
+  margin-top: .75rem;
+  animation: fadeIn .25s ease;
+}
+.banner.success { background: rgba(16,185,129,.12); color: var(--success); border: 1px solid rgba(16,185,129,.25); }
+.banner.error   { background: rgba(239,68,68,.1);   color: var(--danger);  border: 1px solid rgba(239,68,68,.25); }
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+/* ── Notes list ───────────────────────────────────────────── */
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+.list-header h2 { font-size: 1rem; font-weight: 600; }
+.list-header .count {
+  font-size: .78rem;
+  color: var(--muted);
+  background: rgba(255,255,255,.05);
+  padding: .2rem .6rem;
+  border-radius: 999px;
+}
+
+.notes-list { display: flex; flex-direction: column; gap: .6rem; }
+
+.note-item {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: .85rem 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  transition: background .2s, border-color .2s, transform .15s;
+  animation: slideIn .25s ease;
+}
+.note-item:hover { background: var(--card-hover); border-color: #3a4a6a; transform: translateX(3px); }
+@keyframes slideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+
+.note-title { font-size: .93rem; flex: 1; word-break: break-word; }
+
+.note-time {
+  font-size: .72rem;
+  color: var(--muted);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ── Empty / loading states ───────────────────────────────── */
+.empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--muted);
+  font-size: .9rem;
+}
+.empty span { display: block; font-size: 2.5rem; margin-bottom: .75rem; }
+
+.skeleton {
+  background: linear-gradient(90deg, var(--card) 25%, var(--card-hover) 50%, var(--card) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  border-radius: var(--radius);
+  height: 52px;
+}
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
