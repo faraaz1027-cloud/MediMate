@@ -17,7 +17,7 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 - [ ] Review acceptance criteria in REQUIREMENTS.md.
 - [x] Prepare preliminary actor/use-case map, architecture, database relationships and key activity flows ([Step 13 design models](STEP_13_DESIGN_MODELS.md)); confirm required faculty notation.
 - [ ] Design two Figma pages per member and prepare the DOC submission.
-- [ ] Define shared patient, medicine and permission identifiers.
+- [x] Step 15: define shared identifiers, permissions, data dictionary, lifecycle, indexes and consistency rules ([shared data model](STEP_15_DATA_MODEL.md)); implementation and team validation pending.
 - [ ] Agree API requests, responses, authorization and errors.
 - [ ] Document two database-connected APIs per member, with Postman evidence.
 
