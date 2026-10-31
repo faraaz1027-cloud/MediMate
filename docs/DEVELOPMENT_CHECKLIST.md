@@ -13,7 +13,7 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 - [ ] Assign feature owners and module milestones.
 
 ## 2. Analysis and design
-- [ ] Prepare system request and technical, economic and operational feasibility.
+- [x] Prepare system request and preliminary technical, economic and operational feasibility ([Step 12 draft](STEP_12_SYSTEM_REQUEST_FEASIBILITY.md)); faculty/user validation pending.
 - [ ] Review acceptance criteria in REQUIREMENTS.md.
 - [ ] Prepare use-case diagram, architecture and database design.
 - [ ] Design two Figma pages per member and prepare the DOC submission.
@@ -25,7 +25,7 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 - [ ] Install compatible Node.js, Git, editor and Postman versions.
 - [ ] Scaffold client/ and server/; commit dependency lockfiles.
 - [ ] Add environment placeholders and setup instructions.
-- [ ] Connect a React form through Express to MongoDB and verify refresh persistence.
+- [x] Connect a React form through Express to MongoDB and verify refresh and restart persistence (reported by the owner).
 - [ ] Add authentication and patient/caregiver authorization.
 - [ ] Add shared navigation, validation, loading and error states.
 - [ ] Test each planned external integration and its failure state independently.
