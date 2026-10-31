@@ -7,3 +7,9 @@
 - Added the development checklist and team contribution workflow.
 - Repository creation and collaborator invitations were reported by the owner; invitation acceptance remains unverified.
 - Application implementation, testing and deployment are pending.
+
+### Step 10 implementation
+- Added a React save-and-reload form and Express/Mongoose create/list endpoints.
+- Added input validation, error states, localhost binding and environment placeholders.
+- Added Windows-friendly local setup and persistence verification instructions.
+- Live MongoDB persistence verification remains pending.

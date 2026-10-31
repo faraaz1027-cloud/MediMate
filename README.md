@@ -43,3 +43,6 @@ Build the shared frontend/backend/database connection and authorization foundati
 - Calendar deadlines and confirmed collaborator handles: pending.
 
 Use synthetic demonstration records. Do not commit real medical records, contact details, secrets or environment credentials.
+
+## Step 10 connection demo
+The React/Express/Mongoose scaffold is now implemented. Follow [Step 10 setup](docs/STEP_10_SETUP.md) to run it with local MongoDB. Live database persistence verification is pending; this is a synthetic-data-only localhost demo with no authentication yet.
