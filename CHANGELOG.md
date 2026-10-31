@@ -20,3 +20,9 @@
 - Specified schedule time handling, retry-safe dose/stock processing, indexes and transaction requirements.
 - Documented SOS consent, acknowledgements and simulated/verified provider boundaries.
 - Design baseline only; production schemas remain to be implemented. Step 14 submission remains in progress.
+
+### Step 14 design deliverables
+- Created 24 editable detailed Figma frames across six assigned screens: desktop, mobile, error and success views.
+- Added a 15-page Word design submission, screen data, 24 supplementary SVG renderings and a standalone HTML prototype including simulated SOS.
+- Inspected the A1 Figma screenshot and rendered Word layout; checked prototype JavaScript syntax.
+- Recorded the remaining Figma interaction/export verification block caused by the Starter tool allowance. Step 14 is not marked fully verified.

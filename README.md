@@ -38,7 +38,7 @@ Build the shared frontend/backend/database connection and authorization foundati
 
 ## Links to add
 - Jira project: pending.
-- Figma design: pending.
+- [Figma detailed designs](https://www.figma.com/design/1Zy0JqsSdfzL9Lno6GlWbB?node-id=2-2409); [Step 14 deliverables and remaining verification](docs/STEP_14_DESIGN_SUBMISSION.md).
 - Deployment: pending.
 - Calendar deadlines and confirmed collaborator handles: pending.
 
@@ -46,3 +46,6 @@ Use synthetic demonstration records. Do not commit real medical records, contact
 
 ## Step 10 connection demo
 The React/Express/Mongoose scaffold is now implemented. Follow [Step 10 setup](docs/STEP_10_SETUP.md) to run it with local MongoDB. Live database persistence verification is pending; this is a synthetic-data-only localhost demo with no authentication yet.
+
+## Step 14 design deliverables
+Six detailed desktop designs, six mobile designs and error/success states are created in Figma. The [Word submission](docs/submission/MediMate_Step14_Design_Submission.docx) includes labelled figures and native frame links. A [downloadable HTML prototype](design/step14/MediMate_Step14_Prototype.html) covers supplementary interactions and simulated SOS. Figma Starter tool limits blocked final native interaction work and full-frame export/visual verification; see [status and handoff](docs/STEP_14_DESIGN_SUBMISSION.md).

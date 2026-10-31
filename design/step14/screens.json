@@ -1,0 +1,398 @@
+[
+  {
+    "id": "A1",
+    "title": "Prescription review",
+    "owner": "Ihfaz Rashid Sadat",
+    "subtitle": "Review every field before confirming your prescription.",
+    "status": "Draft · review required",
+    "sections": [
+      {
+        "title": "Import prescription",
+        "fields": [
+          [
+            "Source",
+            "Printed prescription image"
+          ],
+          [
+            "File",
+            "sample-prescription.png · 820 KB"
+          ]
+        ],
+        "note": "Upload PNG or JPG, or enter instructions manually. OCR text stays editable."
+      },
+      {
+        "title": "Review extracted instructions",
+        "fields": [
+          [
+            "Medicine name",
+            "Demo medicine A"
+          ],
+          [
+            "Strength",
+            "10 mg"
+          ],
+          [
+            "Quantity per dose",
+            "1 tablet"
+          ],
+          [
+            "Timing instructions",
+            "At 08:00 every day"
+          ],
+          [
+            "Duration",
+            "7 days"
+          ]
+        ],
+        "note": "Synthetic demonstration only. Match these fields to the original prescription."
+      }
+    ],
+    "sideTitle": "Version history",
+    "side": [
+      "Current draft · version 2",
+      "Previous confirmed version 1 retained",
+      "Change preview: duration 5 → 7 days",
+      "Confirming saves a new version; earlier records remain."
+    ],
+    "primary": "Confirm reviewed version",
+    "secondary": "Save draft",
+    "next": "A2",
+    "success": "Version 2 confirmed",
+    "successBody": "The reviewed instructions were saved. Version 1 is still available in history. You can now preview a schedule.",
+    "error": "Review incomplete",
+    "errorBody": "Quantity per dose is missing. Enter a positive quantity and its unit before confirming. Your draft is retained.",
+    "invalidField": [
+      "Quantity per dose",
+      "",
+      "Enter a quantity greater than zero."
+    ],
+    "empty": "No prescription yet. Upload an image or start manual entry.",
+    "loading": "Extracting text… You can switch to manual entry.",
+    "failure": "Image extraction failed. Keep the image and enter or correct the draft manually."
+  },
+  {
+    "id": "A2",
+    "title": "Schedule builder",
+    "owner": "Ihfaz Rashid Sadat",
+    "subtitle": "Build a schedule from confirmed prescription instructions.",
+    "status": "Confirmed prescription · version 2",
+    "sections": [
+      {
+        "title": "Confirmed instruction",
+        "fields": [
+          [
+            "Medicine",
+            "Demo medicine A · 10 mg"
+          ],
+          [
+            "Quantity per dose",
+            "1 tablet"
+          ]
+        ],
+        "note": "Source: prescription version 2. Unconfirmed drafts cannot create active schedules."
+      },
+      {
+        "title": "Schedule settings",
+        "fields": [
+          [
+            "Timing mode",
+            "Fixed daily time"
+          ],
+          [
+            "Time",
+            "08:00"
+          ],
+          [
+            "Timezone",
+            "Asia/Dhaka"
+          ],
+          [
+            "Start date",
+            "2026-11-02"
+          ],
+          [
+            "End date",
+            "2026-11-08"
+          ]
+        ],
+        "note": "Preview all occurrences before confirming. Editing creates a new version."
+      }
+    ],
+    "sideTitle": "Schedule preview",
+    "side": [
+      "Mon 02 Nov · 08:00 · 1 tablet",
+      "Tue 03 Nov · 08:00 · 1 tablet",
+      "Wed 04 Nov · 08:00 · 1 tablet",
+      "7 planned doses · Asia/Dhaka",
+      "Pause stops future reminders; past dose history remains."
+    ],
+    "primary": "Confirm schedule",
+    "secondary": "Back to prescription",
+    "next": "C2",
+    "success": "Schedule confirmed",
+    "successBody": "Seven planned occurrences were saved for 2–8 November. Reminders use Asia/Dhaka. You can pause or revise future scheduling.",
+    "error": "Schedule needs clarification",
+    "errorBody": "The end date is before the start date. Correct the date range and preview again. No schedule was activated.",
+    "invalidField": [
+      "End date",
+      "2026-11-01",
+      "Must be on or after 2026-11-02."
+    ],
+    "empty": "No confirmed prescription. Review and confirm instructions first.",
+    "loading": "Generating schedule preview…",
+    "failure": "Preview could not load. Your inputs remain; retry before confirming."
+  },
+  {
+    "id": "B1",
+    "title": "Medicine cabinet",
+    "owner": "Faraaz Jamil Chowdhury",
+    "subtitle": "Search for a medicine and choose the matching identity.",
+    "status": "Personal cabinet · synthetic patient",
+    "sections": [
+      {
+        "title": "Search medicine terminology",
+        "fields": [
+          [
+            "Search term",
+            "Demo medicine"
+          ]
+        ],
+        "note": "Search uses RxNorm. Check name, strength and form; a result is a candidate, not a verified prescription."
+      },
+      {
+        "title": "Selected candidate",
+        "fields": [
+          [
+            "Display name",
+            "Demo medicine A"
+          ],
+          [
+            "Strength and form",
+            "10 mg · tablet"
+          ],
+          [
+            "Entry source",
+            "External candidate · review required"
+          ]
+        ],
+        "note": "Prototype search data is illustrative. Manual entries are labelled user-entered."
+      }
+    ],
+    "sideTitle": "Your cabinet",
+    "side": [
+      "Demo medicine A · active",
+      "Demo medicine B · user-entered",
+      "Filter: active / archived",
+      "Edit details or archive items; referenced history stays available."
+    ],
+    "primary": "Add selected medicine",
+    "secondary": "Enter manually",
+    "next": "B2",
+    "success": "Medicine added to cabinet",
+    "successBody": "The selected identity and source reference were saved. You can open its information card, edit details or archive it later.",
+    "error": "Search unavailable",
+    "errorBody": "The terminology service did not respond. Retry the search or enter a clearly labelled manual medicine. No candidate was silently selected.",
+    "invalidField": [
+      "Search term",
+      "",
+      "Enter at least one non-space character."
+    ],
+    "empty": "No matching candidate. Try another term or enter medicine details manually.",
+    "loading": "Searching medicine identities…",
+    "failure": "Search timed out. Retry or use manual entry."
+  },
+  {
+    "id": "B2",
+    "title": "Medicine information",
+    "owner": "Faraaz Jamil Chowdhury",
+    "subtitle": "Read source passages and keep your own notes separately.",
+    "status": "Illustrative card · no clinical content",
+    "sections": [
+      {
+        "title": "Selected medicine and source",
+        "fields": [
+          [
+            "Cabinet item",
+            "Demo medicine A · 10 mg tablet"
+          ],
+          [
+            "Label selection",
+            "No real label selected in prototype"
+          ]
+        ],
+        "note": "A source URL, label identifier and retrieval time appear only after a matching label is selected."
+      },
+      {
+        "title": "Label passages",
+        "fields": [
+          [
+            "Warnings",
+            "Matching source passage will appear here."
+          ],
+          [
+            "Storage",
+            "Matching source passage will appear here."
+          ]
+        ],
+        "note": "These are placeholders, not medicine guidance. Personal notes are never presented as label evidence."
+      },
+      {
+        "title": "Personal note",
+        "fields": [
+          [
+            "Note",
+            "Ask the pharmacist about the label match."
+          ]
+        ],
+        "note": "Visible only to people with permission for this patient."
+      }
+    ],
+    "sideTitle": "Source evidence",
+    "side": [
+      "Provider: openFDA label adapter",
+      "Status: illustrative layout",
+      "No claim of a successful live retrieval",
+      "Open original source when available",
+      "No matching label → show information unavailable."
+    ],
+    "primary": "Save personal note",
+    "secondary": "Back to cabinet",
+    "next": "C1",
+    "success": "Personal note saved",
+    "successBody": "Your note was saved separately from source passages. Saving a note does not validate a label match or change medicine instructions.",
+    "error": "Information unavailable",
+    "errorBody": "No suitable source label was found. No warnings or storage instructions are inferred. You can retry or return to the cabinet.",
+    "invalidField": null,
+    "empty": "No matching source label. Information unavailable.",
+    "loading": "Retrieving matching label passages…",
+    "failure": "Label service unavailable. Keep the note and retry source retrieval."
+  },
+  {
+    "id": "C1",
+    "title": "Caregiver tasks",
+    "owner": "Sahir Jawad Chowdhury",
+    "subtitle": "Assign care tasks and keep a clear handover history.",
+    "status": "Patient scope · active caregiver access",
+    "sections": [
+      {
+        "title": "Create a task",
+        "fields": [
+          [
+            "Title",
+            "Collect the refill checklist"
+          ],
+          [
+            "Assignee",
+            "Test caregiver · active grant"
+          ],
+          [
+            "Due",
+            "2026-11-02 · 17:00"
+          ],
+          [
+            "Handover note",
+            "Check the saved list before collection."
+          ]
+        ],
+        "note": "Only authorized caregivers can receive and update patient tasks."
+      },
+      {
+        "title": "Telegram notifications",
+        "fields": [
+          [
+            "Linked account",
+            "Test caregiver · linked with consent"
+          ],
+          [
+            "Notification",
+            "No attempt yet"
+          ]
+        ],
+        "note": "Channel acceptance and human acknowledgement are tracked separately."
+      }
+    ],
+    "sideTitle": "Task board",
+    "side": [
+      "Open · Collect refill checklist",
+      "Accepted · Review tomorrow's tasks",
+      "Completed · Update handover note",
+      "Timeline records assignment, acceptance, completion and reopening.",
+      "Revoked caregivers lose access."
+    ],
+    "primary": "Create assigned task",
+    "secondary": "View handover",
+    "next": "C2",
+    "success": "Task assigned",
+    "successBody": "The open task and its handover note were saved. A notification job is queued; delivery and acknowledgement remain separate.",
+    "error": "Caregiver access revoked",
+    "errorBody": "This assignee no longer has access. Select an active authorized caregiver. The task was not assigned and no notification was sent.",
+    "invalidField": [
+      "Assignee",
+      "Test caregiver · revoked",
+      "Choose a caregiver with active task permission."
+    ],
+    "empty": "No tasks yet. Create one for an authorized caregiver.",
+    "loading": "Loading task board…",
+    "failure": "Task board could not load. Retry; do not assume a task was saved."
+  },
+  {
+    "id": "C2",
+    "title": "Today’s doses",
+    "owner": "Sahir Jawad Chowdhury",
+    "subtitle": "Record what happened for each scheduled occurrence.",
+    "status": "Mon 02 Nov 2026 · Asia/Dhaka",
+    "sections": [
+      {
+        "title": "Due at 08:00",
+        "fields": [
+          [
+            "Medicine",
+            "Demo medicine A · 10 mg"
+          ],
+          [
+            "Scheduled quantity",
+            "1 tablet"
+          ],
+          [
+            "Current status",
+            "Pending · not recorded"
+          ]
+        ],
+        "note": "Choose Taken or Skipped. Snooze moves the reminder and keeps the scheduled dose unchanged."
+      },
+      {
+        "title": "Reminder and recent history",
+        "fields": [
+          [
+            "Channel status",
+            "Accepted by Telegram · not proof of reading"
+          ],
+          [
+            "Previous record",
+            "01 Nov · 08:00 · Taken"
+          ]
+        ],
+        "note": "No response becomes overdue–unconfirmed after the waiting period, never automatically skipped."
+      }
+    ],
+    "sideTitle": "Today at a glance",
+    "side": [
+      "Taken: 0 · Skipped: 0",
+      "Pending: 1 · Overdue-unconfirmed: 0",
+      "Next dose: tomorrow at 08:00",
+      "Repeated clicks return the same record.",
+      "Stock deduction is tracked once; correction keeps history."
+    ],
+    "primary": "Record taken",
+    "secondary": "Record skipped",
+    "next": "A1",
+    "success": "Dose recorded as taken",
+    "successBody": "The 08:00 occurrence is now Taken. A repeated request does not create another action or stock deduction. Corrections require a reason.",
+    "error": "Could not confirm save",
+    "errorBody": "The connection failed before confirmation. Check the latest dose status and retry using the same request. Do not display Taken until the server confirms.",
+    "invalidField": null,
+    "empty": "No doses scheduled today. Open the confirmed schedule to review future doses.",
+    "loading": "Loading scheduled doses…",
+    "failure": "Dose records unavailable. Retry; reminder delivery is not proof a dose was taken."
+  }
+]

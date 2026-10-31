@@ -16,7 +16,9 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 - [x] Prepare system request and preliminary technical, economic and operational feasibility ([Step 12 draft](STEP_12_SYSTEM_REQUEST_FEASIBILITY.md)); faculty/user validation pending.
 - [ ] Review acceptance criteria in REQUIREMENTS.md.
 - [x] Prepare preliminary actor/use-case map, architecture, database relationships and key activity flows ([Step 13 design models](STEP_13_DESIGN_MODELS.md)); confirm required faculty notation.
-- [ ] Design two Figma pages per member and prepare the DOC submission.
+- [x] Create six detailed Figma screens (two per member), plus mobile/error/success frames.
+- [x] Prepare the [Step 14 Word submission and supplemental prototype](STEP_14_DESIGN_SUBMISSION.md).
+- [ ] Step 14 final pass: verify all native frames, finish/check Figma interactions and replace supplemental figures with native exports; blocked by Figma Starter tool allowance.
 - [x] Step 15: define shared identifiers, permissions, data dictionary, lifecycle, indexes and consistency rules ([shared data model](STEP_15_DATA_MODEL.md)); implementation and team validation pending.
 - [ ] Agree API requests, responses, authorization and errors.
 - [ ] Document two database-connected APIs per member, with Postman evidence.
