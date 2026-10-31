@@ -13,3 +13,10 @@
 - Added input validation, error states, localhost binding and environment placeholders.
 - Added Windows-friendly local setup and persistence verification instructions.
 - Live MongoDB persistence verification remains pending.
+
+### Step 15 — Shared data model
+- Defined ObjectId references, patient ownership and explicit access permissions.
+- Added the shared data dictionary for all 13 functions, source evidence, history and reports.
+- Specified schedule time handling, retry-safe dose/stock processing, indexes and transaction requirements.
+- Documented SOS consent, acknowledgements and simulated/verified provider boundaries.
+- Design baseline only; production schemas remain to be implemented. Step 14 submission remains in progress.
