@@ -15,7 +15,7 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 ## 2. Analysis and design
 - [x] Prepare system request and preliminary technical, economic and operational feasibility ([Step 12 draft](STEP_12_SYSTEM_REQUEST_FEASIBILITY.md)); faculty/user validation pending.
 - [ ] Review acceptance criteria in REQUIREMENTS.md.
-- [ ] Prepare use-case diagram, architecture and database design.
+- [x] Prepare preliminary actor/use-case map, architecture, database relationships and key activity flows ([Step 13 design models](STEP_13_DESIGN_MODELS.md)); confirm required faculty notation.
 - [ ] Design two Figma pages per member and prepare the DOC submission.
 - [ ] Define shared patient, medicine and permission identifiers.
 - [ ] Agree API requests, responses, authorization and errors.
