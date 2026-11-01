@@ -1,0 +1,153 @@
+npm warn deprecated har-validator@5.1.5: this library is no longer supported
+npm warn deprecated uuid@3.4.0: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated @faker-js/faker@5.5.3: Please update to a newer version.
+newman
+
+MediMate Step 23 C1 tasks (Telegram disabled; live receipt not verified)
+
+→ Owner CSRF
+  GET http://127.0.0.1:3007/api/v1/auth/csrf [200 OK, 597B, 30ms]
+  √  HTTP 200
+
+→ Register synthetic organizer
+  POST http://127.0.0.1:3007/api/v1/auth/register [201 Created, 789B, 83ms]
+  √  HTTP 201
+
+→ Caregiver CSRF
+  GET http://127.0.0.1:3007/api/v1/auth/csrf [200 OK, 597B, 20ms]
+  √  HTTP 200
+
+→ Register synthetic caregiver
+  POST http://127.0.0.1:3007/api/v1/auth/register [201 Created, 789B, 81ms]
+  √  HTTP 201
+
+→ Grant task access
+  POST http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/access-grants [201 Created, 594B, 18ms]
+  √  HTTP 201
+
+→ Create and assign task
+  POST http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks [201 Created, 697B, 19ms]
+  √  HTTP 201
+  √  Open and unacknowledged
+
+→ Cannot complete before accept
+  POST http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks/6ae7a848f9528fa10b512def/transitions [409 Conflict, 419B, 5ms]
+  √  HTTP 409
+
+→ Caregiver reads assignment
+  GET http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks/6ae7a848f9528fa10b512def [200 OK, 692B, 4ms]
+  √  HTTP 200
+  √  Correct assignee
+
+→ Explicit app acknowledgement
+  POST http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks/6ae7a848f9528fa10b512def/acknowledgements [200 OK, 786B, 22ms]
+  √  HTTP 200
+  √  Acknowledgement is separate from status
+
+→ Caregiver accepts
+  POST http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks/6ae7a848f9528fa10b512def/transitions [200 OK, 790B, 18ms]
+  √  HTTP 200
+
+→ Append handover note
+  POST http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks/6ae7a848f9528fa10b512def/notes [201 Created, 1.18kB, 18ms]
+  √  HTTP 201
+
+→ Caregiver completes
+  POST http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks/6ae7a848f9528fa10b512def/transitions [200 OK, 791B, 19ms]
+  √  HTTP 200
+
+→ Assignee cannot reopen organizer task
+  POST http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks/6ae7a848f9528fa10b512def/transitions [403 Forbidden, 417B, 6ms]
+  √  HTTP 403
+
+→ Organizer reopens
+  POST http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks/6ae7a848f9528fa10b512def/transitions [200 OK, 742B, 19ms]
+  √  HTTP 200
+  √  Reopening starts a new unacknowledged assignment
+
+→ Edit with current revision
+  PATCH http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks/6ae7a848f9528fa10b512def [200 OK, 789B, 18ms]
+  √  HTTP 200
+
+→ Read append-only history
+  GET http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks/6ae7a848f9528fa10b512def/history [200 OK, 6.06kB, 5ms]
+  √  HTTP 200
+  √  Transitions and note retained
+
+→ Filter own open tasks
+  GET http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks?assigneeUserId=me&status=open [200 OK, 820B, 4ms]
+  √  HTTP 200
+  √  Current assignment found
+
+→ Delivery state is separate
+  GET http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks/6ae7a848f9528fa10b512def/notifications [200 OK, 768B, 6ms]
+  √  HTTP 200
+  √  No false delivery or app acknowledgement
+
+→ Telegram disabled configuration
+  GET http://127.0.0.1:3007/api/v1/me/channel-links [200 OK, 422B, 4ms]
+  √  HTTP 200
+  √  No bot configured for this collection
+
+→ Link challenge cannot fake a bot
+  POST http://127.0.0.1:3007/api/v1/me/channel-link-challenges [503 Service Unavailable, 467B, 2ms]
+  √  HTTP 503
+
+→ Revoke caregiver
+  POST http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/access-grants/6ae7a848f9528fa10b512de3/revoke [200 OK, 628B, 19ms]
+  √  HTTP 200
+
+→ Revoked caregiver cannot read history
+  GET http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks/6ae7a848f9528fa10b512def/history [404 Not Found, 400B, 2ms]
+  √  HTTP 404
+
+→ Restore existing grant
+  PATCH http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/access-grants/6ae7a848f9528fa10b512de3 [200 OK, 606B, 21ms]
+  √  HTTP 200
+
+→ Restored caregiver reads task
+  GET http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks/6ae7a848f9528fa10b512def [200 OK, 789B, 4ms]
+  √  HTTP 200
+
+→ Stale edit rejected
+  PATCH http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks/6ae7a848f9528fa10b512def [409 Conflict, 416B, 7ms]
+  √  HTTP 409
+
+→ Same-key handover replay
+  POST http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks/6ae7a848f9528fa10b512def/notes [200 OK, 1.18kB, 19ms]
+  √  HTTP 200
+
+→ No duplicated handover
+  GET http://127.0.0.1:3007/api/v1/patients/6ae7a847f9528fa10b512dcf/tasks/6ae7a848f9528fa10b512def/history [200 OK, 6.06kB, 5ms]
+  √  HTTP 200
+  √  One effective note
+
+→ Other patient scope is denied
+  GET http://127.0.0.1:3007/api/v1/patients/6ae7a848f9528fa10b512dd9/tasks/6ae7a848f9528fa10b512def [404 Not Found, 400B, 3ms]
+  √  HTTP 404
+
+┌─────────────────────────┬──────────────────┬──────────────────┐
+│                         │         executed │           failed │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              iterations │                1 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│                requests │               28 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│            test-scripts │               28 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│      prerequest-scripts │               28 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              assertions │               37 │                0 │
+├─────────────────────────┴──────────────────┴──────────────────┤
+│ total run duration: 2.9s                                      │
+├───────────────────────────────────────────────────────────────┤
+│ total data received: 21.53kB (approx)                         │
+├───────────────────────────────────────────────────────────────┤
+│ average response time: 17ms [min: 2ms, max: 83ms, s.d.: 19ms] │
+└───────────────────────────────────────────────────────────────┘
+npm notice
+npm notice New major version of npm available! 11.20.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

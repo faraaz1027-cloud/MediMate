@@ -15,6 +15,13 @@ const collections = {
   SourceRecord: "sourceRecords",
   Task: "careTasks",
   TaskEvent: "taskEvents",
+  ChannelLink: "channelLinks",
+  ChannelChallenge: "channelChallenges",
+  TelegramReceipt: "telegramReceipts",
+  WorkerState: "workerState",
+  NotificationJob: "notificationJobs",
+  NotificationAttempt: "notificationAttempts",
+  Acknowledgement: "acknowledgements",
   Operation: "operations",
   AuditEvent: "auditEvents",
 };
@@ -102,8 +109,31 @@ model("CabinetItem", {
   form: String,
   sourceRecordId: oid,
 });
-model("SourceRecord", {provider:String,externalId:String,sourceUrl:String,retrievedAt:Date,contentHash:String,snapshot:Schema.Types.Mixed,matchStatus:String});
-model("CabinetRevision", {patientId:oid,cabinetItemId:oid,revisionNumber:Number,actorUserId:oid,snapshot:Schema.Types.Mixed,reason:String,legacyBaseline:Boolean}, [[{cabinetItemId:1,revisionNumber:1},{unique:true}], [{patientId:1,cabinetItemId:1,createdAt:-1,_id:-1},{}]]);
+model("SourceRecord", {
+  provider: String,
+  externalId: String,
+  sourceUrl: String,
+  retrievedAt: Date,
+  contentHash: String,
+  snapshot: Schema.Types.Mixed,
+  matchStatus: String,
+});
+model(
+  "CabinetRevision",
+  {
+    patientId: oid,
+    cabinetItemId: oid,
+    revisionNumber: Number,
+    actorUserId: oid,
+    snapshot: Schema.Types.Mixed,
+    reason: String,
+    legacyBaseline: Boolean,
+  },
+  [
+    [{ cabinetItemId: 1, revisionNumber: 1 }, { unique: true }],
+    [{ patientId: 1, cabinetItemId: 1, createdAt: -1, _id: -1 }, {}],
+  ],
+);
 model("Task", {
   patientId: oid,
   createdByUserId: oid,
@@ -113,6 +143,9 @@ model("Task", {
   type: String,
   status: String,
   dueAtUTC: Date,
+  assignmentGeneration: Number,
+  acknowledgedAt: Date,
+  acknowledgedByUserId: oid,
 });
 model("TaskEvent", {
   patientId: oid,
@@ -120,7 +153,97 @@ model("TaskEvent", {
   actorUserId: oid,
   eventType: String,
   text: String,
+  occurredAt: Date,
+  fromStatus: String,
+  toStatus: String,
+  snapshot: Schema.Types.Mixed,
 });
+model(
+  "ChannelLink",
+  {
+    userId: oid,
+    telegramUserId: String,
+    chatId: String,
+    consentedAt: Date,
+    revokedAt: Date,
+  },
+  [
+    [{ userId: 1 }, { unique: true }],
+    [
+      { telegramUserId: 1 },
+      { unique: true, partialFilterExpression: { revokedAt: null } },
+    ],
+  ],
+);
+model(
+  "ChannelChallenge",
+  {
+    userId: oid,
+    tokenHash: String,
+    expiresAt: Date,
+    status: String,
+    telegramUserId: String,
+    chatId: String,
+  },
+  [
+    [{ tokenHash: 1 }, { unique: true }],
+    [{ expiresAt: 1 }, { expireAfterSeconds: 0 }],
+  ],
+);
+model("TelegramReceipt", { updateId: Number }, [
+  [{ updateId: 1 }, { unique: true }],
+  [{ createdAt: 1 }, { expireAfterSeconds: 604800 }],
+]);
+model("WorkerState", { name: String, offset: Number, lastActiveAt: Date }, [
+  [{ name: 1 }, { unique: true }],
+]);
+model(
+  "NotificationJob",
+  {
+    patientId: oid,
+    taskId: oid,
+    eventId: oid,
+    recipientId: oid,
+    generation: Number,
+    channelLinkId: oid,
+    channelRevision: Number,
+    status: String,
+    errorCode: String,
+    attemptCount: Number,
+    runAtUTC: Date,
+    leaseUntil: Date,
+  },
+  [
+    [{ eventId: 1, recipientId: 1 }, { unique: true }],
+    [{ status: 1, runAtUTC: 1 }, {}],
+    [{ patientId: 1, taskId: 1, createdAt: -1, _id: -1 }, {}],
+  ],
+);
+model(
+  "NotificationAttempt",
+  {
+    patientId: oid,
+    jobId: oid,
+    attemptNumber: Number,
+    attemptedAt: Date,
+    status: String,
+    externalMessageId: String,
+    errorCode: String,
+  },
+  [[{ jobId: 1, attemptNumber: 1 }, { unique: true }]],
+);
+model(
+  "Acknowledgement",
+  {
+    patientId: oid,
+    taskId: oid,
+    generation: Number,
+    userId: oid,
+    acknowledgedAt: Date,
+    mechanism: String,
+  },
+  [[{ taskId: 1, generation: 1, userId: 1 }, { unique: true }]],
+);
 model(
   "Operation",
   {
@@ -165,11 +288,11 @@ export const db = {
     const [r] = await models[name].create([doc], { session });
     return r.toObject();
   },
-  async list(name, filter, limit, session) {
+  async list(name, filter, limit, session, sort = { createdAt: -1, _id: -1 }) {
     return models[name]
       .find(filter)
       .session(session || null)
-      .sort({ createdAt: -1, _id: -1 })
+      .sort(sort)
       .limit(limit)
       .lean();
   },

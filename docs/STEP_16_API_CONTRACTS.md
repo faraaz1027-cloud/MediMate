@@ -140,19 +140,27 @@ Label selection must match item identity/strength/form adequately; unrelated mat
 Worker produces outcome answered/insufficient_evidence/error. Answered requires cited retrieved passages; no source means abstention. API must not synthesize unsupported prescribing/treatment instructions. Unselected model/provider remains an implementation choice constrained by zero cost and grounding checks.
 
 ## C1 Care tasks and channel linking
+**Step 23 implementation update (2 November 2026):** [task implementation, Telegram preparation and open gate](STEP_23_CAREGIVER_TASKS.md). Task workflows and controlled adapter/worker tests are implemented. The user has no bot or consenting test account; **no real Telegram delivery has been verified**, so full C1 and the external-integration demonstration remain open. A separate long-polling worker replaces the earlier proposed webhook for this local slice; no public update/link approval endpoint exists.
+
 | Route | Permission | Request | Success |
 |---|---|---|---|
 | POST /tasks | task.write | {title,description?,assigneeUserId,type,dueAtUTC?,handoverNote?} | 201 Task; notification queued separately |
-| GET /tasks | task.read | status?,assigneeUserId?,cursor?,limit? | 200 list Task |
+| GET /task-assignees | task.write | None | 200 current owner/caregiver IDs and names; assignees need task.read AND task.write |
+| GET /tasks | task.read | status?,assigneeUserId? (ID or me),cursor?,limit? | 200 list Task |
 | GET /tasks/{id} | task.read | None | 200 Task |
-| PATCH /tasks/{id} | task.write | {expectedRevision,title?,description?,assigneeUserId?,dueAtUTC?} | 200 Task; active grant required for assignee |
+| PATCH /tasks/{id} | task.write | {expectedRevision,title?,description?,assigneeUserId?,dueAtUTC?}; empty description/null due date clears | 200 Task; active grant required; creator/owner edits active tasks; reassign starts new generation |
 | POST /tasks/{id}/transitions | task.write | {expectedRevision,action:accept/complete/reopen} | 200 Task; only valid lifecycle transitions |
 | POST /tasks/{id}/notes | task.write | {text} (1–2000 chars) | 201 task note |
 | GET /tasks/{id}/history | task.read | cursor?,limit? | 200 append-only task events |
-| POST /api/v1/me/channel-link-challenges | Own session | {provider:telegram} | 201 {challengeUrl,expiresAt}; single use, 10-minute expiry |
-| DELETE /api/v1/me/channel-links/{linkId} | Own session | None | 204; revoke channel link and queued sends |
+| POST /tasks/{id}/acknowledgements | task.write; current active assignee | {expectedRevision} | 200 explicit app acknowledgement, separate from delivery/acceptance |
+| GET /tasks/{id}/notifications | task.read | cursor?,limit? | 200 jobs with sanitized delivery attempts |
+| POST /tasks/{id}/notifications/{jobId}/retry | task.write; participant | {} | 200 requeued current definitively unsent job; at most 3 processing attempts; unknown/sent cannot be resent |
+| GET /api/v1/me/channel-links | Own session | None | 200 configuration, masked own links/challenges and polling heartbeat |
+| POST /api/v1/me/channel-link-challenges | Own session, CSRF | {provider:telegram} | 201 {id,revision,challengeUrl,expiresAt}; single use, 10-minute expiry; URL shown once, replay URL null |
+| POST /api/v1/me/channel-link-challenges/{id}/confirm | Own session, CSRF | {expectedRevision,consent:true} | 200 masked link after private /start proof; no patient access granted |
+| DELETE /api/v1/me/channel-links/{linkId} | Own session, CSRF | None or {} | 200 {unlinked:true}; revoke link, suppress queued sends on worker recheck; idempotent envelope |
 
-Owner may transition assigned tasks; a caregiver needs task.write and must be the assignee to accept/complete. Reopening needs the creator/owner and task.write. Private callback verifies linkage, consent and active grants. Telegram webhook authenticates with the configured webhook secret and deduplicates update IDs; it is not a public channel-link approval endpoint.
+Owner may transition assigned tasks; a caregiver needs task.write and must be the assignee to accept/complete. Reopening needs the creator/owner and task.write. Handover notes are append-only for participants. All assignments require owner or active read/write caregiver access. Reopen/reassignment clears the current acknowledgement while retaining history. The dedicated bot poller deduplicates update IDs, requires matching private sender/chat IDs and stores only a hashed challenge. The app account separately confirms consent. Generic notices contain no patient/task/medicine text. Missing configuration is disabled, not delivered; uncertain sends stay unknown with no automatic resend. See Step 23 for dedicated bot/database, queue lease, retry and setup limits. Generic job/notification routes below remain future contracts; C1 implements task-scoped routes above.
 
 ## C2 Doses and C3 follow-up
 | Route | Permission | Request | Success |

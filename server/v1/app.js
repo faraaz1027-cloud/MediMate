@@ -1,6 +1,9 @@
 import { installPrescriptions } from "./prescriptions.js";
 import { installCabinet } from "./cabinet.js";
 import { createRxNorm } from "./rxnorm.js";
+import { createTelegram } from "./telegram.js";
+import { installChannels } from "./channels.js";
+import { installTasks } from "./tasks.js";
 import express from "express";
 import mongoose from "mongoose";
 import {
@@ -115,6 +118,7 @@ function authInput(body, register = false) {
 export function createV1({
   db,
   rxnorm = createRxNorm(),
+  telegram = createTelegram(),
   secure = process.env.NODE_ENV === "production",
   origins = ["http://localhost:5173", "http://127.0.0.1:5173"],
   now = () => new Date(),
@@ -374,7 +378,7 @@ export function createV1({
   patient.get("/", scope(null), (req, res) =>
     send(req, res, publicDoc(req.patient)),
   );
-  async function mutate(req, res, permission, fn, status = 201, prepare) {
+  async function mutate(req, res, permission, fn, status = 201, prepare, present = value => value) {
     const key = req.get("Idempotency-Key");
     if (
       !key ||
@@ -434,7 +438,7 @@ export function createV1({
         result = { ...result, status: 200 };
       } else throw e;
     }
-    send(req, res, result.response, result.status);
+    send(req, res, present(result.response), result.status);
   }
   const ownerOnly = (req) => {
     if (String(req.patient.ownerUserId) !== String(req.actorId))
@@ -556,9 +560,10 @@ export function createV1({
   );
   installPrescriptions(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now });
   installCabinet(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, rxnorm });
+  installChannels(app, { db, authenticated, csrf, mutate, object, fail, id, telegram, now, throttle });
+  installTasks(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now, telegram });
   const resources = [
     ["prescriptions", "Prescription", "prescription"],
-    ["tasks", "Task", "task"],
   ];
   for (const [route, model, perm] of resources) {
     patient.get("/" + route, scope(perm + ".read"), async (req, res) => {
@@ -614,98 +619,8 @@ export function createV1({
           : null,
       });
     });
-    if (model === "Prescription") continue;
-    patient.post(
-      "/" + route,
-      csrf,
-      scope(perm + ".write"),
-      async (req, res) => {
-        let doc;
-        {
-          const b = object(
-            req.body,
-            [
-              "title",
-              "description",
-              "assigneeUserId",
-              "type",
-              "dueAtUTC",
-              "handoverNote",
-            ],
-            ["title", "assigneeUserId", "type"],
-          );
-          doc = {
-            title: text(b.title, "title"),
-            createdByUserId: req.actorId,
-            assigneeUserId: id(b.assigneeUserId),
-            type: b.type,
-            status: "open",
-          };
-          if (!["general", "refill"].includes(b.type))
-            fail(422, "VALIDATION_ERROR", "Unknown task type.");
-          if (b.description !== undefined)
-            doc.description = text(b.description, "description", 2000);
-          if (b.dueAtUTC !== undefined) {
-            if (
-              typeof b.dueAtUTC !== "string" ||
-              !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$/.test(
-                b.dueAtUTC,
-              ) ||
-              !Number.isFinite(Date.parse(b.dueAtUTC)) ||
-              new Date(b.dueAtUTC).toISOString().slice(0, 19) !==
-                b.dueAtUTC.slice(0, 19)
-            )
-              fail(422, "VALIDATION_ERROR", "UTC due date required.");
-            doc.dueAtUTC = new Date(b.dueAtUTC);
-          }
-          if (b.handoverNote !== undefined)
-            text(b.handoverNote, "handoverNote", 2000);
-        }
-        await mutate(req, res, perm + ".write", async (s) => {
-          if (
-            model === "Task" &&
-            String(doc.assigneeUserId) !== String(req.patient.ownerUserId)
-          ) {
-            const grant = await db.one(
-              "AccessGrant",
-              {
-                patientId: req.patient._id,
-                userId: doc.assigneeUserId,
-                revokedAt: null,
-              },
-              s,
-            );
-            if (!grant?.permissions.includes("task.write"))
-              fail(
-                422,
-                "ASSIGNEE_UNAUTHORIZED",
-                "Choose an active caregiver with task permission.",
-                [{ path: "assigneeUserId", message: "Choose the patient owner or an active caregiver with task permission." }],
-              );
-          }
-          const created = await db.insert(
-            model,
-            { ...doc, patientId: req.patient._id },
-            s,
-          );
-          if (model === "Task") {
-            await db.insert(
-              "TaskEvent",
-              {
-                patientId: req.patient._id,
-                taskId: created._id,
-                actorUserId: req.actorId,
-                eventType: "created",
-                text: req.body.handoverNote,
-              },
-              s,
-            );
-          }
-          return publicDoc(created);
-        });
-      },
-    );
   }
+
   app.use((req, res, next) =>
     next(new ApiError(404, "NOT_FOUND", "Endpoint not found.")),
   );

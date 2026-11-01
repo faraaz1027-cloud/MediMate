@@ -34,6 +34,8 @@ Implementation update (2 November 2026): [B1 implementation and lab evidence](ST
 Integrate RxNorm as a **live external API** with search result IDs, selectable candidate and an honest manual entry fallback for unmatched Bangladesh products. Store source/manual status, strength/form and patient ownership; support view, edit, filter and archive while preserving referenced history. Test outage, ambiguous match, invalid input and cross-patient request. **Demo:** external search → save → reload → edit/archive; show manual fallback.
 
 ### Step 23 — C1 caregiver tasks and handover (Sahir)
+Implementation update (2 November 2026): [implemented tasks and Telegram preparation](STEP_23_CAREGIVER_TASKS.md) covers assign/edit/accept/complete/reopen, append-only handover, separate acknowledgement and notification attempts, consent linking and a durable polling worker. API/DOM/Postman and two-account Chromium task checks passed. **Gate open:** the user has no bot/test recipient; real Telegram linking/receipt and Sahir's external-integration demonstration are unverified. CI or controlled fixtures do not complete that gate.
+
 Implement create/assign/accept/complete/reopen task transitions, handover notes and status history. Link consenting test Telegram account, send task notice and record delivery attempts separately from acknowledgement. Test invalid transition, revoked caregiver, failed notification and duplicate retry. **Demo:** patient assigns, caregiver accepts/completes, patient sees history and a linked test account receives a notification.
 
 ### Step 24 — Integrate and demonstrate Module 1

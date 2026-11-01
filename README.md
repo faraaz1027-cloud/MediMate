@@ -3,7 +3,7 @@ Medication management and caregiver coordination — CSE471, Section 01, Fall 20
 
 MediMate is a planned web application for reviewing prescriptions, organizing medicine schedules, recording doses, tracking stock and coordinating caregivers. Its 13th function adds emergency contact alerts and assistance coordination.
 
-**Status:** design/data/API specifications are established. The localhost React/Express/MongoDB demo and six authenticated database APIs are implemented. The React client now integrates those APIs. Full feature workflows and deployment remain pending. The repository is not a working medical or emergency service.
+**Status:** local account/access, prescription review/history, RxNorm cabinet and caregiver task workflows are implemented for owner review. Step 23 Telegram code is prepared, but no bot/test recipient is configured and real delivery is unverified. Other feature workflows, full Module 1 acceptance and deployment remain pending. The repository is not a working medical or emergency service.
 
 ## Project documents
 - [13 functional requirements and acceptance criteria](docs/REQUIREMENTS.md)
@@ -34,7 +34,7 @@ The project has a zero-cost constraint. Integration terms and deployment options
 Notify linked, consenting contacts and track acknowledgements. Use a clearly labelled simulated hospital/provider dashboard for classroom demonstrations until a participating provider is secured. A notification does not establish ambulance dispatch.
 
 ## Next implementation milestone
-Next is Step 23, C1 caregiver task transitions, handover and Telegram linking/notifications, followed by Module 1 integration. A1 review/history and B1 live search/cabinet are implemented for owner review in [Step 21](docs/STEP_21_PRESCRIPTION_REVIEW.md) and [Step 22](docs/STEP_22_MEDICINE_CABINET.md). See [API setup and test evidence](docs/STEP_17_API_IMPLEMENTATION.md).
+Next planned work is Step 24 integration of A1/B1/C1. The [Step 23 real Telegram demonstration gate](docs/STEP_23_CAREGIVER_TASKS.md) remains open because no bot/test recipient is available; Module 1 cannot be marked fully demonstrated yet. A1/B1 and task workflows are prepared for owner review. See [API setup](docs/STEP_17_API_IMPLEMENTATION.md).
 
 ## Links to add
 - Jira project: pending.
@@ -73,3 +73,6 @@ The six APIs are POST and GET for prescriptions, manual cabinet items and caregi
 
 ## Step 22 medicine search and cabinet
 [Live RxNorm search, explicit selection, manual fallback, editing/filtering and retained archive/history](docs/STEP_22_MEDICINE_CABINET.md). Source identity is separate from user strength/form transcription. [Step 22 Postman collection](postman/MediMate_Step22.postman_collection.json) and real public upstream evidence are included. Faraaz's owner review and faculty acceptance remain open.
+
+## Step 23 caregiver tasks and Telegram preparation
+[Task transitions, handover, acknowledgement, delivery worker and the open Telegram gate](docs/STEP_23_CAREGIVER_TASKS.md). [Step 23 Postman collection](postman/MediMate_Step23.postman_collection.json) uses synthetic accounts with Telegram disabled. Configure secrets privately and run the separate worker only when a dedicated bot and consenting test recipient are ready. Sahir's review/contribution and real receipt evidence remain open.

@@ -103,7 +103,7 @@ try {
   let body = await mount(),
     u = userEvent.setup({ document: dom.window.document });
   async function clickReady(element) {
-    await waitFor(() => assert.equal(element.matches(":disabled"), false), { container: body });
+    await waitFor(() => assert.equal(element.matches(":disabled"), false, "Expected enabled control: " + element.textContent), { container: body });
     await u.click(element);
   }
   await findByText(body, "Cannot reach the server. Check your connection and retry.");
@@ -349,6 +349,36 @@ try {
   await clickReady(await findByRole(body,"button",{name:"View acetaminophen 500 MG Oral Tablet",exact:true}));
   await findByText(body,"Revision 0 · active",{exact:true});
   await findByText(body,"Revision 2 · archived",{exact:true});
+  // Step 23 remains usable with Telegram disabled; this is not live Telegram evidence.
+  await clickReady(getByRole(body,"button",{name:"Caregiver tasks",exact:true}));
+  await findByText(body,"DOM task",{exact:true});
+  await clickReady(getByRole(body,"button",{name:"View task DOM task",exact:true}));
+  await findByText(body,"Task status: open",{exact:true});
+  await findByText(body,"Telegram is not configured. Tasks and handover work without it; no Telegram delivery has been verified.",{exact:true});
+  assert.equal(getByRole(body,"button",{name:"Generate Telegram linking code",exact:true}).disabled,true);
+  await u.type(getByLabelText(body,"New handover note",{exact:true}),"Synthetic DOM handover");
+  await clickReady(getByRole(body,"button",{name:"Add handover note",exact:true}));
+  await findByText(body,"Synthetic DOM handover",{exact:true,selector:"p"});
+  await clickReady(getByRole(body,"button",{name:"Acknowledge task notice",exact:true}));
+  await waitFor(()=>assert.equal(body.textContent.includes("Acknowledged in the app at"),true),{container:body});
+  await clickReady(getByRole(body,"button",{name:"Accept task",exact:true}));
+  await findByText(body,"Task status: accepted",{exact:true});
+  await clickReady(getByRole(body,"button",{name:"Complete task",exact:true}));
+  await findByText(body,"Task status: completed",{exact:true});
+  await clickReady(getByRole(body,"button",{name:"Reopen task",exact:true}));
+  await findByText(body,"Task status: open",{exact:true});
+  await findByText(body,"Not acknowledged by the assignee in the app.",{exact:true});
+  await u.clear(getByLabelText(body,"Task title",{exact:true}));await u.type(getByLabelText(body,"Task title",{exact:true}),"DOM task reviewed");
+  await clickReady(getByRole(body,"button",{name:"Save task changes",exact:true}));
+  await findByText(body,"DOM task reviewed",{exact:true});
+  body=await mount();u=userEvent.setup({document:dom.window.document});
+  await findByRole(body,"heading",{name:"Hello, Reviewed profile"});
+  await u.selectOptions(getByRole(body,"combobox",{name:"Patient",exact:true}),(await mongoose.model("Patient").findOne({displayName:"DOM owner"}))._id.toString());
+  await clickReady(getByRole(body,"button",{name:"Caregiver tasks",exact:true}));
+  await clickReady(await findByRole(body,"button",{name:"View task DOM task reviewed",exact:true}));
+  await findByText(body,"Task status: open",{exact:true});
+  await findByText(body,"Synthetic DOM handover",{exact:true,selector:"p"});
+  assert.ok(body.textContent.includes("reopened"));
   const counts = {
     prescriptions: await mongoose.model("Prescription").countDocuments(),
     cabinet: await mongoose.model("CabinetItem").countDocuments(),
@@ -382,6 +412,8 @@ try {
           "Step 21 remount preserves confirmed version and prior instructions",
           "Step 22 explicit external selection, review, edit and archive",
           "Step 22 no-match/outage manual fallback and archived history after remount",
+          "Step 23 handover, explicit acknowledgement, accept/complete/reopen and edit after remount",
+          "Step 23 Telegram disabled status is explicit; live delivery remains unverified",
         ],
         counts,
         limitations:

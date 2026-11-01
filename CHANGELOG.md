@@ -1,5 +1,11 @@
 # Change log
 
+## Step 23 — C1 tasks and Telegram preparation
+- Added assignment/edit/accept/complete/reopen, append-only handover snapshots and separate authenticated acknowledgement.
+- Added private-chat proof plus in-app consent linking, hashed one-time codes, unlinking, a persisted task delivery queue/attempts and a separate Telegram polling worker.
+- Recheck assignment/access/link before send; keep uncertain outcomes unknown without blind resend. Missing bot configuration is explicitly disabled.
+- Added API/provider, DOM, two-account browser and Postman evidence. Real Telegram receipt remains unverified because no bot/test recipient is available; C1's final gate and Sahir's individual review remain open.
+
 ## Step 22 — B1 live search and cabinet
 - Added bounded/cached RxNorm lookup, explicit candidate selection and server revalidation, source snapshots and honest manual fallback.
 - Added cabinet details, filters, revision-checked editing and archive with immutable history and an honest baseline for earlier items.
