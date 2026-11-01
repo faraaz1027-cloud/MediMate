@@ -1,5 +1,11 @@
 # Change log
 
+## Review preparation — session recovery and repeatable checks
+- Recover expired session/CSRF credentials for explicit retries without replaying writes.
+- Cover authenticated and anonymous session expiry in the database-backed DOM checks.
+- Fix Windows ESM imports and MongoDB command-line options in the DOM runner.
+- Add an isolated API test runner and GitHub Actions build/API/DOM verification.
+
 ## Step 18 — React integration
 - Added registration/login, patient selection and six API-backed create/list views.
 - Added loading/error/empty feedback, input preservation, retry keys and paginated lists.

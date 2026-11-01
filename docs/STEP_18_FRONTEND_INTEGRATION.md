@@ -12,6 +12,10 @@ Run the local replica set and backend using [Step 17 setup](STEP_17_API_IMPLEMEN
 - `/auth/me` now includes up to 100 accessible active patient summaries, based on ownership and up to 1,000 active grants. Large-scale patient discovery pagination is later work. Access is still rechecked for each resource request, so discovery does not bypass permissions.
 
 ## Validation
+Pull requests and pushes to main run `.github/workflows/verify.yml`: a clean install, production build, the API suite against a disposable replica set, and the DOM integration checks. Run `node verification/step18/api.mjs` after installing the isolated test package to run the API suite without configuring a local database.
+
+Session recovery is covered by expiring the real MongoDB sessions during the DOM test. Expired authenticated sessions return to sign-in with a fresh CSRF token; expired anonymous sign-in sessions preserve credentials for an explicit retry. Recovery never automatically replays a mutation.
+
 The production Vite build passes. The real MongoDB API acceptance suite passes all 12 reported tests, including new patient-discovery and revocation assertions. The production React bundle is also exercised through JSDOM and Testing Library against a real MongoDB replica set; see [interaction evidence](evidence/step18-dom.json). This checks registration, each create/list flow, remount persistence and logout/login with patient rediscovery.
 
 To repeat the DOM test, first run `npm ci` and `npm run build` at the repository root, then `npm ci --prefix verification/step18` and `npm test --prefix verification/step18`. This isolated test package downloads a temporary MongoDB binary and creates synthetic disposable data; it does not use your application database.

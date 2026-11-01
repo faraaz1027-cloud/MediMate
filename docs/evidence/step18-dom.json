@@ -1,5 +1,5 @@
 {
-  "runAt": "2026-11-01T08:21:11.606Z",
+  "runAt": "2026-11-01T13:31:35.592Z",
   "runner": "JSDOM + Testing Library user-event; production React bundle; real MongoDB 7.0.24 replica set",
   "passed": [
     "registration",
@@ -8,7 +8,9 @@
     "task create/list",
     "remount persistence",
     "logout/login",
-    "patient rediscovery"
+    "patient rediscovery",
+    "authenticated session expiry and sign-in recovery",
+    "anonymous session expiry and explicit CSRF retry"
   ],
   "counts": {
     "prescriptions": 1,
