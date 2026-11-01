@@ -14,6 +14,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
+import { SourceTextModule } from "node:vm";
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../..",
@@ -48,11 +49,7 @@ try {
   origins.push(base);
   const jar = new CookieJar();
   const bundle = fs.readFileSync(
-    root +
-      "/client/dist/assets/" +
-      fs
-        .readdirSync(root + "/client/dist/assets")
-        .find((n) => n.endsWith(".js")),
+    root + "/client/dist" + fs.readFileSync(root + "/client/dist/index.html", "utf8").match(/<script[^>]+src="([^"]+)"/)[1],
     "utf8",
   );
   async function mount() {
@@ -87,18 +84,27 @@ try {
       for (const c of r.headers.getSetCookie()) await jar.setCookie(c, url);
       return r;
     };
-    dom.window.eval(bundle);
+    const module = new SourceTextModule(bundle, {
+      context: dom.getInternalVMContext(),
+      initializeImportMeta(meta) { meta.url = base + "/assets/entry.js"; },
+    });
+    await module.link(() => { throw new Error("Unexpected static module dependency in the production entry."); });
+    await module.evaluate();
     return dom.window.document.body;
   }
   let body = await mount(),
     u = userEvent.setup({ document: dom.window.document });
+  async function clickReady(element) {
+    await waitFor(() => assert.equal(element.matches(":disabled"), false), { container: body });
+    await u.click(element);
+  }
   await findByText(body, "Cannot reach the server. Check your connection and retry.");
   assert.equal(getByRole(body, "button", { name: "Sign in", exact: true }).disabled, true);
   offline = false;
-  await u.click(getByRole(body, "button", { name: "Reconnect to server", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Reconnect to server", exact: true }));
   await waitFor(() => assert.equal(getByRole(body, "button", { name: "Sign in", exact: true }).disabled, false), { container: body });
   await findByRole(body, "button", { name: "Create a new account" });
-  await u.click(getByRole(body, "button", { name: "Create a new account" }));
+  await clickReady(getByRole(body, "button", { name: "Create a new account" }));
   await u.type(
     getByLabelText(body, "Email", { exact: true }),
     "dom@example.test",
@@ -108,17 +114,17 @@ try {
     "Synthetic-pass-123!",
   );
   await u.type(getByLabelText(body, "Display name"), "DOM owner");
-  await u.click(
+  await clickReady(
     getByRole(body, "button", { name: "Create account", exact: true }),
   );
   await findByRole(body, "heading", { name: "Hello, DOM owner" });
   // Logout immediately after registration must show sign-in, not registration.
-  await u.click(getByRole(body, "button", { name: "Sign out", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Sign out", exact: true }));
   await findByRole(body, "heading", { name: "Welcome back" });
   await waitFor(() => assert.equal(getByRole(body, "button", { name: "Sign in", exact: true }).disabled, false), { container: body });
   await u.type(getByLabelText(body, "Email", { exact: true }), "dom@example.test");
   await u.type(getByLabelText(body, "Password", { exact: true }), "Synthetic-pass-123!");
-  await u.click(getByRole(body, "button", { name: "Sign in", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Sign in", exact: true }));
   await findByRole(body, "heading", { name: "Hello, DOM owner" });
   await u.type(getByLabelText(body, "Prescription title"), "DOM prescription");
   await u.type(
@@ -129,29 +135,29 @@ try {
     getByLabelText(body, "Instructions from prescription"),
     "Synthetic instructions",
   );
-  await u.click(getByRole(body, "button", { name: "Save draft", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Save draft", exact: true }));
   await findByText(body, "DOM prescription", { exact: true });
-  await u.click(
+  await clickReady(
     getByRole(body, "button", { name: "Medicine cabinet", exact: true }),
   );
   await u.type(
     getByLabelText(body, "Medicine name", { exact: true }),
     "DOM cabinet",
   );
-  await u.click(
+  await clickReady(
     getByRole(body, "button", { name: "Save medicine", exact: true }),
   );
   await findByText(body, "DOM cabinet", { exact: true });
-  await u.click(
+  await clickReady(
     getByRole(body, "button", { name: "Caregiver tasks", exact: true }),
   );
   await u.type(getByLabelText(body, "Task title"), "DOM task");
-  await u.click(getByRole(body, "button", { name: "Save task", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Save task", exact: true }));
   await findByText(body, "DOM task", { exact: true });
   body = await mount();
   u = userEvent.setup({ document: dom.window.document });
   await findByText(body, "DOM prescription", { exact: true });
-  await u.click(getByRole(body, "button", { name: "Sign out", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Sign out", exact: true }));
   await findByRole(body, "heading", { name: "Welcome back" });
   await waitFor(() => assert.equal(getByRole(body, "button", { name: "Sign in", exact: true }).disabled, false), { container: body });
   await u.type(
@@ -162,20 +168,20 @@ try {
     getByLabelText(body, "Password", { exact: true }),
     "Synthetic-pass-123!",
   );
-  await u.click(getByRole(body, "button", { name: "Sign in", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Sign in", exact: true }));
   await findByText(body, "DOM prescription", { exact: true });
   // Expired authenticated sessions must return to a usable sign-in form.
   await mongoose.model("Session").updateMany({}, {
     $set: { expiresAt: new Date(0) },
   });
-  await u.click(getByRole(body, "button", { name: "Refresh", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Refresh", exact: true }));
   await findByRole(body, "heading", { name: "Welcome back" });
   await waitFor(() => assert.equal(getByRole(body, "button", { name: "Sign in", exact: true }).disabled, false), { container: body });
   await u.type(getByLabelText(body, "Email", { exact: true }), "dom@example.test");
   await u.type(getByLabelText(body, "Password", { exact: true }), "Synthetic-pass-123!");
-  await u.click(getByRole(body, "button", { name: "Sign in", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Sign in", exact: true }));
   await findByText(body, "DOM prescription", { exact: true });
-  await u.click(getByRole(body, "button", { name: "Sign out", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Sign out", exact: true }));
   await findByRole(body, "heading", { name: "Welcome back" });
   await waitFor(() => assert.equal(getByRole(body, "button", { name: "Sign in", exact: true }).disabled, false), { container: body });
   await u.type(getByLabelText(body, "Email", { exact: true }), "dom@example.test");
@@ -184,67 +190,69 @@ try {
   await mongoose.model("Session").updateMany({}, {
     $set: { expiresAt: new Date(0) },
   });
-  await u.click(getByRole(body, "button", { name: "Sign in", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Sign in", exact: true }));
   await findByRole(body, "alert");
   await waitFor(() => assert.equal(
     getByRole(body, "button", { name: "Sign in", exact: true }).disabled, false,
   ), { container: body });
   assert.equal(getByLabelText(body, "Email", { exact: true }).value, "dom@example.test");
-  await u.click(getByRole(body, "button", { name: "Sign in", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Sign in", exact: true }));
   await findByText(body, "DOM prescription", { exact: true });
-  await u.click(getByRole(body, "button", { name: "Account and access", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Account and access", exact: true }));
   await findByRole(body, "heading", { name: "Account and access" });
   const display = getByLabelText(body, "Account display name", { exact: true });
   await u.clear(display); await u.type(display, "Reviewed profile");
-  await u.click(getByRole(body, "button", { name: "Save profile", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Save profile", exact: true }));
   await findByRole(body, "heading", { name: "Hello, Reviewed profile" });
   await findByText(body, "Changes saved. Permissions apply on the next server request.");
   await u.type(getByLabelText(body, "New patient name", { exact: true }), "Second DOM patient");
-  await u.click(getByRole(body, "button", { name: "Create patient", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Create patient", exact: true }));
   await findByRole(body, "option", { name: "Second DOM patient", exact: true });
   await waitFor(() => assert.equal(getByRole(body, "button", { name: "Close account settings", exact: true }).disabled, false), { container: body });
-  await u.click(getByRole(body, "button", { name: "Close account settings", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Close account settings", exact: true }));
   htmlList = true;
-  await u.click(getByRole(body, "button", { name: "Refresh", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Refresh", exact: true }));
   await findByText(body, "The server returned an unexpected response. Please retry.");
   assert.ok(getByText(body, "DOM prescription", { exact: true }));
   assert.equal(body.textContent.includes("No records yet."), false);
-  await u.click(getByRole(body, "button", { name: "Retry loading records", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Retry loading records", exact: true }));
   await findByText(body, "DOM prescription", { exact: true });
   await waitFor(() => assert.equal(body.textContent.includes("Retry loading records"), false), { container: body });
+  await waitFor(() => assert.equal(getByRole(body, "button", { name: "New draft", exact: true }).disabled, false), { container: body });
+  await clickReady(getByRole(body, "button", { name: "New draft", exact: true }));
   const titleField = getByLabelText(body, "Prescription title", { exact: true });
   await u.type(titleField, "   ");
   await u.type(getByLabelText(body, "Medicine name", { exact: true }), "Demo");
   await u.type(getByLabelText(body, "Instructions from prescription", { exact: true }), "Demo instructions");
-  await u.click(getByRole(body, "button", { name: "Save draft", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Save draft", exact: true }));
   await waitFor(() => assert.equal(titleField.getAttribute("aria-invalid"), "true"), { container: body });
   assert.equal(dom.window.document.activeElement, titleField);
   assert.ok(titleField.getAttribute("aria-describedby"));
   holdList = true;
-  await u.click(getByRole(body, "button", { name: "Refresh", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Refresh", exact: true }));
   await findByText(body, "Loading records…");
-  await u.click(getByRole(body, "button", { name: "Medicine cabinet", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Medicine cabinet", exact: true }));
   await findByText(body, "DOM cabinet", { exact: true });
   releaseList();
   await waitFor(() => assert.equal(staleFinished, true), { container: body });
-  await u.click(getByRole(body, "button", { name: "Refresh", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Refresh", exact: true }));
   await findByText(body, "DOM cabinet", { exact: true });
   assert.ok(getByRole(body, "heading", { name: "Hello, Reviewed profile" }));
   assert.equal(body.textContent.includes("DOM prescription"), false);
-  await u.click(getByRole(body, "button", { name: "Caregiver tasks", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Caregiver tasks", exact: true }));
   await u.type(getByLabelText(body, "Task title", { exact: true }), "Invalid assignee test");
   const assigneeField = getByLabelText(body, "Assign to user ID", { exact: true });
   await u.type(assigneeField, "f".repeat(24));
-  await u.click(getByRole(body, "button", { name: "Save task", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Save task", exact: true }));
   await waitFor(() => assert.equal(assigneeField.getAttribute("aria-invalid"), "true"), { container: body });
   assert.equal(dom.window.document.activeElement, assigneeField);
   const currentUser = await mongoose.model("User").findOne({emailNormalized:"dom@example.test"});
   const organizer = await mongoose.model("User").create({emailNormalized:"organizer@example.test",displayName:"Organizer"});
   const shared = await mongoose.model("Patient").create({ownerUserId:organizer._id,displayName:"Shared read-only patient",timezone:"Asia/Dhaka",status:"active"});
   await mongoose.model("AccessGrant").create({patientId:shared._id,userId:currentUser._id,permissions:["task.read"]});
-  await u.click(getByRole(body, "button", { name: "Account and access", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Account and access", exact: true }));
   await waitFor(() => assert.equal(getByRole(body, "button", { name: "Refresh account details", exact: true }).disabled, false), { container: body });
-  await u.click(getByRole(body, "button", { name: "Refresh account details", exact: true }));
+  await clickReady(getByRole(body, "button", { name: "Refresh account details", exact: true }));
   await findByRole(body, "option", { name: "Shared read-only patient", exact: true });
   await u.selectOptions(getByRole(body, "combobox", { name: "Patient", exact: true }), String(shared._id));
   await findByText(body, "You do not have permission to create records in this area.");
@@ -252,6 +260,44 @@ try {
   assert.equal(getByRole(body, "button", { name: "Save task", exact: true }).closest("fieldset").disabled, true);
   assert.equal(body.querySelector('button[aria-current="page"]').textContent, "Caregiver tasks");
   assert.equal([...body.querySelectorAll("nav button")].length, 1);
+  // Step 21: exercise the actual editor rather than marking the create/list demo complete.
+  await u.selectOptions(getByRole(body, "combobox", { name: "Patient", exact: true }), (await mongoose.model("Patient").findOne({displayName:"DOM owner"}))._id.toString());
+  await clickReady(getByRole(body, "button", { name: "Prescriptions", exact: true }));
+  await findByText(body, "DOM prescription", {exact:true});
+  await clickReady(getByRole(body, "button", { name: "Review DOM prescription", exact: true }));
+  await findByRole(body, "heading", { name: "Review prescription", exact: true });
+  await waitFor(()=>assert.equal(getByLabelText(body,"Dose quantity",{exact:true}).value,""),{container:body});
+  await u.type(getByLabelText(body,"Dose quantity",{exact:true}),"1.25");
+  await u.selectOptions(getByLabelText(body,"Dose unit",{exact:true}),"tablet");
+  await u.type(getByLabelText(body,"Timing from prescription",{exact:true}),"Synthetic timing");
+  await u.type(getByLabelText(body,"Duration from prescription",{exact:true}),"Synthetic duration");
+  await clickReady(getByRole(body,"checkbox",{name:"Needs clarification or review",exact:true}));
+  await clickReady(getByRole(body,"button",{name:"Save draft",exact:true}));
+  await waitFor(()=>assert.equal(getByRole(body,"button",{name:"Confirm reviewed version",exact:true}).matches(":disabled"),false),{container:body});
+  await clickReady(getByRole(body,"checkbox",{name:"I reviewed every instruction and resolved all ambiguities",exact:true}));
+  await clickReady(getByRole(body,"button",{name:"Confirm reviewed version",exact:true}));
+  await findByRole(body,"heading",{name:"Confirmed version 1",exact:true});
+  await clickReady(getByRole(body,"button",{name:"Create replacement draft",exact:true}));
+  await waitFor(()=>assert.equal(getByLabelText(body,"Dose quantity",{exact:true}).value,"1.25"),{container:body});
+  await u.clear(getByLabelText(body,"Dose quantity",{exact:true}));
+  await u.type(getByLabelText(body,"Dose quantity",{exact:true}),"2");
+  await clickReady(getByRole(body,"button",{name:"Save draft",exact:true}));
+  await waitFor(()=>assert.equal(getByRole(body,"button",{name:"Confirm reviewed version",exact:true}).matches(":disabled"),false),{container:body});
+  await clickReady(getByRole(body,"button",{name:"Compare versions",exact:true}));
+  await findByText(body,"doseQuantity: 1.25 → 2",{exact:true});
+  await clickReady(getByRole(body,"checkbox",{name:"I reviewed every instruction and resolved all ambiguities",exact:true}));
+  await clickReady(getByRole(body,"button",{name:"Confirm reviewed version",exact:true}));
+  await findByRole(body,"heading",{name:"Confirmed version 2",exact:true});
+  body=await mount();u=userEvent.setup({document:dom.window.document});
+  await findByRole(body,"heading",{name:"Hello, Reviewed profile"});
+  await u.selectOptions(getByRole(body,"combobox",{name:"Patient",exact:true}),(await mongoose.model("Patient").findOne({displayName:"DOM owner"}))._id.toString());
+  await findByText(body,"DOM prescription",{exact:true});
+  await clickReady(getByRole(body,"button",{name:"Review DOM prescription",exact:true}));
+  await findByRole(body,"heading",{name:"Confirmed version 2",exact:true});
+  await clickReady(getByRole(body,"button",{name:"View version 1",exact:true}));
+  await findByRole(body,"heading",{name:"Historical version 1",exact:true});
+  const firstVersion=await mongoose.model("PrescriptionVersion").findOne({versionNumber:1});
+  assert.equal((await mongoose.model("PrescriptionInstruction").findOne({prescriptionVersionId:firstVersion._id})).doseQuantity.toString(),"1.25");
   const counts = {
     prescriptions: await mongoose.model("Prescription").countDocuments(),
     cabinet: await mongoose.model("CabinetItem").countDocuments(),
@@ -281,6 +327,8 @@ try {
           "Step 20 whitespace and server field errors focus associated inputs",
           "Step 20 slow stale 401 cannot replace current tab or log out",
           "Step 20 permission-aware navigation and read-only controls",
+          "Step 21 edit/review/confirm and replacement comparison",
+          "Step 21 remount preserves confirmed version and prior instructions",
         ],
         counts,
         limitations:

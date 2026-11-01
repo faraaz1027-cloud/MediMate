@@ -1,3 +1,4 @@
+import PrescriptionReview from "./PrescriptionReview.jsx";
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import AccountAccess from "./AccountAccess.jsx";
@@ -114,7 +115,7 @@ export default function App() {
   }, [connectionAttempt]);
   async function list(append = false) {
     const token = ++generation.current;
-    if (!patient || !user || !canRead) { setLoading(false); return; }
+    if (!patient || !user || !canRead || activeTab === "prescriptions") { setLoading(false); return; }
     setLoading(true);
     setListError("");
     try {
@@ -201,19 +202,7 @@ export default function App() {
       f = Object.fromEntries(new FormData(form));
     try {
     let body;
-    if (activeTab === "prescriptions")
-      body = {
-        title: f.title,
-        instructions: [
-          {
-            lineNumber: 1,
-            medicineText: f.medicineText,
-            instructionsText: f.instructionsText,
-            clarificationRequired: f.review === "on",
-          },
-        ],
-      };
-    else if (activeTab === "cabinet-items")
+    if (activeTab === "cabinet-items")
       body = {
         displayName: f.displayName,
         entryType: "manual",
@@ -389,54 +378,18 @@ export default function App() {
                     </button>
                   ))}
                 </nav>
+                {activeTab === "prescriptions" ? <PrescriptionReview key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : (
                 <div className="columns">
                   <section className="card">
                     <h2>
-                      {activeTab === "prescriptions"
-                        ? "New prescription draft"
-                        : activeTab === "cabinet-items"
+                      {activeTab === "cabinet-items"
                           ? "Add medicine manually"
                           : "Create caregiver task"}
                     </h2>
                     <ValidatedForm key={patient + activeTab} onSubmit={save}>
                       {!canWrite && <p>You do not have permission to create records in this area.</p>}
                       <fieldset disabled={busy || !canWrite}>
-                        {activeTab === "prescriptions" ? (
-                          <>
-                            <label>
-                              Prescription title
-                              <input name="title" required maxLength={200} />
-                            </label>
-                            <label>
-                              Medicine name
-                              <input
-                                name="medicineText"
-                                required
-                                maxLength={200}
-                              />
-                            </label>
-                            <label>
-                              Instructions from prescription
-                              <textarea
-                                name="instructionsText"
-                                required
-                                maxLength={2000}
-                              />
-                            </label>
-                            <label className="check">
-                              <input
-                                name="review"
-                                type="checkbox"
-                                defaultChecked
-                              />
-                              Needs clarification or review
-                            </label>
-                            <p className="hint">
-                              Saves one instruction as a draft. Confirmation and
-                              OCR come later.
-                            </p>
-                          </>
-                        ) : activeTab === "cabinet-items" ? (
+                        {activeTab === "cabinet-items" ? (
                           <>
                             <label>
                               Medicine name
@@ -506,9 +459,7 @@ export default function App() {
                           {busy
                             ? "Saving…"
                             : "Save " +
-                              (activeTab === "prescriptions"
-                                ? "draft"
-                                : activeTab === "tasks"
+                              (activeTab === "tasks"
                                   ? "task"
                                   : "medicine")}
                         </button>
@@ -571,6 +522,7 @@ export default function App() {
                     )}
                   </section>
                 </div>
+                )}
               </>
             )}
           </>

@@ -1,0 +1,13 @@
+{
+  "step": 21,
+  "date": "2026-11-02",
+  "branch": "feature/step21-prescription-review",
+  "basePullRequest": "https://github.com/faraaz1027-cloud/MediMate/pull/3",
+  "owner": "Ihfaz Rashid Sadat",
+  "data": "synthetic only",
+  "api": {"reportedTests": 25, "failed": 0, "skipped": 0},
+  "dom": {"passed": true, "evidence": "step18-dom.json", "includes": ["draft edit", "explicit review", "replacement comparison", "confirmed history after remount", "shared account/access regressions"]},
+  "newman": {"requests": 15, "assertions": 22, "failed": 0, "evidence": "step21-newman.txt"},
+  "browser": {"engine": "Chromium", "passed": ["real English printed-image OCR", "confirm reviewed v1", "quantity 1 to 2 difference and v2 confirmation", "reload with immutable v1 and current v2", "invalid image signature rejected", "unreadable image manual draft and blocked confirmation", "desktop and mobile inspection"], "mobileViewport": [390,844], "desktopViewport": [1440,1000]},
+  "limits": ["English printed OCR only tested", "no image upload or retention; source metadata is untrusted", "not clinical or authenticity verification", "local OCR gives no external API course credit", "no deployment, faculty acceptance or individual contribution claim", "Module 1 integration remains open"]
+}

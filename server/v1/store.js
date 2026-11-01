@@ -70,6 +70,11 @@ model(
     prescriptionId: oid,
     versionNumber: Number,
     status: String,
+    previousVersionId: oid,
+    confirmedAt: Date,
+    confirmedByUserId: oid,
+    reviewCorrections: String,
+    source: Schema.Types.Mixed,
   },
   [[{ prescriptionId: 1, versionNumber: 1 }, { unique: true }]],
 );
@@ -82,6 +87,8 @@ model("PrescriptionInstruction", {
   strengthText: String,
   doseQuantity: Schema.Types.Decimal128,
   doseUnit: String,
+  frequencyText: String,
+  durationText: String,
   clarificationRequired: Boolean,
 });
 model("CabinetItem", {
@@ -153,9 +160,10 @@ export const db = {
     const [r] = await models[name].create([doc], { session });
     return r.toObject();
   },
-  async list(name, filter, limit) {
+  async list(name, filter, limit, session) {
     return models[name]
       .find(filter)
+      .session(session || null)
       .sort({ createdAt: -1, _id: -1 })
       .limit(limit)
       .lean();
@@ -169,8 +177,8 @@ export const db = {
       )
       .lean();
   },
-  async remove(name, filter) {
-    await models[name].deleteMany(filter);
+  async remove(name, filter, session) {
+    await models[name].deleteMany(filter).session(session || null);
   },
   async transaction(fn) {
     return mongoose.connection.transaction(fn);

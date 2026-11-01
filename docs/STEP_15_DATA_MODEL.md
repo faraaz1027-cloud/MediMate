@@ -135,3 +135,6 @@ Within a transaction: validate active access and expected revision; write action
 ## Step 15 completion
 Identifiers, patient ownership, permissions, all 13 feature data dictionaries, lifecycles, timestamps, index constraints and consistency strategy are defined. This is the documented team baseline, subject to implementation feedback; it does not claim team/faculty sign-off or working schemas.
 
+
+## Step 21 implementation update — 2 November 2026
+A1 adds optional PrescriptionVersion.previousVersionId, confirmedAt, confirmedByUserId, reviewCorrections and source metadata, plus PrescriptionInstruction.frequencyText/durationText. Confirmation preserves version/instruction identities; replacement creates new records and changes only the parent's current pointer. No destructive migration or rewrite of confirmed history is performed. Existing drafts need complete reviewed timing/duration before confirmation. Browser-local OCR replaces the planned server asset/job storage for this slice: no image bytes are retained and source metadata is untrusted. See [Step 21 contract and rationale](STEP_21_PRESCRIPTION_REVIEW.md) and the amended A1 section of Step 16. Other asset/domain models remain planned, not implemented by A1.
