@@ -64,3 +64,6 @@ The six APIs are POST and GET for prescriptions, manual cabinet items and caregi
 
 ## Step 19 account and access
 [Implementation, lab mapping and remaining gates](docs/STEP_19_ACCOUNT_ACCESS.md). Open Account and access to edit your profile, create/select patients, and administer named caregiver grants as a patient owner. Direct grants to registered user IDs take effect immediately; no email invitation is sent. [Step 19 Postman collection](postman/MediMate_Step19.postman_collection.json).
+
+## Step 20 shared behavior
+[Reconnect/retry, field validation, permission navigation and validation evidence](docs/STEP_20_SHARED_BEHAVIOR.md). Later assessed feature workflows remain separate roadmap steps.

@@ -19,6 +19,8 @@ Implementation update (1 November 2026): the [shared local slice](STEP_19_ACCOUN
 Build signup/login/logout, profile and patient profile selection, invitation/grant/revocation of caregiver access, roles and any necessary admin path. Reconcile with Step 17's existing session/CSRF/authorization code rather than duplicating it. Specify who may confirm a prescription, edit tasks, record a dose and view an SOS. Persist grants and audit state; enforce permission on every server read/write, including a previously authorized caregiver after revocation. Test another patient's ID, expired session, CSRF failure and grant revocation. **Evidence:** working UI/API, DB records and access tests. These are shared infrastructure, not assessed A/B/C features.
 
 ### Step 20 — Finish shared UI/backend behavior
+Implementation update (1 November 2026): [shared behavior and evidence](STEP_20_SHARED_BEHAVIOR.md) records reconnect/retry, field-associated validation, permission-aware navigation, stale-response guards and desktop/mobile/keyboard/controlled-fault checks. This is shared infrastructure, not a claim that later feature screens or a comprehensive accessibility/performance audit are complete.
+
 Extend Step 18 React screens with navigation, form field validation, loading/empty/error states, mobile responsiveness and accessible labels. Normalize API errors and protect patient routes server-side. Avoid full-page generated templates that owners cannot explain. Test keyboard navigation, small viewport, slow request and stale session. **Evidence:** screenshots of real states and a passing build.
 
 ### Step 21 — A1 prescription import, review and change tracking (Ihfaz)

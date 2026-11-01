@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import AccountAccess from "./AccountAccess.jsx";
+import ValidatedForm from "./ValidatedForm.jsx";
+import { request } from "./request.js";
 const tabs = [
   ["prescriptions", "Prescriptions"],
   ["cabinet-items", "Medicine cabinet"],
@@ -10,35 +12,45 @@ export default function App() {
   const [user, setUser] = useState(null),
     [csrf, setCsrf] = useState(""),
     [ready, setReady] = useState(false),
+    [connectionAttempt, setConnectionAttempt] = useState(0),
+    [connectionFailed, setConnectionFailed] = useState(false),
     [showAccount, setShowAccount] = useState(false),
     [register, setRegister] = useState(false),
     [patient, setPatient] = useState(""),
     [tab, setTab] = useState("prescriptions"),
     [rows, setRows] = useState([]),
+    [rowsView, setRowsView] = useState(""),
     [cursor, setCursor] = useState(null),
     [loading, setLoading] = useState(false),
+    [listError, setListError] = useState(""),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [notice, setNotice] = useState("");
   const generation = useRef(0),
     pending = useRef(null),
-    lock = useRef(false);
+    lock = useRef(false), currentView = useRef("");
   const selectedPatient = user?.patients?.find((p) => p.id === patient);
-  const permissionPrefix = { prescriptions: "prescription", "cabinet-items": "cabinet", tasks: "task" }[tab];
+  const prefixes = { prescriptions: "prescription", "cabinet-items": "cabinet", tasks: "task" };
+  const visibleTabs = tabs.filter(([id]) => selectedPatient?.permissions?.some((p) => p === prefixes[id] + ".read" || p === prefixes[id] + ".write"));
+  const activeTab = visibleTabs.some(([id]) => id === tab) ? tab : visibleTabs[0]?.[0] || tab;
+  const permissionPrefix = prefixes[activeTab];
   const canWrite = selectedPatient?.permissions?.includes(permissionPrefix + ".write");
+  const canRead = selectedPatient?.permissions?.includes(permissionPrefix + ".read");
+  const view = `${user?.id}/${patient}/${activeTab}`;
+  currentView.current = view;
+  const visibleRows = canRead && rowsView === view ? rows : [];
   async function api(path, options = {}) {
-    const r = await fetch("/api/v1" + path, {
-      credentials: "same-origin",
-      ...options,
+    const { isCurrent = () => true, ...fetchOptions } = options;
+    try { return await request(path, {
+      ...fetchOptions,
       headers: {
         "Content-Type": "application/json",
         ...(options.method ? { "X-CSRF-Token": csrf } : {}),
         ...options.headers,
       },
-    });
-    const b = r.status === 204 ? null : await r.json();
-    if (!r.ok) {
-      if (r.status === 401) {
+    }); } catch (e) {
+      if (!isCurrent()) throw e;
+      if (e.status === 401) {
         generation.current++;
         setUser(null);
         setPatient("");
@@ -48,16 +60,12 @@ export default function App() {
         setNotice("");
         pending.current = null;
       }
-      if (r.status === 401 || b?.error?.code === "CSRF_REJECTED") {
+      if (e.status === 401 || e.code === "CSRF_REJECTED") {
         // A rejected write has not run. Recover credentials for an explicit
         // retry, without silently resubmitting the user's mutation.
         setCsrf("");
         try {
-          const tokenResponse = await fetch("/api/v1/auth/csrf", {
-            credentials: "same-origin",
-          });
-          const tokenBody = await tokenResponse.json();
-          if (!tokenResponse.ok) throw new Error("Cannot refresh the session. Retry sign-in.");
+          const tokenBody = await request("/auth/csrf");
           setCsrf(tokenBody.data.csrfToken);
         } catch (e) {
           // Keep retry available if the token endpoint is temporarily offline.
@@ -65,9 +73,8 @@ export default function App() {
           throw e;
         }
       }
-      throw new Error(b?.error?.message || "Request failed.");
+      throw e;
     }
-    return b;
   }
   async function refreshUser() {
     const r = await api("/auth/me");
@@ -81,29 +88,21 @@ export default function App() {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
+    setReady(false); setError(""); setConnectionFailed(false);
     (async () => {
       try {
-        const r = await fetch("/api/v1/auth/csrf", {
-          credentials: "same-origin",
-          signal: controller.signal,
-        });
-        const b = await r.json();
-        if (!r.ok) throw Error(b.error?.message || "Cannot connect to server.");
+        const b = await request("/auth/csrf", { signal: controller.signal });
         if (!active) return;
         setCsrf(b.data.csrfToken);
-        const me = await fetch("/api/v1/auth/me", {
-          credentials: "same-origin",
-          signal: controller.signal,
-        });
-        if (me.ok) {
-          const d = await me.json();
+        try {
+          const d = await request("/auth/me", { signal: controller.signal });
           if (active) {
             setUser(d.data);
             setPatient(d.data.patients?.[0]?.id || "");
           }
-        }
+        } catch (e) { if (e.status !== 401) throw e; }
       } catch (e) {
-        if (active) setError(e.message);
+        if (active) { setError(e.message); setConnectionFailed(true); }
       } finally {
         if (active) setReady(true);
       }
@@ -112,40 +111,43 @@ export default function App() {
       active = false;
       controller.abort();
     };
-  }, []);
+  }, [connectionAttempt]);
   async function list(append = false) {
     const token = ++generation.current;
-    if (!patient || !user) return;
+    if (!patient || !user || !canRead) { setLoading(false); return; }
     setLoading(true);
-    setError("");
+    setListError("");
     try {
       const r = await api(
-        `/patients/${patient}/${tab}?limit=20` +
+        `/patients/${patient}/${activeTab}?limit=20` +
           (append && cursor ? "&cursor=" + encodeURIComponent(cursor) : ""),
+        { isCurrent: () => token === generation.current && view === currentView.current },
       );
-      if (token !== generation.current) return;
+      if (token !== generation.current || view !== currentView.current) return;
       setRows((old) => (append ? [...old, ...r.data] : r.data));
+      setRowsView(view);
       setCursor(r.meta.nextCursor);
     } catch (e) {
-      if (token === generation.current) {
-        setError(e.message);
-        setRows([]);
-        setCursor(null);
+      if (token === generation.current && view === currentView.current) {
+        setListError(e.message);
+        if (e.status === 403 || e.status === 404) { setRows([]); setCursor(null); }
       }
     } finally {
-      if (token === generation.current) setLoading(false);
+      if (token === generation.current && view === currentView.current) setLoading(false);
     }
   }
   useEffect(() => {
     setRows([]);
     setCursor(null);
     setNotice("");
+    setListError(""); setLoading(false);
+    setError("");
     pending.current = null;
     if (user && patient) list();
     return () => {
       generation.current++;
     };
-  }, [patient, tab, user?.id]);
+  }, [patient, activeTab, user?.id, canRead]);
   async function authenticate(e) {
     e.preventDefault();
     if (lock.current) return;
@@ -163,6 +165,7 @@ export default function App() {
       setRegister(false);
     } catch (e) {
       setError(e.message);
+      return { error: e };
     } finally {
       lock.current = false;
       setBusy(false);
@@ -196,8 +199,9 @@ export default function App() {
     setNotice("");
     const form = e.currentTarget,
       f = Object.fromEntries(new FormData(form));
+    try {
     let body;
-    if (tab === "prescriptions")
+    if (activeTab === "prescriptions")
       body = {
         title: f.title,
         instructions: [
@@ -209,7 +213,7 @@ export default function App() {
           },
         ],
       };
-    else if (tab === "cabinet-items")
+    else if (activeTab === "cabinet-items")
       body = {
         displayName: f.displayName,
         entryType: "manual",
@@ -225,10 +229,9 @@ export default function App() {
         ...(f.dueAtUTC ? { dueAtUTC: new Date(f.dueAtUTC).toISOString() } : {}),
       };
     const payload = JSON.stringify(body),
-      path = `/patients/${patient}/${tab}`;
+      path = `/patients/${patient}/${activeTab}`;
     if (pending.current?.payload !== payload || pending.current?.path !== path)
       pending.current = { path, payload, key: crypto.randomUUID() };
-    try {
       await api(path, {
         method: "POST",
         headers: { "Idempotency-Key": pending.current.key },
@@ -243,6 +246,7 @@ export default function App() {
         e.message +
           " Your entries are retained; retry to check the same submission.",
       );
+      return { error: e };
     } finally {
       lock.current = false;
       setBusy(false);
@@ -250,6 +254,7 @@ export default function App() {
   }
   return (
     <>
+      <a className="skip-link" href="#main-content">Skip to main content</a>
       <header>
         <div className="brand">MediMate</div>
         <span>Medication and caregiver coordination</span>
@@ -259,7 +264,7 @@ export default function App() {
           </button>
         )}
       </header>
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <p className="eyebrow">Synthetic demonstration · Module 1</p>
         {error && (
           <div role="alert" className="alert">
@@ -277,7 +282,8 @@ export default function App() {
           <section className="auth card">
             <h1>{register ? "Create an account" : "Welcome back"}</h1>
             <p>Sign in to manage your patient records.</p>
-            <form onSubmit={authenticate}>
+            {(!csrf || connectionFailed) && <button disabled={busy} onClick={() => setConnectionAttempt((n) => n + 1)}>Reconnect to server</button>}
+            <ValidatedForm onSubmit={authenticate}>
               <fieldset disabled={busy}>
                 <label>
                   Email
@@ -321,7 +327,7 @@ export default function App() {
                       : "Sign in"}
                 </button>
               </fieldset>
-            </form>
+            </ValidatedForm>
             <button
               className="link"
               disabled={busy}
@@ -337,7 +343,7 @@ export default function App() {
           </section>
         ) : (
           <>
-            <button className="link" disabled={busy} onClick={() => setShowAccount(!showAccount)}>{showAccount ? "Close account settings" : "Account and access"}</button>
+            <button className="link" disabled={busy} aria-expanded={showAccount} aria-controls="account-settings" onClick={() => setShowAccount(!showAccount)}>{showAccount ? "Close account settings" : "Account and access"}</button>
             <div className="intro">
               <div>
                 <h1>Hello, {user.displayName}</h1>
@@ -368,15 +374,15 @@ export default function App() {
                 No accessible patient is available. Ask the owner to grant
                 access, then sign in again.
               </p>
-            ) : (
+            ) : !visibleTabs.length ? <p>No work areas are permitted for this patient. Use Account and access to refresh your permissions.</p> : (
               <>
                 <nav aria-label="Work areas">
-                  {tabs.map(([id, label]) => (
+                  {visibleTabs.map(([id, label]) => (
                     <button
                       key={id}
                       disabled={busy}
-                      className={tab === id ? "selected" : ""}
-                      aria-current={tab === id ? "page" : undefined}
+                      className={activeTab === id ? "selected" : ""}
+                      aria-current={activeTab === id ? "page" : undefined}
                       onClick={() => setTab(id)}
                     >
                       {label}
@@ -386,16 +392,16 @@ export default function App() {
                 <div className="columns">
                   <section className="card">
                     <h2>
-                      {tab === "prescriptions"
+                      {activeTab === "prescriptions"
                         ? "New prescription draft"
-                        : tab === "cabinet-items"
+                        : activeTab === "cabinet-items"
                           ? "Add medicine manually"
                           : "Create caregiver task"}
                     </h2>
-                    <form key={patient + tab} onSubmit={save}>
+                    <ValidatedForm key={patient + activeTab} onSubmit={save}>
                       {!canWrite && <p>You do not have permission to create records in this area.</p>}
                       <fieldset disabled={busy || !canWrite}>
-                        {tab === "prescriptions" ? (
+                        {activeTab === "prescriptions" ? (
                           <>
                             <label>
                               Prescription title
@@ -430,7 +436,7 @@ export default function App() {
                               OCR come later.
                             </p>
                           </>
-                        ) : tab === "cabinet-items" ? (
+                        ) : activeTab === "cabinet-items" ? (
                           <>
                             <label>
                               Medicine name
@@ -500,35 +506,36 @@ export default function App() {
                           {busy
                             ? "Saving…"
                             : "Save " +
-                              (tab === "prescriptions"
+                              (activeTab === "prescriptions"
                                 ? "draft"
-                                : tab === "tasks"
+                                : activeTab === "tasks"
                                   ? "task"
                                   : "medicine")}
                         </button>
                       </fieldset>
-                    </form>
+                    </ValidatedForm>
                   </section>
                   <section className="card records" aria-busy={loading}>
                     <div className="section-title">
                       <h2>Saved records</h2>
                       <button
                         className="link"
-                        disabled={loading || busy}
+                        disabled={loading || busy || !canRead}
                         onClick={() => list()}
                       >
                         Refresh
                       </button>
                     </div>
                     {loading && <p role="status">Loading records…</p>}
-                    {!loading && !rows.length && (
+                    {!canRead && <p>You do not have permission to view saved records in this area.</p>}
+                    {listError && <div role="alert" className="alert"><p>{listError}</p><button disabled={loading || busy} onClick={() => list()}>Retry loading records</button></div>}
+                    {canRead && !loading && !listError && !visibleRows.length && (
                       <p>
-                        No records to show. Add your first entry or retry after
-                        an error.
+                        No records yet.
                       </p>
                     )}
                     <ul>
-                      {rows.map((r) => (
+                      {visibleRows.map((r) => (
                         <li key={r.id}>
                           <strong>
                             {r.title ||
@@ -536,11 +543,11 @@ export default function App() {
                               "Untitled prescription"}
                           </strong>
                           <span className="badge">
-                            {tab === "prescriptions"
+                            {activeTab === "prescriptions"
                               ? r.draftVersionId
                                 ? "Draft · review required"
                                 : r.status
-                              : tab === "cabinet-items"
+                              : activeTab === "cabinet-items"
                                 ? "Manual · user-entered"
                                 : r.status}
                           </span>

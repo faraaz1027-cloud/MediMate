@@ -94,13 +94,13 @@ function authInput(body, register = false) {
   );
   const email = text(body.email, "email", 254).toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-    fail(422, "VALIDATION_ERROR", "Valid email required.");
+      fail(422, "VALIDATION_ERROR", "Valid email required.", [{ path: "email", message: "Enter a valid email address." }]);
   if (
     typeof body.password !== "string" ||
     body.password.length < 12 ||
     body.password.length > 128
   )
-    fail(422, "VALIDATION_ERROR", "Password must contain 12–128 characters.");
+    fail(422, "VALIDATION_ERROR", "Password must contain 12–128 characters.", [{ path: "password", message: "Enter 12–128 characters." }]);
   return {
     email,
     password: body.password,
@@ -317,9 +317,9 @@ export function createV1({
   }
   function timezone(value) {
     if (typeof value !== "string" || value.length > 100)
-      fail(422, "VALIDATION_ERROR", "Valid IANA timezone required.");
+      fail(422, "VALIDATION_ERROR", "Valid IANA timezone required.", [{ path: "timezone", message: "Enter a valid IANA timezone, for example Asia/Dhaka." }]);
     try { new Intl.DateTimeFormat("en", { timeZone: value }); }
-    catch { fail(422, "VALIDATION_ERROR", "Valid IANA timezone required."); }
+    catch { fail(422, "VALIDATION_ERROR", "Valid IANA timezone required.", [{ path: "timezone", message: "Enter a valid IANA timezone, for example Asia/Dhaka." }]); }
     return value;
   }
   app.patch("/me", authenticated, csrf, async (req, res) => {
@@ -817,6 +817,7 @@ export function createV1({
                 422,
                 "ASSIGNEE_UNAUTHORIZED",
                 "Choose an active caregiver with task permission.",
+                [{ path: "assigneeUserId", message: "Choose the patient owner or an active caregiver with task permission." }],
               );
           }
           const created = await db.insert(
