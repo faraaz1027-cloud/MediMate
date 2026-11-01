@@ -87,17 +87,20 @@ Permission prescription.read for reads; prescription.write for drafts/replacemen
 InstructionInput requires medicineText (1–200 chars), instructionsText (1–2000), lineNumber positive integer, and explicit clarificationRequired. Step 21 supports 1–30 lines and optional strengthText, frequencyText and durationText (each 1–200 chars when supplied). Confirmation requires positive decimal doseQuantity (string), supported doseUnit, nonempty frequencyText/durationText, clarificationRequired:false on every line, and reviewed:true. Supported confirmation units: tablet, capsule, mL, mg, g, drop, puff, unit, application. Missing/ambiguous details return 422; OCR cannot confirm or activate schedules. These are reviewed text fields, not clinical validation or schedule parsing.
 
 ## B1 Medicine search and cabinet
+**Step 22 implemented update (2 November 2026):** use the [B1 implementation guide](STEP_22_MEDICINE_CABINET.md) for source/cache/migration details. External creation accepts an RxCUI (`externalId`) and `reviewed:true`, then resolves the canonical name on the server and creates its own sourceRecordId. Client sourceRecordId, displayName for external entries, and ingredient claims are rejected. Manual names support 1–500 characters; optional strength/form are user transcription, not parsed identities. Ingredients remain a B3 evidence workflow.
+
 | Route | Permission | Request | Success |
 |---|---|---|---|
-| GET /medicine-search | cabinet.read | q (2–100 chars),cursor?,limit? | 200 {candidates:[{externalId,displayName,strengthText?,form?,sourceUrl}],provider,retrievedAt}; no match is an empty list |
-| POST /cabinet-items | cabinet.write | {displayName,entryType:external/manual,sourceRecordId?,strengthText?,form?,ingredients?} | 201 CabinetItem; external source required only for external entry |
-| GET /cabinet-items | cabinet.read | q?,status:active/archived,cursor?,limit? | 200 list CabinetItem |
-| GET /cabinet-items/{id} | cabinet.read | None | 200 CabinetItem |
-| PATCH /cabinet-items/{id} | cabinet.write | {expectedRevision,displayName?,strengthText?,form?,ingredients?,reason} | 200 item + append revision |
+| GET /medicine-search | cabinet.read | q (2–100 chars),cursor?,limit? (1–50) | 200 {candidates:[{externalId,displayName,termType,sourceUrl}],provider,retrievedAt}; meta total/nextCursor; no supported match is an empty list |
+| GET /medicine-search/{externalId} | cabinet.read | Numeric RxCUI | 200 resolved active SCD/SBD candidate with retrieval/source fields |
+| POST /cabinet-items | cabinet.write | Manual: {displayName,entryType:manual,strengthText?,form?}; external: {entryType:external,externalId,reviewed:true,strengthText?,form?} | 201 item + initial revision; external source is resolved and saved by the server |
+| GET /cabinet-items | cabinet.read | q?,entryType?,status:active(default)/archived/all,cursor?,limit? | 200 list CabinetItem |
+| GET /cabinet-items/{id} | cabinet.read | None | 200 CabinetItem plus stored source or null |
+| PATCH /cabinet-items/{id} | cabinet.write | {expectedRevision,displayName?,strengthText?,form?,reason}; one editable field required | 200 item + append revision; external name fixed; empty strength/form clears it |
 | POST /cabinet-items/{id}/archive | cabinet.write | {expectedRevision} | 200 archived item; history retained |
 | GET /cabinet-items/{id}/revisions | cabinet.read | cursor?,limit? | 200 immutable snapshots |
 
-The server revalidates external candidates instead of trusting arbitrary external IDs or URLs. Manual ingredient identities remain unverified until explicitly reviewed with evidence. Search failures return 502/503, not an empty successful search.
+The server revalidates external candidates instead of trusting arbitrary external IDs or URLs. Manual ingredient identities remain unverified until explicitly reviewed with evidence. Step 22 search failures return 503/RXNORM_UNAVAILABLE, not an empty successful search; unsupported/inactive selection returns 422. Supported search results are active SCD/SBD concepts, not packs. Search cursors bind query and offset over the cached sorted set; refresh search after cache expiry if upstream results change. Source snapshots remain readable without upstream access. Revision/CSRF/idempotency and patient authorization protect edit/archive; legacy items gain an honest baseline snapshot on first change.
 
 ## A2 Verified schedule builder
 | Route | Permission | Request | Success |

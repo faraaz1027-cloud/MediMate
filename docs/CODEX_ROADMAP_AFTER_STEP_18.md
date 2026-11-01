@@ -29,6 +29,8 @@ Implementation update (2 November 2026): [implemented A1 scope, technical decisi
 Implement manual prescription draft first; add printed-image OCR as editable suggestions. Confirm only complete, reviewed instructions; retain immutable confirmed versions and field-level differences on replacement. Verify a confirmed version persists after reload and past versions remain accessible. Test blurry image, missing quantity, duplicate submission and unauthorized access. **Dependency:** Step 19 permissions and Step 15 version model. **Demo:** upload or enter → correct → confirm → replace → compare.
 
 ### Step 22 — B1 medicine search and personal cabinet (Faraaz)
+Implementation update (2 November 2026): [B1 implementation and lab evidence](STEP_22_MEDICINE_CABINET.md) covers live RxNorm search/explicit candidate review, labelled manual fallback, persistent cabinet details/edit/filter/archive and immutable source/revision history. API/provider, DOM, Newman and real Chromium checks passed. Faraaz's personal contribution/live-edit review, faculty acceptance and Module 1 integration remain open.
+
 Integrate RxNorm as a **live external API** with search result IDs, selectable candidate and an honest manual entry fallback for unmatched Bangladesh products. Store source/manual status, strength/form and patient ownership; support view, edit, filter and archive while preserving referenced history. Test outage, ambiguous match, invalid input and cross-patient request. **Demo:** external search → save → reload → edit/archive; show manual fallback.
 
 ### Step 23 — C1 caregiver tasks and handover (Sahir)

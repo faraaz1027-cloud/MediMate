@@ -11,6 +11,8 @@ const collections = {
   PrescriptionVersion: "prescriptionVersions",
   PrescriptionInstruction: "prescriptionInstructions",
   CabinetItem: "cabinetItems",
+  CabinetRevision: "cabinetRevisions",
+  SourceRecord: "sourceRecords",
   Task: "careTasks",
   TaskEvent: "taskEvents",
   Operation: "operations",
@@ -98,7 +100,10 @@ model("CabinetItem", {
   status: String,
   strengthText: String,
   form: String,
+  sourceRecordId: oid,
 });
+model("SourceRecord", {provider:String,externalId:String,sourceUrl:String,retrievedAt:Date,contentHash:String,snapshot:Schema.Types.Mixed,matchStatus:String});
+model("CabinetRevision", {patientId:oid,cabinetItemId:oid,revisionNumber:Number,actorUserId:oid,snapshot:Schema.Types.Mixed,reason:String,legacyBaseline:Boolean}, [[{cabinetItemId:1,revisionNumber:1},{unique:true}], [{patientId:1,cabinetItemId:1,createdAt:-1,_id:-1},{}]]);
 model("Task", {
   patientId: oid,
   createdByUserId: oid,

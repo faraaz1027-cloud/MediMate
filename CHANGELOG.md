@@ -1,5 +1,11 @@
 # Change log
 
+## Step 22 — B1 live search and cabinet
+- Added bounded/cached RxNorm lookup, explicit candidate selection and server revalidation, source snapshots and honest manual fallback.
+- Added cabinet details, filters, revision-checked editing and archive with immutable history and an honest baseline for earlier items.
+- Kept external requests outside database transactions while allowing successful request replay during upstream outages.
+- Added API/provider and DOM checks, live Chromium evidence and a passing Postman collection; preserved Faraaz's ownership and remaining review/integration gates.
+
 ## Step 21 — A1 prescription review and history
 - Added multi-line manual drafts and browser-local printed-image OCR with editable suggestions, timeout/cancellation and manual fallback.
 - Added explicit reviewed confirmation, immutable versions, replacements, field differences and archival, using scoped permissions, revision checks, idempotency and transactions.

@@ -1,5 +1,5 @@
 {
-  "runAt": "2026-11-01T19:11:49.728Z",
+  "runAt": "2026-11-01T20:03:19.944Z",
   "runner": "JSDOM + Testing Library user-event; production React bundle; real MongoDB 7.0.24 replica set",
   "passed": [
     "registration",
@@ -18,11 +18,13 @@
     "Step 20 slow stale 401 cannot replace current tab or log out",
     "Step 20 permission-aware navigation and read-only controls",
     "Step 21 edit/review/confirm and replacement comparison",
-    "Step 21 remount preserves confirmed version and prior instructions"
+    "Step 21 remount preserves confirmed version and prior instructions",
+    "Step 22 explicit external selection, review, edit and archive",
+    "Step 22 no-match/outage manual fallback and archived history after remount"
   ],
   "counts": {
     "prescriptions": 1,
-    "cabinet": 1,
+    "cabinet": 2,
     "tasks": 1
   },
   "limitations": "JSDOM does not verify browser layout or accessibility; see separate Step 19 browser smoke evidence."
