@@ -1,5 +1,5 @@
 {
-  "runAt": "2026-11-01T08:21:11.606Z",
+  "runAt": "2026-11-01T15:52:08.425Z",
   "runner": "JSDOM + Testing Library user-event; production React bundle; real MongoDB 7.0.24 replica set",
   "passed": [
     "registration",
@@ -8,12 +8,15 @@
     "task create/list",
     "remount persistence",
     "logout/login",
-    "patient rediscovery"
+    "patient rediscovery",
+    "authenticated session expiry and sign-in recovery",
+    "anonymous session expiry and explicit CSRF retry",
+    "account profile edit and patient creation"
   ],
   "counts": {
     "prescriptions": 1,
     "cabinet": 1,
     "tasks": 1
   },
-  "limitations": "No real browser layout or screenshot verification; Chromium download failed."
+  "limitations": "JSDOM does not verify browser layout or accessibility; see separate Step 19 browser smoke evidence."
 }

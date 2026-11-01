@@ -1,0 +1,25 @@
+name: Verify integration
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            verification/step18/package-lock.json
+      - run: npm ci
+      - run: npm ci --prefix verification/step18
+      - run: npm run build
+      - run: node verification/step18/api.mjs
+      - run: npm test --prefix verification/step18

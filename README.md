@@ -61,3 +61,6 @@ The six APIs are POST and GET for prescriptions, manual cabinet items and caregi
 
 ## Step 18 frontend
 [Run and verify the integrated React interface](docs/STEP_18_FRONTEND_INTEGRATION.md). Register/sign in, select a patient and create/list prescription drafts, manual cabinet entries and caregiver tasks.
+
+## Step 19 account and access
+[Implementation, lab mapping and remaining gates](docs/STEP_19_ACCOUNT_ACCESS.md). Open Account and access to edit your profile, create/select patients, and administer named caregiver grants as a patient owner. Direct grants to registered user IDs take effect immediately; no email invitation is sent. [Step 19 Postman collection](postman/MediMate_Step19.postman_collection.json).
