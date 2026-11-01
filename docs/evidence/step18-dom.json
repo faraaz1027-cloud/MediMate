@@ -1,0 +1,19 @@
+{
+  "runAt": "2026-11-01T08:21:11.606Z",
+  "runner": "JSDOM + Testing Library user-event; production React bundle; real MongoDB 7.0.24 replica set",
+  "passed": [
+    "registration",
+    "prescription create/list",
+    "cabinet create/list",
+    "task create/list",
+    "remount persistence",
+    "logout/login",
+    "patient rediscovery"
+  ],
+  "counts": {
+    "prescriptions": 1,
+    "cabinet": 1,
+    "tasks": 1
+  },
+  "limitations": "No real browser layout or screenshot verification; Chromium download failed."
+}

@@ -94,6 +94,7 @@ test(
         const r = await owner.call("GET", "/auth/me");
         assert.equal(r.status, 200);
         assert.equal(r.body.data.id, ownerId);
+        assert.ok(r.body.data.patients.some((p) => p.id === patientId));
         assert.equal(JSON.stringify(r).includes("passwordHash"), false);
       },
     );
@@ -337,6 +338,11 @@ test(
           permissions: ["task.read", "task.write"],
         });
         assert.equal(grant.status, 201);
+        assert.ok(
+          (await caregiver.call("GET", "/auth/me")).body.data.patients.some(
+            (p) => p.id === patientId,
+          ),
+        );
         assert.equal((await caregiver.call("GET", route("tasks"))).status, 200);
         assert.equal(
           (await caregiver.call("GET", route("cabinet-items"))).status,
@@ -359,6 +365,12 @@ test(
           200,
         );
         assert.equal((await caregiver.call("GET", route("tasks"))).status, 404);
+        assert.equal(
+          (await caregiver.call("GET", "/auth/me")).body.data.patients.some(
+            (p) => p.id === patientId,
+          ),
+          false,
+        );
         assert.equal(
           (await caregiver.call("POST", route("tasks"), body, { key })).status,
           404,

@@ -1,5 +1,12 @@
 # Change log
 
+## Step 18 — React integration
+- Added registration/login, patient selection and six API-backed create/list views.
+- Added loading/error/empty feedback, input preservation, retry keys and paginated lists.
+- Added patient discovery to auth/me and regression checks for grant revocation.
+- Production build and database API checks passed; interaction evidence and browser-review limits are documented in Step 18.
+
+
 ## 2026-11-01 — Final design and API milestone
 - Completed the student-account Figma pass: 46 native frames, 142 valid navigation destinations, supporting states and simulated SOS.
 - Replaced the Word submission with the reviewed 16-page version using native exports.

@@ -1,19 +1,19 @@
 Actual Node test run against MongoDB 7.0.24 single-node replica set; synthetic data.
-Node v24.22.1; 2026-11-01T08:12:56.437Z
+Node v24.22.1; 2026-11-01T08:18:40.209Z
 
 ▶ Step 17 database-connected API acceptance
-  ✔ registration, session rotation and private credential projection (279.143906ms)
-  ✔ unauthenticated, cross-patient and CSRF/origin rejection (15.602676ms)
-  ✔ POST/GET prescriptions: persistence, replay and changed-payload conflict (44.462983ms)
-  ✔ POST/GET cabinet-items: persistence, replay and changed-payload conflict (37.211542ms)
-  ✔ POST/GET tasks: persistence, replay and changed-payload conflict (32.233498ms)
-  ✔ concurrent duplicate creates commit one item and one audit (31.182767ms)
-  ✔ validation and mass assignment cannot write partial data (70.928544ms)
-  ✔ permission grants, assignment checks and revocation apply on next request (64.910455ms)
-  ✔ cursor pagination stays stable across new inserts (16.399589ms)
-  ✔ API restart preserves database records and sessions; logout revokes session (86.464971ms)
-  ✔ transaction rolls back all writes on a dependency failure (8.438964ms)
-✔ Step 17 database-connected API acceptance (903.362524ms)
+  ✔ registration, session rotation and private credential projection (389.372639ms)
+  ✔ unauthenticated, cross-patient and CSRF/origin rejection (25.453653ms)
+  ✔ POST/GET prescriptions: persistence, replay and changed-payload conflict (56.549234ms)
+  ✔ POST/GET cabinet-items: persistence, replay and changed-payload conflict (42.618509ms)
+  ✔ POST/GET tasks: persistence, replay and changed-payload conflict (28.762985ms)
+  ✔ concurrent duplicate creates commit one item and one audit (40.023349ms)
+  ✔ validation and mass assignment cannot write partial data (67.7812ms)
+  ✔ permission grants, assignment checks and revocation apply on next request (82.746096ms)
+  ✔ cursor pagination stays stable across new inserts (18.724327ms)
+  ✔ API restart preserves database records and sessions; logout revokes session (144.350321ms)
+  ✔ transaction rolls back all writes on a dependency failure (9.759599ms)
+✔ Step 17 database-connected API acceptance (1186.570643ms)
 ℹ tests 12
 ℹ suites 0
 ℹ pass 12
@@ -21,4 +21,4 @@ Node v24.22.1; 2026-11-01T08:12:56.437Z
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 1155.038631
+ℹ duration_ms 1709.631198

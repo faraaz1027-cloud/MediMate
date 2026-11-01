@@ -3,7 +3,7 @@ Medication management and caregiver coordination — CSE471, Section 01, Fall 20
 
 MediMate is a planned web application for reviewing prescriptions, organizing medicine schedules, recording doses, tracking stock and coordinating caregivers. Its 13th function adds emergency contact alerts and assistance coordination.
 
-**Status:** design/data/API specifications are established. The localhost React/Express/MongoDB demo and six authenticated database APIs are implemented. Full feature workflows, frontend integration and deployment remain pending. The repository is not a working medical or emergency service.
+**Status:** design/data/API specifications are established. The localhost React/Express/MongoDB demo and six authenticated database APIs are implemented. The React client now integrates those APIs. Full feature workflows and deployment remain pending. The repository is not a working medical or emergency service.
 
 ## Project documents
 - [13 functional requirements and acceptance criteria](docs/REQUIREMENTS.md)
@@ -34,7 +34,7 @@ The project has a zero-cost constraint. Integration terms and deployment options
 Notify linked, consenting contacts and track acknowledgements. Use a clearly labelled simulated hospital/provider dashboard for classroom demonstrations until a participating provider is secured. A notification does not establish ambulance dispatch.
 
 ## Next implementation milestone
-Connect the Step 17 APIs to the React interface, then finish A1 review/history, B1 search and C1 task transitions/notifications for Module 1. See [API setup and test evidence](docs/STEP_17_API_IMPLEMENTATION.md).
+Finish A1 review/history, B1 search and C1 task transitions/notifications for Module 1. The six APIs are connected to the React interface in [Step 18](docs/STEP_18_FRONTEND_INTEGRATION.md). See [API setup and test evidence](docs/STEP_17_API_IMPLEMENTATION.md).
 
 ## Links to add
 - Jira project: pending.
@@ -58,3 +58,6 @@ Six detailed desktop designs, six mobile designs and error/success states are cr
 - [Importable Postman collection](postman/MediMate_Step17.postman_collection.json)
 
 The six APIs are POST and GET for prescriptions, manual cabinet items and caregiver tasks. Login, session/CSRF handling, patient scope, access grants/revocation, idempotency and transactions support them. This milestone does not implement all 13 functions.
+
+## Step 18 frontend
+[Run and verify the integrated React interface](docs/STEP_18_FRONTEND_INTEGRATION.md). Register/sign in, select a patient and create/list prescription drafts, manual cabinet entries and caregiver tasks.

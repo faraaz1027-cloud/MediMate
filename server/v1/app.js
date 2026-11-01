@@ -272,12 +272,34 @@ export function createV1({
     });
     res.sendStatus(204);
   });
+  async function accessiblePatients(actorId) {
+    const grants = await db.list(
+      "AccessGrant",
+      { userId: actorId, revokedAt: null },
+      1000,
+    );
+    return db.list(
+      "Patient",
+      {
+        status: "active",
+        $or: [
+          { ownerUserId: actorId },
+          { _id: { $in: grants.map((g) => g.patientId) } },
+        ],
+      },
+      100,
+    );
+  }
   app.get("/auth/me", authenticated, async (req, res) => {
     const u = await db.one("User", { _id: req.actorId });
     send(req, res, {
       id: String(u._id),
       email: u.emailNormalized,
       displayName: u.displayName,
+      patients: (await accessiblePatients(req.actorId)).map((p) => ({
+        id: String(p._id),
+        displayName: p.displayName,
+      })),
     });
   });
   async function access(req, permission, s) {
@@ -294,7 +316,7 @@ export function createV1({
       s,
     );
     if (!grant) fail(404, "NOT_FOUND", "Record not found.");
-    if (!grant.permissions.includes(permission))
+    if (permission && !grant.permissions.includes(permission))
       fail(403, "FORBIDDEN", "This operation is not permitted.");
     return p;
   }
@@ -308,7 +330,7 @@ export function createV1({
   };
   const patient = express.Router({ mergeParams: true });
   app.use("/patients/:patientId", authenticated, patient);
-  patient.get("/", scope("prescription.read"), (req, res) =>
+  patient.get("/", scope(null), (req, res) =>
     send(req, res, publicDoc(req.patient)),
   );
   async function mutate(req, res, permission, fn, status = 201) {
