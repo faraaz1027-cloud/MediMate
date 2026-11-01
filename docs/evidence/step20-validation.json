@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-01",
+  "step": 20,
+  "responsibility": "Shared infrastructure; AI-assisted changes require student review",
+  "branch": "feature/step20-shared-ui",
+  "base": "Step 19 draft PR #2, commit 3e0b1ce5f740f5ef9d743d0f0df67cb9c43ea368",
+  "runtime": "Windows / Node 26.13.0 / MongoDB 7.0.24 disposable replica sets",
+  "build": "passed",
+  "api": {"reportedTests":14,"failed":0,"skipped":0},
+  "dom": {"result":"passed","cases":["offline startup reconnect","non-JSON list error and explicit retry","retain records during transient failure","whitespace and server field-error focus/description","delayed stale 401 ignored after navigation","task-only navigation and read-only controls","existing session, profile and persistence regression cases"]},
+  "browser": {"result":"smoke review passed","data":"synthetic local records only","viewports":["1440x900","390x844","320x740"],"mobileHorizontalOverflow":false,"cases":["configured 10-second list delay displays loading","injected 503 displays retry and retains saved draft","removing injected fault and retrying recovers","reload persistence","invalid title focused with aria-invalid and aria-describedby","Tab from title reaches medicine name with 3px focus outline"],"consoleWarningsOrErrorsAfterRecovery":[]},
+  "limitations":["Transport faults are deliberately injected test conditions, not production failures or performance measurements","Not a full accessibility/Lighthouse or cross-browser audit","No assessed feature, external integration, deployment or faculty submission is claimed"]
+}

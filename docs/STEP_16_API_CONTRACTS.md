@@ -2,6 +2,8 @@
 Status: proposed implementation contract, 1 November 2026. Covers A1–A4, B1–B4 and C1–C5. This is the full implementation target. The six create/list APIs and identity/access foundation now have an implemented subset; see [Step 17](STEP_17_API_IMPLEMENTATION.md) for its exact coverage and limitations. The Step 10 localhost notes API remains a separate demonstration. Read with [Step 15](STEP_15_DATA_MODEL.md) and [acceptance criteria](STEP_11_ACCEPTANCE.md).
 
 ## Shared HTTP contract
+Step 20 keeps this envelope and authorization contract unchanged. Validation for email, password, timezone and task assignee now includes a field path/message so the UI can associate and focus the affected input. The client normalizes network/non-JSON responses locally; it does not convert a failure into an empty successful list or automatically repeat a mutation. No schema migration is needed.
+
 Base path: /api/v1. Patient routes below are relative to /patients/{patientId}. All ObjectIds are 24 hexadecimal characters. Dates/times are ISO UTC instants, local dates YYYY-MM-DD and wall times HH:mm. Decimal quantities are strings with explicit units. Arrays contain IDs unless stated otherwise.
 
 Success: {"data": resource-or-array, "meta":{"requestId":"opaque"}}. Lists additionally return meta.nextCursor (opaque string or null), limit (default 20, maximum 100) and applied filters. Cursor order is createdAt plus _id; dose lists order dueAtUTC plus _id. Never expose password hashes, raw callback tokens, Telegram chat IDs or storage keys.

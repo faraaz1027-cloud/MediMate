@@ -434,6 +434,15 @@ test(
       assert.equal((await stranger.call("GET", "/auth/me")).status, 401);
       assert.equal((await stranger.call("POST", "/patients", input)).status, 401);
     });
+    await t.test("Step 20 validation errors identify fields", async () => {
+      const invalid = await owner.call("POST", "/patients", { displayName: "Synthetic", timezone: "Invalid/Zone" });
+      assert.equal(invalid.status, 422);
+      assert.equal(invalid.body.error.fields[0].path, "timezone");
+      assert.ok(invalid.body.meta.requestId);
+      const assignee = await owner.call("POST", route("tasks"), { title: "Cannot assign", assigneeUserId: "f".repeat(24), type: "general" });
+      assert.equal(assignee.status, 422);
+      assert.equal(assignee.body.error.fields[0].path, "assigneeUserId");
+    });
     await t.test(
       "cursor pagination stays stable across new inserts",
       async () => {

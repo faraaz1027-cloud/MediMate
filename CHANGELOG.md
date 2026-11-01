@@ -1,5 +1,10 @@
 # Change log
 
+## Step 20 — Shared UI and backend behavior
+- Added safe request errors, startup reconnect and explicit list retry/empty states.
+- Added shared accessible field validation, permission-aware navigation and view-context guards against stale records and old 401s.
+- Verified real mobile/keyboard states and controlled slow/failing requests; retained server-side authorization and explicit AI-assisted shared-work attribution.
+
 ## Step 19 — Shared account and access workflows
 - Added profile editing, patient creation/editing and explicit owner/caregiver summaries.
 - Added registered-caregiver direct grants, permission editing, revocation and restoration UI/API, with transactional audit/replay and revision checks.
