@@ -1,5 +1,10 @@
 # Change log
 
+## Step 18 — Browser validation follow-up
+- Verified the production interface in Chromium with real disposable MongoDB data.
+- Checked three create/list flows, reload/login persistence, unauthorized-assignee input retention, desktop/mobile layouts and visible keyboard focus.
+- Recorded limited browser evidence and kept full accessibility and Module 1 workflows open.
+
 ## Review preparation — session recovery and repeatable checks
 - Recover expired session/CSRF credentials for explicit retries without replaying writes.
 - Cover authenticated and anonymous session expiry in the database-backed DOM checks.
