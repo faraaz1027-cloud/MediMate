@@ -34,7 +34,7 @@ The project has a zero-cost constraint. Integration terms and deployment options
 Notify linked, consenting contacts and track acknowledgements. Use a clearly labelled simulated hospital/provider dashboard for classroom demonstrations until a participating provider is secured. A notification does not establish ambulance dispatch.
 
 ## Next implementation milestone
-Next is Step 22, B1 live medicine search and the personal cabinet, followed by C1 task transitions/notifications and Module 1 integration. A1 review/history is implemented for owner review in [Step 21](docs/STEP_21_PRESCRIPTION_REVIEW.md). See [API setup and test evidence](docs/STEP_17_API_IMPLEMENTATION.md).
+Next is Step 23, C1 caregiver task transitions, handover and Telegram linking/notifications, followed by Module 1 integration. A1 review/history and B1 live search/cabinet are implemented for owner review in [Step 21](docs/STEP_21_PRESCRIPTION_REVIEW.md) and [Step 22](docs/STEP_22_MEDICINE_CABINET.md). See [API setup and test evidence](docs/STEP_17_API_IMPLEMENTATION.md).
 
 ## Links to add
 - Jira project: pending.
@@ -70,3 +70,6 @@ The six APIs are POST and GET for prescriptions, manual cabinet items and caregi
 
 ## Step 21 prescription review
 [Manual and printed-image OCR review, explicit confirmation, immutable history and replacement comparison](docs/STEP_21_PRESCRIPTION_REVIEW.md). Images are processed locally and not retained; local OCR is not external API course credit. [Step 21 Postman collection](postman/MediMate_Step21.postman_collection.json). Student contribution/viva and faculty acceptance remain open.
+
+## Step 22 medicine search and cabinet
+[Live RxNorm search, explicit selection, manual fallback, editing/filtering and retained archive/history](docs/STEP_22_MEDICINE_CABINET.md). Source identity is separate from user strength/form transcription. [Step 22 Postman collection](postman/MediMate_Step22.postman_collection.json) and real public upstream evidence are included. Faraaz's owner review and faculty acceptance remain open.

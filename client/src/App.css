@@ -86,6 +86,10 @@ nav .selected {
 .prescription-workspace button { margin: 6px 8px 6px 0; }
 .prescription-workspace li { overflow-wrap: anywhere; }
 .prescription-workspace li > button { margin-left: 8px; }
+.cabinet-workspace > .card { margin-bottom: 24px; }
+.cabinet-workspace button { margin: 6px 8px 6px 0; }
+.cabinet-workspace li { overflow-wrap: anywhere; }
+.candidate-list { max-height: 340px; overflow-y: auto; padding-right: 14px; }
 .skip-link { position: absolute; left: 16px; top: -100px; background: white; color: #262233; padding: 12px; z-index: 2; }
 .skip-link:focus { top: 12px; outline: 3px solid #65518f; }
 [aria-invalid="true"] { border: 2px solid #8b2519; }

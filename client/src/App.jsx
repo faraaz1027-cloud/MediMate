@@ -1,3 +1,4 @@
+import MedicineCabinet from "./MedicineCabinet.jsx";
 import PrescriptionReview from "./PrescriptionReview.jsx";
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
@@ -115,7 +116,7 @@ export default function App() {
   }, [connectionAttempt]);
   async function list(append = false) {
     const token = ++generation.current;
-    if (!patient || !user || !canRead || activeTab === "prescriptions") { setLoading(false); return; }
+    if (!patient || !user || !canRead || ["prescriptions", "cabinet-items"].includes(activeTab)) { setLoading(false); return; }
     setLoading(true);
     setListError("");
     try {
@@ -202,14 +203,6 @@ export default function App() {
       f = Object.fromEntries(new FormData(form));
     try {
     let body;
-    if (activeTab === "cabinet-items")
-      body = {
-        displayName: f.displayName,
-        entryType: "manual",
-        ...(f.strengthText ? { strengthText: f.strengthText } : {}),
-        ...(f.form ? { form: f.form } : {}),
-      };
-    else
       body = {
         title: f.title,
         assigneeUserId: f.assigneeUserId || user.id,
@@ -378,45 +371,16 @@ export default function App() {
                     </button>
                   ))}
                 </nav>
-                {activeTab === "prescriptions" ? <PrescriptionReview key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : (
+                {activeTab === "prescriptions" ? <PrescriptionReview key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "cabinet-items" ? <MedicineCabinet key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : (
                 <div className="columns">
                   <section className="card">
                     <h2>
-                      {activeTab === "cabinet-items"
-                          ? "Add medicine manually"
-                          : "Create caregiver task"}
+                      Create caregiver task
                     </h2>
                     <ValidatedForm key={patient + activeTab} onSubmit={save}>
                       {!canWrite && <p>You do not have permission to create records in this area.</p>}
                       <fieldset disabled={busy || !canWrite}>
-                        {activeTab === "cabinet-items" ? (
-                          <>
-                            <label>
-                              Medicine name
-                              <input
-                                name="displayName"
-                                required
-                                maxLength={200}
-                              />
-                            </label>
-                            <label>
-                              Strength (optional)
-                              <input name="strengthText" maxLength={200} />
-                            </label>
-                            <label>
-                              Form (optional)
-                              <input
-                                name="form"
-                                maxLength={200}
-                                placeholder="e.g. tablet"
-                              />
-                            </label>
-                            <p className="hint">
-                              User-entered medicine. No external identity
-                              verification.
-                            </p>
-                          </>
-                        ) : (
+
                           <>
                             <label>
                               Task title
@@ -454,7 +418,7 @@ export default function App() {
                               not enabled.
                             </p>
                           </>
-                        )}
+
                         <button>
                           {busy
                             ? "Saving…"

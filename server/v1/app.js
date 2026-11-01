@@ -1,4 +1,6 @@
 import { installPrescriptions } from "./prescriptions.js";
+import { installCabinet } from "./cabinet.js";
+import { createRxNorm } from "./rxnorm.js";
 import express from "express";
 import mongoose from "mongoose";
 import {
@@ -112,6 +114,7 @@ function authInput(body, register = false) {
 }
 export function createV1({
   db,
+  rxnorm = createRxNorm(),
   secure = process.env.NODE_ENV === "production",
   origins = ["http://localhost:5173", "http://127.0.0.1:5173"],
   now = () => new Date(),
@@ -371,7 +374,7 @@ export function createV1({
   patient.get("/", scope(null), (req, res) =>
     send(req, res, publicDoc(req.patient)),
   );
-  async function mutate(req, res, permission, fn, status = 201) {
+  async function mutate(req, res, permission, fn, status = 201, prepare) {
     const key = req.get("Idempotency-Key");
     if (
       !key ||
@@ -399,6 +402,9 @@ export function createV1({
         );
       return old;
     }
+    // Resolve external data before opening a transaction. A successful replay
+    // must remain usable during an upstream outage; access is checked again below.
+    if (prepare && !(await replay())) await prepare();
     let result;
     try {
       result = await db.transaction(async (s) => {
@@ -549,9 +555,9 @@ export function createV1({
     },
   );
   installPrescriptions(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now });
+  installCabinet(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, rxnorm });
   const resources = [
     ["prescriptions", "Prescription", "prescription"],
-    ["cabinet-items", "CabinetItem", "cabinet"],
     ["tasks", "Task", "task"],
   ];
   for (const [route, model, perm] of resources) {
@@ -615,26 +621,7 @@ export function createV1({
       scope(perm + ".write"),
       async (req, res) => {
         let doc;
-        if (model === "CabinetItem") {
-          const b = object(
-            req.body,
-            ["displayName", "entryType", "strengthText", "form"],
-            ["displayName", "entryType"],
-          );
-          if (b.entryType !== "manual")
-            fail(
-              422,
-              "EXTERNAL_ENTRY_NOT_IMPLEMENTED",
-              "Step 17 supports labelled manual entries only.",
-            );
-          doc = {
-            displayName: text(b.displayName, "displayName"),
-            entryType: "manual",
-            status: "active",
-          };
-          for (const k of ["strengthText", "form"])
-            if (b[k] !== undefined) doc[k] = text(b[k], k);
-        } else {
+        {
           const b = object(
             req.body,
             [

@@ -8,7 +8,7 @@ const replica = await MongoMemoryReplSet.create({
   replSet: { count: 1 },
 });
 try {
-  const child = spawn(process.execPath, ["--test", "server/test/api.test.js", "server/test/prescriptions.test.js"], {
+  const child = spawn(process.execPath, ["--test", "server/test/api.test.js", "server/test/prescriptions.test.js", "server/test/cabinet.test.js", "server/test/rxnorm.test.js"], {
     cwd: fileURLToPath(new URL("../../", import.meta.url)),
     env: { ...process.env, MONGODB_TEST_URI: replica.getUri() },
     stdio: "inherit",
