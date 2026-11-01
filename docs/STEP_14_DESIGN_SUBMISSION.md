@@ -3,7 +3,7 @@ Updated 1 November 2026.
 
 ## Deliverables
 - [Editable Figma designs](https://www.figma.com/design/1Zy0JqsSdfzL9Lno6GlWbB?node-id=2-2409): detailed desktop, mobile, error and success designs for six screens, preserving original wireframes.
-- [Word submission](submission/MediMate_Step14_Design_Submission.docx): 15 pages, with member allocations, labelled figures, Figma links, mobile/error views, interaction rules and C5 SOS specification.
+- [Word submission](submission/MediMate_Step14_Design_Submission.docx): 16 pages, with member allocations, labelled figures, Figma links, mobile/error views, interaction rules and C5 SOS specification.
 - [Self-contained HTML prototype](../design/step14/MediMate_Step14_Prototype.html): download and open locally. Uses temporary in-memory data; no real API, Telegram or hospital requests.
 - [Screen data](../design/step14/screens.json) and editable SVG supplements in design/step14/.
 
@@ -17,21 +17,22 @@ Updated 1 November 2026.
 | Sahir Jawad Chowdhury | C1 Caregiver tasks | [Open](https://www.figma.com/design/1Zy0JqsSdfzL9Lno6GlWbB?node-id=4-759) | [Open](https://www.figma.com/design/1Zy0JqsSdfzL9Lno6GlWbB?node-id=4-864) | [Open](https://www.figma.com/design/1Zy0JqsSdfzL9Lno6GlWbB?node-id=4-969) | [Open](https://www.figma.com/design/1Zy0JqsSdfzL9Lno6GlWbB?node-id=4-998) |
 | Sahir Jawad Chowdhury | C2 Today’s doses | [Open](https://www.figma.com/design/1Zy0JqsSdfzL9Lno6GlWbB?node-id=4-1017) | [Open](https://www.figma.com/design/1Zy0JqsSdfzL9Lno6GlWbB?node-id=4-1118) | [Open](https://www.figma.com/design/1Zy0JqsSdfzL9Lno6GlWbB?node-id=4-1219) | [Open](https://www.figma.com/design/1Zy0JqsSdfzL9Lno6GlWbB?node-id=4-1238) |
 
-## Prototype review
-Use the navigation buttons to change screens. The state selector shows ready, loading, empty and failure states. Main actions show success; invalid schedule dates show a correction state. Manual entries remain labelled user-entered. Task actions cycle Open → Accepted → Completed → Open. Dose action is terminal until a correction flow; repeated Taken clicks do not create another demo record. Snooze changes only the reminder feedback. Emergency SOS test uses confirmation, location-unavailable, contact response, simulated provider and closure states.
+## Native prototype verification
+The student-account pass completed the native Figma prototype. The detailed page contains 46 frames: the 24 desktop/mobile/error/success frames above, supporting loading/empty/secondary-action states and three C5 SOS frames. The original wireframes are preserved.
 
-The prototype is for interface review, not production persistence or permission validation. No backend is called. Browser execution could not be verified here because Chromium was unavailable and its download failed; JavaScript syntax passed.
+- [SOS confirmation](https://www.figma.com/design/1Zy0JqsSdfzL9Lno6GlWbB?node-id=34-1886)
+- [SOS active incident](https://www.figma.com/design/1Zy0JqsSdfzL9Lno6GlWbB?node-id=34-1909)
+- [SOS closure](https://www.figma.com/design/1Zy0JqsSdfzL9Lno6GlWbB?node-id=34-1939)
+- [Presentation starting at A1](https://www.figma.com/proto/1Zy0JqsSdfzL9Lno6GlWbB/MediMate-Step-14-Interface-Designs?node-id=3-2402)
 
-## Verification and remaining blocker
-- Confirmed Figma creation results for 24 detailed native frames with editable text, imported Material 3 buttons and text fields, and auto-layout.
-- Corrected desktop horizontal auto-layout sizing after inspecting A1; visually inspected the resulting A1 Figma screenshot.
-- Created 24 supplementary editable SVG views from the same screen specification.
-- Rendered and reviewed the 15-page Word document, then removed the inherited title border and re-rendered.
-- One figure is an actual Figma screenshot. Other Word figures are explicitly labelled supplemental vector renderings, not Figma exports.
-- **Native Figma interactions and final visual review/exports of all frames remain incomplete/unverified.** A prototype-wiring call failed on a self-navigation target; the next inspection hit the Figma Starter MCP tool limit. Do not claim successful wiring from that failed call.
-- Native C5 SOS frames and a native loading/empty-state gallery were not confirmed created. Their flow is specified in the Word document and HTML supplement.
+Inspected the native interaction graph: 142 NAVIGATE destinations resolve to valid frames; BACK interactions are configured separately. This is graph validation, not a claim of a manual click-through usability study. The prototype demonstrates navigation and illustrative outcomes; it does not call a working medical backend.
 
-## Next Figma pass
-When tool access is available, inspect page 2:2409 first. Verify every desktop/mobile frame and fix any wrapping, clipping or spacing issues; wire buttons only to different top-level frames on the same page, skipping self-navigation links. Verify forward/back flows, add SOS/loading/empty frames, export the remaining frames, and replace supplemental figures with those exports. Keep Step 14's final verification checkbox open until those checks pass.
+## Word submission and visual review
+The final 16-page Word document uses native Figma exports for the six desktop designs, mobile excerpts, six error views, six success views and three SOS states. The mobile figures are explicitly labelled upper-screen excerpts; complete editable mobile layouts remain in Figma. No supplemental vector rendering is represented as a native export.
 
-Step 15 remains complete as a documented data-model baseline. This update does not change the agreed 13 functions.
+Reviewed the 27 exported native frames and rendered Word pages. Corrected the SOS active status banner clipping and the Word title border; re-rendered and checked the final document. Member allocations, frame links, interaction rules, accessibility considerations and simulation limits are included.
+
+The HTML and SVG files remain supplementary earlier review artifacts. Figma and the final Word document are the authoritative Step 14 design submission. All examples are synthetic; SOS provider requests are simulated and no real notifications or dispatches occur.
+
+## Completion
+Step 14's detailed design and Word preparation are complete. Uploading the document to a university submission portal and faculty acceptance are separate actions; neither is claimed here. The native verification record is [available here](../design/step14/native_verification.json).

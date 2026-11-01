@@ -1,0 +1,303 @@
+{
+  "runner": "Newman 6.2.3",
+  "runAt": "2026-11-01T08:13:15.171Z",
+  "node": "v24.22.1",
+  "mongodb": "7.0.24 single-node replica set; synthetic temporary data",
+  "stats": {
+    "iterations": {
+      "total": 1,
+      "pending": 0,
+      "failed": 0
+    },
+    "items": {
+      "total": 13,
+      "pending": 0,
+      "failed": 0
+    },
+    "scripts": {
+      "total": 17,
+      "pending": 0,
+      "failed": 0
+    },
+    "prerequests": {
+      "total": 13,
+      "pending": 0,
+      "failed": 0
+    },
+    "requests": {
+      "total": 13,
+      "pending": 0,
+      "failed": 0
+    },
+    "tests": {
+      "total": 13,
+      "pending": 0,
+      "failed": 0
+    },
+    "assertions": {
+      "total": 37,
+      "pending": 0,
+      "failed": 0
+    },
+    "testScripts": {
+      "total": 13,
+      "pending": 0,
+      "failed": 0
+    },
+    "prerequestScripts": {
+      "total": 4,
+      "pending": 0,
+      "failed": 0
+    }
+  },
+  "failures": [],
+  "executions": [
+    {
+      "name": "00 Session and CSRF",
+      "method": "GET",
+      "status": 200,
+      "assertions": [
+        {
+          "assertion": "HTTP 200",
+          "passed": true
+        },
+        {
+          "assertion": "Request identifier",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "01 Register synthetic owner",
+      "method": "POST",
+      "status": 201,
+      "assertions": [
+        {
+          "assertion": "HTTP 201",
+          "passed": true
+        },
+        {
+          "assertion": "Request identifier",
+          "passed": true
+        },
+        {
+          "assertion": "No credential hash",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "A1 POST prescriptions",
+      "method": "POST",
+      "status": 201,
+      "assertions": [
+        {
+          "assertion": "HTTP 201",
+          "passed": true
+        },
+        {
+          "assertion": "Request identifier",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "A1 Replay same creation",
+      "method": "POST",
+      "status": 200,
+      "assertions": [
+        {
+          "assertion": "HTTP 200",
+          "passed": true
+        },
+        {
+          "assertion": "Request identifier",
+          "passed": true
+        },
+        {
+          "assertion": "Same resource ID",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "A1 GET prescriptions",
+      "method": "GET",
+      "status": 200,
+      "assertions": [
+        {
+          "assertion": "HTTP 200",
+          "passed": true
+        },
+        {
+          "assertion": "Request identifier",
+          "passed": true
+        },
+        {
+          "assertion": "Created record persisted",
+          "passed": true
+        },
+        {
+          "assertion": "Pagination metadata",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "B1 POST cabinet-items",
+      "method": "POST",
+      "status": 201,
+      "assertions": [
+        {
+          "assertion": "HTTP 201",
+          "passed": true
+        },
+        {
+          "assertion": "Request identifier",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "B1 Replay same creation",
+      "method": "POST",
+      "status": 200,
+      "assertions": [
+        {
+          "assertion": "HTTP 200",
+          "passed": true
+        },
+        {
+          "assertion": "Request identifier",
+          "passed": true
+        },
+        {
+          "assertion": "Same resource ID",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "B1 GET cabinet-items",
+      "method": "GET",
+      "status": 200,
+      "assertions": [
+        {
+          "assertion": "HTTP 200",
+          "passed": true
+        },
+        {
+          "assertion": "Request identifier",
+          "passed": true
+        },
+        {
+          "assertion": "Created record persisted",
+          "passed": true
+        },
+        {
+          "assertion": "Pagination metadata",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "C1 POST tasks",
+      "method": "POST",
+      "status": 201,
+      "assertions": [
+        {
+          "assertion": "HTTP 201",
+          "passed": true
+        },
+        {
+          "assertion": "Request identifier",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "C1 Replay same creation",
+      "method": "POST",
+      "status": 200,
+      "assertions": [
+        {
+          "assertion": "HTTP 200",
+          "passed": true
+        },
+        {
+          "assertion": "Request identifier",
+          "passed": true
+        },
+        {
+          "assertion": "Same resource ID",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "C1 GET tasks",
+      "method": "GET",
+      "status": 200,
+      "assertions": [
+        {
+          "assertion": "HTTP 200",
+          "passed": true
+        },
+        {
+          "assertion": "Request identifier",
+          "passed": true
+        },
+        {
+          "assertion": "Created record persisted",
+          "passed": true
+        },
+        {
+          "assertion": "Pagination metadata",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Validation rejects mass assignment",
+      "method": "POST",
+      "status": 422,
+      "assertions": [
+        {
+          "assertion": "HTTP 422",
+          "passed": true
+        },
+        {
+          "assertion": "Request identifier",
+          "passed": true
+        },
+        {
+          "assertion": "Validation code",
+          "passed": true
+        }
+      ]
+    },
+    {
+      "name": "Cross-patient read denied",
+      "method": "GET",
+      "status": 404,
+      "assertions": [
+        {
+          "assertion": "HTTP 404",
+          "passed": true
+        },
+        {
+          "assertion": "Request identifier",
+          "passed": true
+        }
+      ]
+    }
+  ],
+  "databaseCounts": {
+    "prescriptions": 1,
+    "versions": 1,
+    "instructions": 1,
+    "cabinetItems": 1,
+    "tasks": 1,
+    "taskEvents": 1
+  }
+}

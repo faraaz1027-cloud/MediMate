@@ -1,5 +1,16 @@
 # Change log
 
+## 2026-11-01 — Final design and API milestone
+- Completed the student-account Figma pass: 46 native frames, 142 valid navigation destinations, supporting states and simulated SOS.
+- Replaced the Word submission with the reviewed 16-page version using native exports.
+- Added Step 16 contracts for all 13 functions and aligned data-model revision/report-write conventions.
+- Implemented Step 17 POST/GET prescription, manual cabinet and caregiver task APIs, with transactional history, idempotency and audit records.
+- Added session authentication, password hashing, CSRF/origin checks, patient scope and caregiver grant/revocation checks.
+- Added database integration tests, an importable Postman collection and actual automated runner evidence. Local replica-set setup is documented.
+- Kept remaining full feature workflows, personal contribution verification, university upload and deployment open.
+
+Earlier entries below describe the state at those checkpoints and are superseded by this update.
+
 ## 2026-11-01
 - Established the repository documentation baseline from the agreed project conversation.
 - Recorded A1–A4, B1–B4 and C1–C5 with owners and module allocation.
@@ -26,3 +37,4 @@
 - Added a 15-page Word design submission, screen data, 24 supplementary SVG renderings and a standalone HTML prototype including simulated SOS.
 - Inspected the A1 Figma screenshot and rendered Word layout; checked prototype JavaScript syntax.
 - Recorded the remaining Figma interaction/export verification block caused by the Starter tool allowance. Step 14 is not marked fully verified.
+

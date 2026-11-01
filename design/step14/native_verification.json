@@ -1,0 +1,12 @@
+{
+  "account": "student",
+  "frames": 46,
+  "validNavigationDestinations": 142,
+  "invalidDestinations": [],
+  "sos": {
+    "confirm": "34:1886",
+    "active": "34:1909",
+    "closed": "34:1939"
+  },
+  "verification": "Prototype graph inspection and native export visual review; no backend or usability-test claim"
+}

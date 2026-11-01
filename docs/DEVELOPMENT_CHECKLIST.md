@@ -18,17 +18,17 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 - [x] Prepare preliminary actor/use-case map, architecture, database relationships and key activity flows ([Step 13 design models](STEP_13_DESIGN_MODELS.md)); confirm required faculty notation.
 - [x] Create six detailed Figma screens (two per member), plus mobile/error/success frames.
 - [x] Prepare the [Step 14 Word submission and supplemental prototype](STEP_14_DESIGN_SUBMISSION.md).
-- [ ] Step 14 final pass: verify all native frames, finish/check Figma interactions and replace supplemental figures with native exports; blocked by Figma Starter tool allowance.
+- [x] Step 14 final pass: completed 46 native frames, checked 142 navigation destinations, reviewed 27 native exports and replaced Word figures; rendered final 16-page document.
 - [x] Step 15: define shared identifiers, permissions, data dictionary, lifecycle, indexes and consistency rules ([shared data model](STEP_15_DATA_MODEL.md)); implementation and team validation pending.
-- [ ] Agree API requests, responses, authorization and errors.
-- [ ] Document two database-connected APIs per member, with Postman evidence.
+- [x] Define API requests, responses, authorization and errors ([Step 16](STEP_16_API_CONTRACTS.md)); team/faculty agreement remains unverified.
+- [x] Implement and document two database-connected APIs per allocated member; include automated Postman/Newman evidence ([Step 17](STEP_17_API_IMPLEMENTATION.md)). Individual contribution and faculty-specific screenshot requirements remain to be confirmed.
 
 ## 3. Development foundation
 - [ ] Install compatible Node.js, Git, editor and Postman versions.
-- [ ] Scaffold client/ and server/; commit dependency lockfiles.
-- [ ] Add environment placeholders and setup instructions.
+- [x] Scaffold client/ and server/; commit dependency lockfiles.
+- [x] Add environment placeholders and setup instructions.
 - [x] Connect a React form through Express to MongoDB and verify refresh and restart persistence (reported by the owner).
-- [ ] Add authentication and patient/caregiver authorization.
+- [x] Add session authentication, CSRF checks and patient/caregiver authorization for the Step 17 APIs. Full account and grant management remain later work.
 - [ ] Add shared navigation, validation, loading and error states.
 - [ ] Test each planned external integration and its failure state independently.
 
@@ -84,3 +84,4 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 | Lab 6 | Module 2 and deployment activity |
 | Lab 7 | Module 3 and final report preparation |
 | Labs 8–9 | Final demonstration, viva, live modifications and report |
+

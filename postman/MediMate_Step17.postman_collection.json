@@ -1,0 +1,568 @@
+{
+  "info": {
+    "name": "MediMate Step 17 \u2014 six database APIs",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Synthetic data only. Run all requests in order against a local replica-set database. Cookie jar enabled. Owner/member allocation identifies project responsibility, not individual authorship evidence."
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:3001/api/v1"
+    },
+    {
+      "key": "csrfToken",
+      "value": ""
+    },
+    {
+      "key": "patientId",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "operationKey",
+      "value": ""
+    },
+    {
+      "key": "createdId",
+      "value": ""
+    },
+    {
+      "key": "runEmail",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "00 Session and CSRF",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/auth/csrf"
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('runEmail','synthetic-'+pm.variables.replaceIn('{{$guid}}')+'@example.test');",
+              "pm.collectionVariables.set('operationKey',pm.variables.replaceIn('{{$guid}}')); "
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const payload=pm.response.json();",
+              "pm.test('Request identifier',()=>pm.expect(payload.meta.requestId).to.be.a('string'));",
+              "pm.collectionVariables.set('csrfToken',payload.data.csrfToken);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 Register synthetic owner",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrfToken}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{operationKey}}"
+          }
+        ],
+        "url": "{{baseUrl}}/auth/register",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\": \"{{runEmail}}\", \"password\": \"Synthetic-pass-123!\", \"displayName\": \"Synthetic API evidence\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "const payload=pm.response.json();",
+              "pm.test('Request identifier',()=>pm.expect(payload.meta.requestId).to.be.a('string'));",
+              "pm.collectionVariables.set('patientId',payload.data.patientId);",
+              "pm.collectionVariables.set('userId',payload.data.user.id);",
+              "pm.collectionVariables.set('csrfToken',payload.data.csrfToken);",
+              "pm.test('No credential hash',()=>pm.expect(payload.data.user).not.to.have.property('passwordHash')); "
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "A1 POST prescriptions",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrfToken}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{operationKey}}"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/prescriptions",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"title\": \"Synthetic API example\", \"instructions\": [{\"lineNumber\": 1, \"medicineText\": \"Demo medicine A\", \"instructionsText\": \"Demonstration only\", \"clarificationRequired\": true, \"doseQuantity\": \"1\", \"doseUnit\": \"tablet\"}]}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('operationKey',pm.variables.replaceIn('{{$guid}}')); "
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "const payload=pm.response.json();",
+              "pm.test('Request identifier',()=>pm.expect(payload.meta.requestId).to.be.a('string'));",
+              "const created=payload.data.prescription||payload.data;pm.collectionVariables.set('createdId',created.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "A1 Replay same creation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrfToken}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{operationKey}}"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/prescriptions",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"title\": \"Synthetic API example\", \"instructions\": [{\"lineNumber\": 1, \"medicineText\": \"Demo medicine A\", \"instructionsText\": \"Demonstration only\", \"clarificationRequired\": true, \"doseQuantity\": \"1\", \"doseUnit\": \"tablet\"}]}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const payload=pm.response.json();",
+              "pm.test('Request identifier',()=>pm.expect(payload.meta.requestId).to.be.a('string'));",
+              "const created=payload.data.prescription||payload.data;pm.test('Same resource ID',()=>pm.expect(created.id).to.equal(pm.collectionVariables.get('createdId')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "A1 GET prescriptions",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/prescriptions"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const payload=pm.response.json();",
+              "pm.test('Request identifier',()=>pm.expect(payload.meta.requestId).to.be.a('string'));",
+              "pm.test('Created record persisted',()=>pm.expect(payload.data.map(x=>x.id)).to.include(pm.collectionVariables.get('createdId')));",
+              "pm.test('Pagination metadata',()=>pm.expect(payload.meta).to.have.property('nextCursor'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "B1 POST cabinet-items",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrfToken}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{operationKey}}"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"displayName\": \"Demo medicine A\", \"entryType\": \"manual\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('operationKey',pm.variables.replaceIn('{{$guid}}')); "
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "const payload=pm.response.json();",
+              "pm.test('Request identifier',()=>pm.expect(payload.meta.requestId).to.be.a('string'));",
+              "const created=payload.data.prescription||payload.data;pm.collectionVariables.set('createdId',created.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "B1 Replay same creation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrfToken}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{operationKey}}"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"displayName\": \"Demo medicine A\", \"entryType\": \"manual\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const payload=pm.response.json();",
+              "pm.test('Request identifier',()=>pm.expect(payload.meta.requestId).to.be.a('string'));",
+              "const created=payload.data.prescription||payload.data;pm.test('Same resource ID',()=>pm.expect(created.id).to.equal(pm.collectionVariables.get('createdId')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "B1 GET cabinet-items",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const payload=pm.response.json();",
+              "pm.test('Request identifier',()=>pm.expect(payload.meta.requestId).to.be.a('string'));",
+              "pm.test('Created record persisted',()=>pm.expect(payload.data.map(x=>x.id)).to.include(pm.collectionVariables.get('createdId')));",
+              "pm.test('Pagination metadata',()=>pm.expect(payload.meta).to.have.property('nextCursor'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "C1 POST tasks",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrfToken}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{operationKey}}"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/tasks",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"title\": \"Review synthetic handover\", \"assigneeUserId\": \"{{userId}}\", \"type\": \"general\", \"handoverNote\": \"Demonstration only\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('operationKey',pm.variables.replaceIn('{{$guid}}')); "
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "const payload=pm.response.json();",
+              "pm.test('Request identifier',()=>pm.expect(payload.meta.requestId).to.be.a('string'));",
+              "const created=payload.data.prescription||payload.data;pm.collectionVariables.set('createdId',created.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "C1 Replay same creation",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrfToken}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{operationKey}}"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/tasks",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"title\": \"Review synthetic handover\", \"assigneeUserId\": \"{{userId}}\", \"type\": \"general\", \"handoverNote\": \"Demonstration only\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const payload=pm.response.json();",
+              "pm.test('Request identifier',()=>pm.expect(payload.meta.requestId).to.be.a('string'));",
+              "const created=payload.data.prescription||payload.data;pm.test('Same resource ID',()=>pm.expect(created.id).to.equal(pm.collectionVariables.get('createdId')));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "C1 GET tasks",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/tasks"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const payload=pm.response.json();",
+              "pm.test('Request identifier',()=>pm.expect(payload.meta.requestId).to.be.a('string'));",
+              "pm.test('Created record persisted',()=>pm.expect(payload.data.map(x=>x.id)).to.include(pm.collectionVariables.get('createdId')));",
+              "pm.test('Pagination metadata',()=>pm.expect(payload.meta).to.have.property('nextCursor'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Validation rejects mass assignment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-CSRF-Token",
+            "value": "{{csrfToken}}"
+          },
+          {
+            "key": "Idempotency-Key",
+            "value": "{{operationKey}}"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"displayName\": \"Bad\", \"entryType\": \"manual\", \"patientId\": \"000000000000000000000000\"}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422',()=>pm.response.to.have.status(422));",
+              "const payload=pm.response.json();",
+              "pm.test('Request identifier',()=>pm.expect(payload.meta.requestId).to.be.a('string'));",
+              "pm.test('Validation code',()=>pm.expect(payload.error.code).to.equal('VALIDATION_ERROR'));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cross-patient read denied",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/000000000000000000000000/tasks"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404',()=>pm.response.to.have.status(404));",
+              "const payload=pm.response.json();",
+              "pm.test('Request identifier',()=>pm.expect(payload.meta.requestId).to.be.a('string'));"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
