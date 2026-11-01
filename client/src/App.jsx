@@ -1,3 +1,4 @@
+import TaskBoard from "./TaskBoard.jsx";
 import MedicineCabinet from "./MedicineCabinet.jsx";
 import PrescriptionReview from "./PrescriptionReview.jsx";
 import { useEffect, useRef, useState } from "react";
@@ -20,27 +21,14 @@ export default function App() {
     [register, setRegister] = useState(false),
     [patient, setPatient] = useState(""),
     [tab, setTab] = useState("prescriptions"),
-    [rows, setRows] = useState([]),
-    [rowsView, setRowsView] = useState(""),
-    [cursor, setCursor] = useState(null),
-    [loading, setLoading] = useState(false),
-    [listError, setListError] = useState(""),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [notice, setNotice] = useState("");
-  const generation = useRef(0),
-    pending = useRef(null),
-    lock = useRef(false), currentView = useRef("");
+  const lock = useRef(false);
   const selectedPatient = user?.patients?.find((p) => p.id === patient);
   const prefixes = { prescriptions: "prescription", "cabinet-items": "cabinet", tasks: "task" };
   const visibleTabs = tabs.filter(([id]) => selectedPatient?.permissions?.some((p) => p === prefixes[id] + ".read" || p === prefixes[id] + ".write"));
   const activeTab = visibleTabs.some(([id]) => id === tab) ? tab : visibleTabs[0]?.[0] || tab;
-  const permissionPrefix = prefixes[activeTab];
-  const canWrite = selectedPatient?.permissions?.includes(permissionPrefix + ".write");
-  const canRead = selectedPatient?.permissions?.includes(permissionPrefix + ".read");
-  const view = `${user?.id}/${patient}/${activeTab}`;
-  currentView.current = view;
-  const visibleRows = canRead && rowsView === view ? rows : [];
   async function api(path, options = {}) {
     const { isCurrent = () => true, ...fetchOptions } = options;
     try { return await request(path, {
@@ -53,14 +41,9 @@ export default function App() {
     }); } catch (e) {
       if (!isCurrent()) throw e;
       if (e.status === 401) {
-        generation.current++;
         setUser(null);
         setPatient("");
-        setRows([]);
-        setCursor(null);
-        setLoading(false);
         setNotice("");
-        pending.current = null;
       }
       if (e.status === 401 || e.code === "CSRF_REJECTED") {
         // A rejected write has not run. Recover credentials for an explicit
@@ -114,42 +97,6 @@ export default function App() {
       controller.abort();
     };
   }, [connectionAttempt]);
-  async function list(append = false) {
-    const token = ++generation.current;
-    if (!patient || !user || !canRead || ["prescriptions", "cabinet-items"].includes(activeTab)) { setLoading(false); return; }
-    setLoading(true);
-    setListError("");
-    try {
-      const r = await api(
-        `/patients/${patient}/${activeTab}?limit=20` +
-          (append && cursor ? "&cursor=" + encodeURIComponent(cursor) : ""),
-        { isCurrent: () => token === generation.current && view === currentView.current },
-      );
-      if (token !== generation.current || view !== currentView.current) return;
-      setRows((old) => (append ? [...old, ...r.data] : r.data));
-      setRowsView(view);
-      setCursor(r.meta.nextCursor);
-    } catch (e) {
-      if (token === generation.current && view === currentView.current) {
-        setListError(e.message);
-        if (e.status === 403 || e.status === 404) { setRows([]); setCursor(null); }
-      }
-    } finally {
-      if (token === generation.current && view === currentView.current) setLoading(false);
-    }
-  }
-  useEffect(() => {
-    setRows([]);
-    setCursor(null);
-    setNotice("");
-    setListError(""); setLoading(false);
-    setError("");
-    pending.current = null;
-    if (user && patient) list();
-    return () => {
-      generation.current++;
-    };
-  }, [patient, activeTab, user?.id, canRead]);
   async function authenticate(e) {
     e.preventDefault();
     if (lock.current) return;
@@ -174,8 +121,6 @@ export default function App() {
     }
   }
   async function logout() {
-    generation.current++;
-    setRows([]);
     setBusy(true);
     setError("");
     try {
@@ -189,48 +134,6 @@ export default function App() {
     } catch (e) {
       setError(e.message);
     } finally {
-      setBusy(false);
-    }
-  }
-  async function save(e) {
-    e.preventDefault();
-    if (lock.current) return;
-    lock.current = true;
-    setBusy(true);
-    setError("");
-    setNotice("");
-    const form = e.currentTarget,
-      f = Object.fromEntries(new FormData(form));
-    try {
-    let body;
-      body = {
-        title: f.title,
-        assigneeUserId: f.assigneeUserId || user.id,
-        type: f.type,
-        ...(f.handoverNote ? { handoverNote: f.handoverNote } : {}),
-        ...(f.dueAtUTC ? { dueAtUTC: new Date(f.dueAtUTC).toISOString() } : {}),
-      };
-    const payload = JSON.stringify(body),
-      path = `/patients/${patient}/${activeTab}`;
-    if (pending.current?.payload !== payload || pending.current?.path !== path)
-      pending.current = { path, payload, key: crypto.randomUUID() };
-      await api(path, {
-        method: "POST",
-        headers: { "Idempotency-Key": pending.current.key },
-        body: payload,
-      });
-      pending.current = null;
-      form.reset();
-      setNotice("Saved to the database.");
-      await list();
-    } catch (e) {
-      setError(
-        e.message +
-          " Your entries are retained; retry to check the same submission.",
-      );
-      return { error: e };
-    } finally {
-      lock.current = false;
       setBusy(false);
     }
   }
@@ -371,122 +274,7 @@ export default function App() {
                     </button>
                   ))}
                 </nav>
-                {activeTab === "prescriptions" ? <PrescriptionReview key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "cabinet-items" ? <MedicineCabinet key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : (
-                <div className="columns">
-                  <section className="card">
-                    <h2>
-                      Create caregiver task
-                    </h2>
-                    <ValidatedForm key={patient + activeTab} onSubmit={save}>
-                      {!canWrite && <p>You do not have permission to create records in this area.</p>}
-                      <fieldset disabled={busy || !canWrite}>
-
-                          <>
-                            <label>
-                              Task title
-                              <input name="title" required maxLength={200} />
-                            </label>
-                            <label>
-                              Assign to user ID
-                              <input
-                                name="assigneeUserId"
-                                placeholder={user.id}
-                                pattern="[a-fA-F0-9]{24}"
-                              />
-                            </label>
-                            <p className="hint">
-                              Leave blank to assign to yourself. Another
-                              assignee needs an active task.write grant.
-                            </p>
-                            <label>
-                              Type
-                              <select name="type">
-                                <option value="general">General</option>
-                                <option value="refill">Refill</option>
-                              </select>
-                            </label>
-                            <label>
-                              Due (your device local time, optional)
-                              <input name="dueAtUTC" type="datetime-local" />
-                            </label>
-                            <label>
-                              Handover note (optional)
-                              <textarea name="handoverNote" maxLength={2000} />
-                            </label>
-                            <p className="hint">
-                              Creates an open task. Telegram notifications are
-                              not enabled.
-                            </p>
-                          </>
-
-                        <button>
-                          {busy
-                            ? "Saving…"
-                            : "Save " +
-                              (activeTab === "tasks"
-                                  ? "task"
-                                  : "medicine")}
-                        </button>
-                      </fieldset>
-                    </ValidatedForm>
-                  </section>
-                  <section className="card records" aria-busy={loading}>
-                    <div className="section-title">
-                      <h2>Saved records</h2>
-                      <button
-                        className="link"
-                        disabled={loading || busy || !canRead}
-                        onClick={() => list()}
-                      >
-                        Refresh
-                      </button>
-                    </div>
-                    {loading && <p role="status">Loading records…</p>}
-                    {!canRead && <p>You do not have permission to view saved records in this area.</p>}
-                    {listError && <div role="alert" className="alert"><p>{listError}</p><button disabled={loading || busy} onClick={() => list()}>Retry loading records</button></div>}
-                    {canRead && !loading && !listError && !visibleRows.length && (
-                      <p>
-                        No records yet.
-                      </p>
-                    )}
-                    <ul>
-                      {visibleRows.map((r) => (
-                        <li key={r.id}>
-                          <strong>
-                            {r.title ||
-                              r.displayName ||
-                              "Untitled prescription"}
-                          </strong>
-                          <span className="badge">
-                            {activeTab === "prescriptions"
-                              ? r.draftVersionId
-                                ? "Draft · review required"
-                                : r.status
-                              : activeTab === "cabinet-items"
-                                ? "Manual · user-entered"
-                                : r.status}
-                          </span>
-                          <p>{r.strengthText || r.description || ""}</p>
-                          {r.dueAtUTC && (
-                            <p>Due: {new Date(r.dueAtUTC).toLocaleString()}</p>
-                          )}
-                          <small>
-                            {new Date(r.createdAt).toLocaleString()}
-                          </small>
-                        </li>
-                      ))}
-                    </ul>
-                    {cursor && (
-                      <button
-                        disabled={loading || busy}
-                        onClick={() => list(true)}
-                      >
-                        Load more
-                      </button>
-                    )}
-                  </section>
-                </div>
-                )}
+                {activeTab === "prescriptions" ? <PrescriptionReview key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "cabinet-items" ? <MedicineCabinet key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : <TaskBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} userId={user.id} owner={selectedPatient.role === "owner"} onBusy={setBusy} />}
               </>
             )}
           </>

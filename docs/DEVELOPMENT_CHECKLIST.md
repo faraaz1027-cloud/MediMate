@@ -37,7 +37,8 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 ## 4. Module 1 — Lab 5
 - [x] A1 implemented slice: manual/printed-image OCR review, confirmation, immutable history, replacement comparison and archive; [Step 21 scope and evidence](STEP_21_PRESCRIPTION_REVIEW.md). Individual owner review and faculty acceptance remain open.
 - [x] B1 implemented slice: live RxNorm search, explicit candidate review, manual fallback, persistent cabinet edit/filter/archive and history; [Step 22 evidence](STEP_22_MEDICINE_CABINET.md). Individual owner review and faculty acceptance remain open.
-- [ ] C1: caregiver tasks, handover history and Telegram linking/notifications.
+- [x] C1 prepared code: task assignment/edit/transitions, handover/acknowledgement history, Telegram consent/linking and persisted delivery worker; [Step 23 tests and limits](STEP_23_CAREGIVER_TASKS.md). Owner review/personal contribution remain open.
+- [ ] C1 real Telegram demonstration: configure a dedicated bot, link a consenting test recipient and record actual receipt. No bot was available; controlled fixtures and CI do not satisfy this gate.
 - [ ] Integrate all three using shared patient data.
 - [ ] Test persistence, invalid input, external failure and revoked access.
 - [ ] Update Jira and collect individual contribution evidence.

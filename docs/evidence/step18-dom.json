@@ -1,5 +1,5 @@
 {
-  "runAt": "2026-11-01T20:03:19.944Z",
+  "runAt": "2026-11-01T21:05:34.903Z",
   "runner": "JSDOM + Testing Library user-event; production React bundle; real MongoDB 7.0.24 replica set",
   "passed": [
     "registration",
@@ -20,7 +20,9 @@
     "Step 21 edit/review/confirm and replacement comparison",
     "Step 21 remount preserves confirmed version and prior instructions",
     "Step 22 explicit external selection, review, edit and archive",
-    "Step 22 no-match/outage manual fallback and archived history after remount"
+    "Step 22 no-match/outage manual fallback and archived history after remount",
+    "Step 23 handover, explicit acknowledgement, accept/complete/reopen and edit after remount",
+    "Step 23 Telegram disabled status is explicit; live delivery remains unverified"
   ],
   "counts": {
     "prescriptions": 1,

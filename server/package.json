@@ -1,1 +1,15 @@
-{"name":"medimate-server","private":true,"version":"0.1.0","type":"module","scripts":{"dev":"node --env-file=.env --watch index.js","start":"node --env-file=.env index.js"},"dependencies":{"express":"^5.0.0","mongoose":"^8.0.0"}}
+{
+  "name": "medimate-server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file=.env --watch index.js",
+    "start": "node --env-file=.env index.js",
+    "worker": "node --env-file-if-exists=.env worker.js"
+  },
+  "dependencies": {
+    "express": "^5.0.0",
+    "mongoose": "^8.0.0"
+  }
+}
