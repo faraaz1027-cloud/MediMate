@@ -82,6 +82,10 @@ nav .selected {
 .hint {
   font-size: 0.85rem;
 }
+.instruction-editor { border-top: 1px solid #d9d4e2; margin: 20px 0; padding-top: 18px; }
+.prescription-workspace button { margin: 6px 8px 6px 0; }
+.prescription-workspace li { overflow-wrap: anywhere; }
+.prescription-workspace li > button { margin-left: 8px; }
 .skip-link { position: absolute; left: 16px; top: -100px; background: white; color: #262233; padding: 12px; z-index: 2; }
 .skip-link:focus { top: 12px; outline: 3px solid #65518f; }
 [aria-invalid="true"] { border: 2px solid #8b2519; }

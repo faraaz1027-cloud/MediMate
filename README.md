@@ -34,7 +34,7 @@ The project has a zero-cost constraint. Integration terms and deployment options
 Notify linked, consenting contacts and track acknowledgements. Use a clearly labelled simulated hospital/provider dashboard for classroom demonstrations until a participating provider is secured. A notification does not establish ambulance dispatch.
 
 ## Next implementation milestone
-Finish A1 review/history, B1 search and C1 task transitions/notifications for Module 1. The six APIs are connected to the React interface in [Step 18](docs/STEP_18_FRONTEND_INTEGRATION.md). See [API setup and test evidence](docs/STEP_17_API_IMPLEMENTATION.md).
+Next is Step 22, B1 live medicine search and the personal cabinet, followed by C1 task transitions/notifications and Module 1 integration. A1 review/history is implemented for owner review in [Step 21](docs/STEP_21_PRESCRIPTION_REVIEW.md). See [API setup and test evidence](docs/STEP_17_API_IMPLEMENTATION.md).
 
 ## Links to add
 - Jira project: pending.
@@ -67,3 +67,6 @@ The six APIs are POST and GET for prescriptions, manual cabinet items and caregi
 
 ## Step 20 shared behavior
 [Reconnect/retry, field validation, permission navigation and validation evidence](docs/STEP_20_SHARED_BEHAVIOR.md). Later assessed feature workflows remain separate roadmap steps.
+
+## Step 21 prescription review
+[Manual and printed-image OCR review, explicit confirmation, immutable history and replacement comparison](docs/STEP_21_PRESCRIPTION_REVIEW.md). Images are processed locally and not retained; local OCR is not external API course credit. [Step 21 Postman collection](postman/MediMate_Step21.postman_collection.json). Student contribution/viva and faculty acceptance remain open.

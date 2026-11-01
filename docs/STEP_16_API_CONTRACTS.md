@@ -66,23 +66,25 @@ Task: {id,title,description?,assigneeUserId,type,status,dueAtUTC?,revision}. Job
 Incident: {id,status,activatedAt,locationStatus,location?,alerts[],providerRequests[],revision}. Alert exposes minimal authorized recipient display name, attempt status and acknowledgement; never another contact's secrets. ProviderRequest always includes providerMode, request status and separate dispatchStatus.
 
 ## A1 Prescription import, review and history
-Permission prescription.read for reads; prescription.write for drafts/assets; prescription.confirm for confirmation.
+**Step 21 implementation decision (2 November 2026):** OCR runs in the browser with pinned Tesseract.js 7.0.0. Image bytes are not uploaded or retained. The `/assets`, asset-content and OCR-job routes below remain an earlier proposal, **not implemented endpoints**. Current prescription payloads use optional `source` metadata instead of `sourceAssetId`: `{fileName,mimeType,sizeBytes,sha256,ocrText,confidence?,ocrStatus}` (PNG/JPEG, 1–5 MiB, SHA-256 hex, original OCR text up to 30000 characters, finite confidence 0–100, succeeded/failed). This is untrusted provenance, not authenticity evidence. See [implemented scope, rationale and validation](STEP_21_PRESCRIPTION_REVIEW.md). Browser-local OCR is not an external API course integration.
+
+Permission prescription.read for reads; prescription.write for drafts/replacement/archive; prescription.confirm independently for confirmation. Detail returns `{prescription,currentVersion,draftVersion}` with nested instructions. Draft PATCH and confirm use the version revision; replacement/archive use the parent revision. Draft edits also increment the parent revision. Confirmation stamps actor/time and preserves immutable instruction IDs. Replacement requires the current confirmed previousVersionId and no existing draft.
 | Route | Request or query | Response and rule |
 |---|---|---|
-| POST /assets | multipart image; PNG/JPEG only, maximum 5 MiB; validate signature and decoded dimensions | 201 {id,mimeType,sizeBytes}; private asset |
-| GET /assets/{assetId}/content | Scoped session | 200 private binary; private,no-store; no public storage key |
-| POST /prescriptions | {title?,sourceAssetId?,instructions:[InstructionInput]} | 201 Prescription + draft version |
+| Proposed only: POST /assets | multipart image; PNG/JPEG only, maximum 5 MiB; validate signature and decoded dimensions | Not implemented in Step 21 |
+| Proposed only: GET /assets/{assetId}/content | Scoped session | Not implemented in Step 21 |
+| POST /prescriptions | {title?,source?,instructions:[InstructionInput]} | 201 {prescription,draftVersion} |
 | GET /prescriptions | status?,cursor?,limit? | 200 list Prescription |
-| GET /prescriptions/{id} | None | 200 Prescription plus current version |
-| POST /prescriptions/{id}/versions | {expectedRevision,previousVersionId,instructions:[InstructionInput],sourceAssetId?} | 201 new draft; preserve prior versions |
-| PATCH /prescriptions/{id}/versions/{versionId} | {expectedRevision,instructions:[InstructionInput],reviewCorrections?} | 200 draft; 409 if confirmed |
+| GET /prescriptions/{id} | None | 200 {prescription,currentVersion,draftVersion} |
+| POST /prescriptions/{id}/versions | {expectedRevision,previousVersionId,instructions:[InstructionInput],source?} | 201 new draft; preserve prior versions |
+| PATCH /prescriptions/{id}/versions/{versionId} | {expectedRevision,instructions:[InstructionInput],reviewCorrections?,source?} | 200 draft; 409 if confirmed |
 | POST /prescriptions/{id}/versions/{versionId}/confirm | {expectedRevision,reviewed:true} | 200 confirmed immutable version; update current pointer atomically |
 | GET /prescriptions/{id}/versions | cursor?,limit? | 200 version history |
 | GET /prescriptions/{id}/comparison | fromVersionId,toVersionId | 200 {added,removed,changed}; both versions must belong to this prescription |
 | POST /prescriptions/{id}/archive | {expectedRevision} | 200 archived Prescription |
-| POST /assets/{assetId}/ocr | None | 202 Job; GET /jobs/{id} reports pending/succeeded/failed and editable draft text |
+| Proposed only: POST /assets/{assetId}/ocr | None | Not implemented in Step 21; recognition and progress run in the browser |
 
-InstructionInput requires medicineText (1–200 chars), instructionsText (1–2000), lineNumber positive integer, and explicit clarificationRequired. Confirmation additionally requires positive doseQuantity and supported doseUnit and reviewed timing/duration instructions. Missing/ambiguous details return 422; OCR cannot confirm or activate schedules. Local Tesseract is an implementation option behind this job contract, not an external API requirement.
+InstructionInput requires medicineText (1–200 chars), instructionsText (1–2000), lineNumber positive integer, and explicit clarificationRequired. Step 21 supports 1–30 lines and optional strengthText, frequencyText and durationText (each 1–200 chars when supplied). Confirmation requires positive decimal doseQuantity (string), supported doseUnit, nonempty frequencyText/durationText, clarificationRequired:false on every line, and reviewed:true. Supported confirmation units: tablet, capsule, mL, mg, g, drop, puff, unit, application. Missing/ambiguous details return 422; OCR cannot confirm or activate schedules. These are reviewed text fields, not clinical validation or schedule parsing.
 
 ## B1 Medicine search and cabinet
 | Route | Permission | Request | Success |

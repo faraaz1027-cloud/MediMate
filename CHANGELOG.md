@@ -1,5 +1,11 @@
 # Change log
 
+## Step 21 — A1 prescription review and history
+- Added multi-line manual drafts and browser-local printed-image OCR with editable suggestions, timeout/cancellation and manual fallback.
+- Added explicit reviewed confirmation, immutable versions, replacements, field differences and archival, using scoped permissions, revision checks, idempotency and transactions.
+- Added additive source/timing/history schema fields, API and production-bundle DOM tests, Postman evidence and real browser checks; documented the change from proposed server asset/OCR jobs.
+- Preserved Ihfaz's ownership and remaining individual review, external API and Module 1 integration gates.
+
 ## Step 20 — Shared UI and backend behavior
 - Added safe request errors, startup reconnect and explicit list retry/empty states.
 - Added shared accessible field validation, permission-aware navigation and view-context guards against stale records and old 401s.

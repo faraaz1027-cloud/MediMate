@@ -1,3 +1,4 @@
+import { installPrescriptions } from "./prescriptions.js";
 import express from "express";
 import mongoose from "mongoose";
 import {
@@ -547,6 +548,7 @@ export function createV1({
       );
     },
   );
+  installPrescriptions(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now });
   const resources = [
     ["prescriptions", "Prescription", "prescription"],
     ["cabinet-items", "CabinetItem", "cabinet"],
@@ -606,139 +608,13 @@ export function createV1({
           : null,
       });
     });
+    if (model === "Prescription") continue;
     patient.post(
       "/" + route,
       csrf,
       scope(perm + ".write"),
       async (req, res) => {
         let doc;
-        if (model === "Prescription") {
-          const b = object(
-            req.body,
-            ["title", "instructions"],
-            ["instructions"],
-          );
-          if (
-            !Array.isArray(b.instructions) ||
-            b.instructions.length < 1 ||
-            b.instructions.length > 30
-          )
-            fail(422, "VALIDATION_ERROR", "Enter 1–30 instructions.");
-          const used = new Set();
-          const instructions = b.instructions.map((x, i) => {
-            object(
-              x,
-              [
-                "lineNumber",
-                "medicineText",
-                "instructionsText",
-                "strengthText",
-                "doseQuantity",
-                "doseUnit",
-                "clarificationRequired",
-              ],
-              [
-                "lineNumber",
-                "medicineText",
-                "instructionsText",
-                "clarificationRequired",
-              ],
-            );
-            if (
-              !Number.isInteger(x.lineNumber) ||
-              x.lineNumber < 1 ||
-              used.has(x.lineNumber)
-            )
-              fail(
-                422,
-                "VALIDATION_ERROR",
-                "Line numbers must be positive and unique.",
-              );
-            used.add(x.lineNumber);
-            if (typeof x.clarificationRequired !== "boolean")
-              fail(422, "VALIDATION_ERROR", "Review state is required.");
-            const out = {
-              lineNumber: x.lineNumber,
-              medicineText: text(
-                x.medicineText,
-                `instructions.${i}.medicineText`,
-              ),
-              instructionsText: text(
-                x.instructionsText,
-                `instructions.${i}.instructionsText`,
-                2000,
-              ),
-              clarificationRequired: x.clarificationRequired,
-            };
-            if (x.strengthText !== undefined)
-              out.strengthText = text(x.strengthText, "strengthText");
-            if (x.doseQuantity !== undefined) {
-              if (
-                typeof x.doseQuantity !== "string" ||
-                !/^\d{1,12}(\.\d{1,6})?$/.test(x.doseQuantity) ||
-                Number(x.doseQuantity) <= 0 ||
-                !x.doseUnit
-              )
-                fail(
-                  422,
-                  "VALIDATION_ERROR",
-                  "Positive decimal quantity and unit required.",
-                );
-              out.doseQuantity = x.doseQuantity;
-              out.doseUnit = text(x.doseUnit, "doseUnit", 30);
-            } else if (x.doseUnit !== undefined)
-              fail(422, "VALIDATION_ERROR", "Quantity required with unit.");
-            return out;
-          });
-          const title =
-            b.title === undefined ? undefined : text(b.title, "title");
-          await mutate(req, res, perm + ".write", async (s) => {
-            const prescriptionId = new mongoose.Types.ObjectId(),
-              versionId = new mongoose.Types.ObjectId();
-            const p = await db.insert(
-              "Prescription",
-              {
-                _id: prescriptionId,
-                patientId: req.patient._id,
-                title,
-                status: "active",
-                draftVersionId: versionId,
-              },
-              s,
-            );
-            const version = await db.insert(
-              "PrescriptionVersion",
-              {
-                _id: versionId,
-                patientId: req.patient._id,
-                prescriptionId,
-                versionNumber: 1,
-                status: "draft",
-              },
-              s,
-            );
-            const lines = [];
-            for (const x of instructions)
-              lines.push(
-                publicDoc(
-                  await db.insert(
-                    "PrescriptionInstruction",
-                    {
-                      ...x,
-                      patientId: req.patient._id,
-                      prescriptionVersionId: versionId,
-                    },
-                    s,
-                  ),
-                ),
-              );
-            return {
-              prescription: publicDoc(p),
-              draftVersion: { ...publicDoc(version), instructions: lines },
-            };
-          });
-          return;
-        }
         if (model === "CabinetItem") {
           const b = object(
             req.body,

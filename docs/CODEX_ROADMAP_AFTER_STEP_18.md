@@ -24,6 +24,8 @@ Implementation update (1 November 2026): [shared behavior and evidence](STEP_20_
 Extend Step 18 React screens with navigation, form field validation, loading/empty/error states, mobile responsiveness and accessible labels. Normalize API errors and protect patient routes server-side. Avoid full-page generated templates that owners cannot explain. Test keyboard navigation, small viewport, slow request and stale session. **Evidence:** screenshots of real states and a passing build.
 
 ### Step 21 — A1 prescription import, review and change tracking (Ihfaz)
+Implementation update (2 November 2026): [implemented A1 scope, technical decision, owner review and evidence](STEP_21_PRESCRIPTION_REVIEW.md) covers manual/printed-image OCR drafts, explicit completeness/review gates, immutable confirmed history, replacement differences and archive. API, DOM, Postman and real Chromium cases passed. Browser-local OCR replaces the earlier proposed server asset/job contract; it is not external API course credit. Individual ownership review and Module 1 integration remain open.
+
 Implement manual prescription draft first; add printed-image OCR as editable suggestions. Confirm only complete, reviewed instructions; retain immutable confirmed versions and field-level differences on replacement. Verify a confirmed version persists after reload and past versions remain accessible. Test blurry image, missing quantity, duplicate submission and unauthorized access. **Dependency:** Step 19 permissions and Step 15 version model. **Demo:** upload or enter → correct → confirm → replace → compare.
 
 ### Step 22 — B1 medicine search and personal cabinet (Faraaz)

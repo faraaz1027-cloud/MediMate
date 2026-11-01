@@ -35,7 +35,7 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 - [ ] Test each planned external integration and its failure state independently.
 
 ## 4. Module 1 — Lab 5
-- [ ] A1: manual prescription workflow, confirmation/history, then OCR review.
+- [x] A1 implemented slice: manual/printed-image OCR review, confirmation, immutable history, replacement comparison and archive; [Step 21 scope and evidence](STEP_21_PRESCRIPTION_REVIEW.md). Individual owner review and faculty acceptance remain open.
 - [ ] B1: search, candidate selection and persistent personal cabinet.
 - [ ] C1: caregiver tasks, handover history and Telegram linking/notifications.
 - [ ] Integrate all three using shared patient data.

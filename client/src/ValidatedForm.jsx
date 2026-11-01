@@ -7,7 +7,7 @@ export default function ValidatedForm({ onSubmit, children, ...props }) {
   useEffect(() => {
     const marked = [];
     errors.forEach((error, i) => {
-      const control = form.current.elements.namedItem(error.path.split(".").at(-1));
+      const control = form.current.elements.namedItem(error.path) || form.current.elements.namedItem(error.path.split(".").at(-1));
       if (!control?.setAttribute) return;
       const previous = control.getAttribute("aria-describedby");
       control.setAttribute("aria-invalid", "true");

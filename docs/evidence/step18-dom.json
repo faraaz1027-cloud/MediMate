@@ -1,5 +1,5 @@
 {
-  "runAt": "2026-11-01T16:22:08.363Z",
+  "runAt": "2026-11-01T19:11:49.728Z",
   "runner": "JSDOM + Testing Library user-event; production React bundle; real MongoDB 7.0.24 replica set",
   "passed": [
     "registration",
@@ -16,7 +16,9 @@
     "Step 20 non-JSON list error retains records and retries",
     "Step 20 whitespace and server field errors focus associated inputs",
     "Step 20 slow stale 401 cannot replace current tab or log out",
-    "Step 20 permission-aware navigation and read-only controls"
+    "Step 20 permission-aware navigation and read-only controls",
+    "Step 21 edit/review/confirm and replacement comparison",
+    "Step 21 remount preserves confirmed version and prior instructions"
   ],
   "counts": {
     "prescriptions": 1,
