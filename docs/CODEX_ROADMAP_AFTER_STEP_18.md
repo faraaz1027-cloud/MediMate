@@ -14,6 +14,8 @@
 ## Shared foundation and Module 1
 
 ### Step 19 — Complete account and access workflows
+Implementation update (1 November 2026): the [shared local slice](STEP_19_ACCOUNT_ACCESS.md) adds editable account/patient profiles, owner-administered direct grants to registered caregiver IDs, named permissions and revoke/restore. API, DOM, Postman and browser evidence are recorded. Email/pending invitations, scale pagination and comprehensive accessibility remain explicitly open; no faculty submission or individual feature credit is claimed. Technical decisions and contracts are documented alongside the implementation.
+
 Build signup/login/logout, profile and patient profile selection, invitation/grant/revocation of caregiver access, roles and any necessary admin path. Reconcile with Step 17's existing session/CSRF/authorization code rather than duplicating it. Specify who may confirm a prescription, edit tasks, record a dose and view an SOS. Persist grants and audit state; enforce permission on every server read/write, including a previously authorized caregiver after revocation. Test another patient's ID, expired session, CSRF failure and grant revocation. **Evidence:** working UI/API, DB records and access tests. These are shared infrastructure, not assessed A/B/C features.
 
 ### Step 20 — Finish shared UI/backend behavior

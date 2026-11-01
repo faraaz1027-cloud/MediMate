@@ -82,6 +82,11 @@ nav .selected {
 .hint {
   font-size: 0.85rem;
 }
+.account { margin: 16px 0; overflow-wrap: anywhere; }
+.account form { margin: 24px 0; }
+.account legend { font-weight: 650; }
+.account button { margin: 8px 12px 0 0; }
+.permission-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; }
 .check {
   display: flex;
   align-items: center;

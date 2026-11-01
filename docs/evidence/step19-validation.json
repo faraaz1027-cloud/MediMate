@@ -1,0 +1,11 @@
+{
+  "date": "2026-11-01",
+  "step": 19,
+  "data": "Synthetic local accounts and patients only",
+  "runtime": "Windows, Node 26.13.0, MongoDB 7.0.24 disposable replica sets",
+  "api": {"reportedTests":13,"failures":0,"skipped":0,"covers":["profile/patient persistence","idempotent retries","stale revisions","cross-patient grant IDs","caregiver role/permissions","owner-only administration","revocation on next request","CSRF failure","expired authentication","audit persistence"]},
+  "postman": {"runner":"Newman 6.2.1","requests":19,"assertions":23,"failedRequests":0,"failedAssertions":0},
+  "dom": {"result":"passed","covers":["registration/logout/login","session expiry recovery","three resource create/list flows","remount persistence","account profile editing","patient creation"]},
+  "browser": {"runner":"in-app Chromium","result":"smoke review passed","covers":["profile name saved","registered caregiver direct grant","revocation and restoration controls","caregiver discovery and patient selection","owner-only settings hidden for shared patient"],"mobileViewport":"390x844","horizontalOverflow":false},
+  "limitations":["Full accessibility, slow/offline and other browser engines not tested","No email invitation, external feature integration, deployment or faculty submission claimed","No individual student implementation credit claimed"]
+}

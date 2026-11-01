@@ -381,6 +381,59 @@ test(
         );
       },
     );
+    await t.test("Step 19 account, patient and access administration", async () => {
+      const me = (await owner.call("GET", "/auth/me")).body.data;
+      assert.equal(me.patients.find((p) => p.id === patientId).role, "owner");
+      assert.ok(me.permissionCatalog.includes("prescription.confirm"));
+      const profileKey = randomUUID();
+      const profile = { displayName: "Updated owner", expectedRevision: me.revision };
+      assert.equal((await owner.call("PATCH", "/me", profile, { key: profileKey })).status, 200);
+      assert.equal((await owner.call("PATCH", "/me", profile, { key: profileKey })).status, 200);
+      assert.equal((await owner.call("PATCH", "/me", profile)).status, 409);
+      const updated = (await owner.call("GET", "/auth/me")).body.data;
+      assert.equal(updated.displayName, "Updated owner");
+      assert.equal(updated.revision, me.revision + 1);
+      assert.equal(JSON.stringify(updated).includes("passwordHash"), false);
+      assert.equal((await owner.call("PATCH", "/me", { ...profile, role: "admin" })).status, 422);
+      const key = randomUUID(), input = { displayName: "Second patient", timezone: "Asia/Dhaka" };
+      const created = await owner.call("POST", "/patients", input, { key });
+      assert.equal(created.status, 201);
+      assert.equal((await owner.call("POST", "/patients", input, { key })).body.data.id, created.body.data.id);
+      assert.equal((await stranger.call("GET", "/patients/" + created.body.data.id)).status, 404);
+      assert.equal((await owner.call("POST", "/patients", { ...input, timezone: "Invalid/Zone" })).status, 422);
+      const edit = { displayName: "Patient edited", timezone: "UTC", expectedRevision: 0 };
+      assert.equal((await owner.call("PATCH", "/patients/" + created.body.data.id, edit)).status, 200);
+      assert.equal((await owner.call("PATCH", "/patients/" + created.body.data.id, edit)).status, 409);
+      const grants = await owner.call("GET", route("access-grants"));
+      assert.equal(grants.status, 200);
+      const grant = grants.body.data.find((g) => g.userId === caregiverId);
+      const restore = { expectedRevision: grant.revision, permissions: ["task.read"] };
+      assert.equal((await owner.call("PATCH", route("access-grants") + "/" + grant.id, restore)).status, 200);
+      const discovery = (await caregiver.call("GET", "/auth/me")).body.data;
+      const shared = discovery.patients.find((p) => p.id === patientId);
+      assert.equal(shared.role, "caregiver");
+      assert.deepEqual(shared.permissions, ["task.read"]);
+      assert.equal((await caregiver.call("GET", route("tasks"))).status, 200);
+      assert.equal((await caregiver.call("POST", route("tasks"), cases[2][1])).status, 403);
+      assert.equal((await caregiver.call("GET", route("access-grants"))).status, 403);
+      assert.equal((await caregiver.call("PATCH", "/patients/" + patientId, edit)).status, 403);
+      assert.equal((await stranger.call("GET", route("access-grants"))).status, 404);
+      const grantPath = route("access-grants") + "/" + grant.id;
+      assert.equal((await owner.call("PATCH", "/patients/" + created.body.data.id + "/access-grants/" + grant.id, restore)).status, 404);
+      assert.equal((await owner.call("PATCH", grantPath, restore)).status, 409);
+      assert.equal((await owner.call("PATCH", grantPath, { expectedRevision: grant.revision + 1, permissions: ["access.manage"] })).status, 422);
+      // Same active browser session loses read access on the very next request.
+      assert.equal((await owner.call("POST", grantPath + "/revoke", { expectedRevision: grant.revision + 1 })).status, 200);
+      assert.equal((await caregiver.call("GET", route("tasks"))).status, 404);
+      assert.equal((await caregiver.call("GET", "/auth/me")).body.data.patients.some((p) => p.id === patientId), false);
+      const badCsrf = { headers: { "X-CSRF-Token": "expired" } };
+      assert.equal((await owner.call("PATCH", "/me", { displayName: "No change", expectedRevision: updated.revision }, badCsrf)).status, 403);
+      assert.ok(await mongoose.model("AuditEvent").countDocuments({ actorUserId: ownerId, action: "PATCH/me" }));
+      const strangerUserId = (await stranger.call("GET", "/auth/me")).body.data.id;
+      await mongoose.model("Session").updateMany({ userId: strangerUserId }, { $set: { expiresAt: new Date(0) } });
+      assert.equal((await stranger.call("GET", "/auth/me")).status, 401);
+      assert.equal((await stranger.call("POST", "/patients", input)).status, 401);
+    });
     await t.test(
       "cursor pagination stays stable across new inserts",
       async () => {

@@ -296,11 +296,48 @@ export function createV1({
       id: String(u._id),
       email: u.emailNormalized,
       displayName: u.displayName,
-      patients: (await accessiblePatients(req.actorId)).map((p) => ({
-        id: String(p._id),
-        displayName: p.displayName,
+      revision: u.revision,
+      permissionCatalog: permissionSet.filter((p) => p !== "access.manage"),
+      patients: await Promise.all((await accessiblePatients(req.actorId)).map(async (p) => {
+        const owner = String(p.ownerUserId) === String(req.actorId);
+        const grant = owner ? null : await db.one("AccessGrant", {
+          patientId: p._id, userId: req.actorId, revokedAt: null,
+        });
+        return { id: String(p._id), displayName: p.displayName,
+          timezone: p.timezone, revision: p.revision,
+          role: owner ? "owner" : "caregiver",
+          permissions: owner ? permissionSet : grant?.permissions || [] };
       })),
     });
+  });
+  function revision(value) {
+    if (!Number.isInteger(value) || value < 0)
+      fail(422, "VALIDATION_ERROR", "Integer revision required.");
+    return value;
+  }
+  function timezone(value) {
+    if (typeof value !== "string" || value.length > 100)
+      fail(422, "VALIDATION_ERROR", "Valid IANA timezone required.");
+    try { new Intl.DateTimeFormat("en", { timeZone: value }); }
+    catch { fail(422, "VALIDATION_ERROR", "Valid IANA timezone required."); }
+    return value;
+  }
+  app.patch("/me", authenticated, csrf, async (req, res) => {
+    const b = object(req.body, ["displayName", "expectedRevision"], ["displayName", "expectedRevision"]);
+    const displayName = text(b.displayName, "displayName", 100);
+    revision(b.expectedRevision);
+    await mutate(req, res, null, async (s) => {
+      const u = await db.update("User", { _id: req.actorId, revision: b.expectedRevision }, { displayName }, s);
+      if (!u) fail(409, "REVISION_CONFLICT", "Reload your profile and retry.");
+      return { id: String(u._id), displayName: u.displayName, email: u.emailNormalized, revision: u.revision };
+    }, 200);
+  });
+  app.post("/patients", authenticated, csrf, async (req, res) => {
+    const b = object(req.body, ["displayName", "timezone"], ["displayName", "timezone"]);
+    const displayName = text(b.displayName, "displayName", 100), zone = timezone(b.timezone);
+    await mutate(req, res, null, async (s) => publicDoc(await db.insert("Patient", {
+      ownerUserId: req.actorId, displayName, timezone: zone, status: "active",
+    }, s)));
   });
   async function access(req, permission, s) {
     const p = await db.one(
@@ -343,15 +380,15 @@ export function createV1({
     )
       fail(400, "IDEMPOTENCY_REQUIRED", "Supply a UUID Idempotency-Key.");
     const requestHash = hash(JSON.stringify(canonical(req.body))),
-      route = req.method + "/patients/:patientId" + req.path;
+      route = req.method + (req.patient ? "/patients/:patientId" : "") + req.path;
     const query = {
-      patientId: req.patient._id,
+      patientId: req.patient?._id || null,
       actorUserId: req.actorId,
       key,
       route,
     };
     async function replay(s) {
-      await access(req, permission, s);
+      if (req.patient) await access(req, permission, s);
       const old = await db.one("Operation", query, s);
       if (old && old.requestHash !== requestHash)
         fail(
@@ -370,7 +407,7 @@ export function createV1({
         await db.insert(
           "AuditEvent",
           {
-            patientId: req.patient._id,
+            patientId: req.patient?._id,
             actorUserId: req.actorId,
             action: route,
             requestId: req.requestId,
@@ -392,6 +429,48 @@ export function createV1({
     }
     send(req, res, result.response, result.status);
   }
+  const ownerOnly = (req) => {
+    if (String(req.patient.ownerUserId) !== String(req.actorId))
+      fail(403, "FORBIDDEN", "Owner access required.");
+  };
+  function grantPermissions(value) {
+    if (!Array.isArray(value) || !value.length || value.length > permissionSet.length ||
+      value.some((p) => !permissionSet.includes(p) || p === "access.manage"))
+      fail(422, "VALIDATION_ERROR", "Choose named caregiver permissions; only owners manage access.");
+    return [...new Set(value)];
+  }
+  patient.patch("/", csrf, scope("access.manage"), async (req, res) => {
+    ownerOnly(req);
+    const b = object(req.body, ["displayName", "timezone", "expectedRevision"], ["displayName", "timezone", "expectedRevision"]);
+    const displayName = text(b.displayName, "displayName", 100), zone = timezone(b.timezone);
+    revision(b.expectedRevision);
+    await mutate(req, res, "access.manage", async (s) => {
+      const p = await db.update("Patient", { _id: req.patient._id, revision: b.expectedRevision }, { displayName, timezone: zone }, s);
+      if (!p) fail(409, "REVISION_CONFLICT", "Reload the patient and retry.");
+      return publicDoc(p);
+    }, 200);
+  });
+  patient.get("/access-grants", scope("access.manage"), async (req, res) => {
+    ownerOnly(req);
+    if (Object.keys(req.query).length) fail(400, "INVALID_QUERY", "Unsupported query.");
+    const rows = await db.list("AccessGrant", { patientId: req.patient._id }, 101);
+    if (rows.length > 100) fail(422, "GRANT_LIMIT", "Contact the project owner to review grant pagination.");
+    send(req, res, rows.map(publicDoc));
+  });
+  patient.patch("/access-grants/:grantId", csrf, scope("access.manage"), async (req, res) => {
+    ownerOnly(req);
+    const b = object(req.body, ["permissions", "expectedRevision"], ["permissions", "expectedRevision"]);
+    const permissions = grantPermissions(b.permissions), grantId = id(req.params.grantId);
+    revision(b.expectedRevision);
+    await mutate(req, res, "access.manage", async (s) => {
+      const current = await db.one("AccessGrant", { _id: grantId, patientId: req.patient._id }, s);
+      if (!current) fail(404, "NOT_FOUND", "Record not found.");
+      const g = await db.update("AccessGrant", { _id: grantId, patientId: req.patient._id, revision: b.expectedRevision },
+        { permissions, revokedAt: null }, s);
+      if (!g) fail(409, "REVISION_CONFLICT", "Reload the grant and retry.");
+      return publicDoc(g);
+    }, 200);
+  });
   patient.post(
     "/access-grants",
     csrf,
@@ -405,11 +484,9 @@ export function createV1({
         ["userId", "permissions"],
       );
       const userId = id(b.userId);
-      if (
-        !Array.isArray(b.permissions) ||
-        b.permissions.some((p) => !permissionSet.includes(p))
-      )
-        fail(422, "VALIDATION_ERROR", "Unknown permissions.");
+      const permissions = grantPermissions(b.permissions);
+      if (String(userId) === String(req.actorId))
+        fail(422, "VALIDATION_ERROR", "The owner already has full access.");
       if (!(await db.one("User", { _id: userId })))
         fail(422, "VALIDATION_ERROR", "Registered user required.");
       await mutate(req, res, "access.manage", (s) =>
@@ -419,7 +496,7 @@ export function createV1({
             {
               patientId: req.patient._id,
               userId,
-              permissions: [...new Set(b.permissions)],
+              permissions,
             },
             s,
           )

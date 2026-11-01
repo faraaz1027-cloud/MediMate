@@ -24,6 +24,7 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 - [x] Implement and document two database-connected APIs per allocated member; include automated Postman/Newman evidence ([Step 17](STEP_17_API_IMPLEMENTATION.md)). Individual contribution and faculty-specific screenshot requirements remain to be confirmed.
 
 ## 3. Development foundation
+- [x] Step 19 shared account/access vertical slice: profile/patient edits, registered-caregiver direct grants, named roles/permissions and revoke/restore; see [scope, tests and remaining limits](STEP_19_ACCOUNT_ACCESS.md). No individual contribution credit or faculty submission is claimed.
 - [ ] Install compatible Node.js, Git, editor and Postman versions.
 - [x] Scaffold client/ and server/; commit dependency lockfiles.
 - [x] Add environment placeholders and setup instructions.

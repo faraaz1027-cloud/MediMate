@@ -1,5 +1,11 @@
 # Change log
 
+## Step 19 — Shared account and access workflows
+- Added profile editing, patient creation/editing and explicit owner/caregiver summaries.
+- Added registered-caregiver direct grants, permission editing, revocation and restoration UI/API, with transactional audit/replay and revision checks.
+- Reused session recovery from review PR #1 and corrected registration-to-logout navigation.
+- Added database access regression tests and a real Postman/Newman collection; this is shared infrastructure, not assessed-feature contribution credit.
+
 ## Step 18 — React integration
 - Added registration/login, patient selection and six API-backed create/list views.
 - Added loading/error/empty feedback, input preservation, retry keys and paginated lists.

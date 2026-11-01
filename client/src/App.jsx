@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
+import AccountAccess from "./AccountAccess.jsx";
 const tabs = [
   ["prescriptions", "Prescriptions"],
   ["cabinet-items", "Medicine cabinet"],
@@ -9,6 +10,7 @@ export default function App() {
   const [user, setUser] = useState(null),
     [csrf, setCsrf] = useState(""),
     [ready, setReady] = useState(false),
+    [showAccount, setShowAccount] = useState(false),
     [register, setRegister] = useState(false),
     [patient, setPatient] = useState(""),
     [tab, setTab] = useState("prescriptions"),
@@ -21,6 +23,9 @@ export default function App() {
   const generation = useRef(0),
     pending = useRef(null),
     lock = useRef(false);
+  const selectedPatient = user?.patients?.find((p) => p.id === patient);
+  const permissionPrefix = { prescriptions: "prescription", "cabinet-items": "cabinet", tasks: "task" }[tab];
+  const canWrite = selectedPatient?.permissions?.includes(permissionPrefix + ".write");
   async function api(path, options = {}) {
     const r = await fetch("/api/v1" + path, {
       credentials: "same-origin",
@@ -34,8 +39,31 @@ export default function App() {
     const b = r.status === 204 ? null : await r.json();
     if (!r.ok) {
       if (r.status === 401) {
+        generation.current++;
         setUser(null);
+        setPatient("");
         setRows([]);
+        setCursor(null);
+        setLoading(false);
+        setNotice("");
+        pending.current = null;
+      }
+      if (r.status === 401 || b?.error?.code === "CSRF_REJECTED") {
+        // A rejected write has not run. Recover credentials for an explicit
+        // retry, without silently resubmitting the user's mutation.
+        setCsrf("");
+        try {
+          const tokenResponse = await fetch("/api/v1/auth/csrf", {
+            credentials: "same-origin",
+          });
+          const tokenBody = await tokenResponse.json();
+          if (!tokenResponse.ok) throw new Error("Cannot refresh the session. Retry sign-in.");
+          setCsrf(tokenBody.data.csrfToken);
+        } catch (e) {
+          // Keep retry available if the token endpoint is temporarily offline.
+          setCsrf(csrf);
+          throw e;
+        }
       }
       throw new Error(b?.error?.message || "Request failed.");
     }
@@ -132,6 +160,7 @@ export default function App() {
       });
       setCsrf(r.data.csrfToken);
       await refreshUser();
+      setRegister(false);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -148,6 +177,8 @@ export default function App() {
       await api("/auth/logout", { method: "POST" });
       setUser(null);
       setPatient("");
+      setRegister(false);
+      setShowAccount(false);
       const r = await api("/auth/csrf");
       setCsrf(r.data.csrfToken);
     } catch (e) {
@@ -306,6 +337,7 @@ export default function App() {
           </section>
         ) : (
           <>
+            <button className="link" disabled={busy} onClick={() => setShowAccount(!showAccount)}>{showAccount ? "Close account settings" : "Account and access"}</button>
             <div className="intro">
               <div>
                 <h1>Hello, {user.displayName}</h1>
@@ -330,6 +362,7 @@ export default function App() {
                 </select>
               </label>
             </div>
+            {showAccount && <AccountAccess key={user.id + patient} user={user} patient={patient} api={api} refreshUser={refreshUser} onBusy={setBusy} />}
             {!patient ? (
               <p>
                 No accessible patient is available. Ask the owner to grant
@@ -360,7 +393,8 @@ export default function App() {
                           : "Create caregiver task"}
                     </h2>
                     <form key={patient + tab} onSubmit={save}>
-                      <fieldset disabled={busy}>
+                      {!canWrite && <p>You do not have permission to create records in this area.</p>}
+                      <fieldset disabled={busy || !canWrite}>
                         {tab === "prescriptions" ? (
                           <>
                             <label>

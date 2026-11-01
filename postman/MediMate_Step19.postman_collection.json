@@ -1,0 +1,792 @@
+{
+  "info": {
+    "name": "MediMate Step 19 account and access",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:3005/api/v1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Owner CSRF",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const b=pm.response.json().data;",
+              "pm.collectionVariables.set('ownerCsrf',b.csrfToken);",
+              "pm.collectionVariables.set('ownerCookie',pm.response.headers.get('set-cookie').split(';')[0]);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/auth/csrf"
+      }
+    },
+    {
+      "name": "Register synthetic owner",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "const b=pm.response.json().data;",
+              "pm.collectionVariables.set('ownerCsrf',b.csrfToken);",
+              "pm.collectionVariables.set('ownerCookie',pm.response.headers.get('set-cookie').split(';')[0]);",
+              "pm.collectionVariables.set('patientId',b.patientId);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/auth/register",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"owner-{{$guid}}@example.test\",\"password\":\"Synthetic-pass-123!\",\"displayName\":\"Postman owner\"}"
+        }
+      }
+    },
+    {
+      "name": "Read own profile",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('userRevision',pm.response.json().data.revision);",
+              "pm.test('owner role',()=>pm.expect(pm.response.json().data.patients[0].role).to.eql('owner'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/auth/me"
+      }
+    },
+    {
+      "name": "Edit own profile",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('profile saved',()=>pm.expect(pm.response.json().data.displayName).to.eql('Updated Postman owner'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/me",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"displayName\":\"Updated Postman owner\",\"expectedRevision\":0}"
+        }
+      }
+    },
+    {
+      "name": "Reject stale profile revision",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/me",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"displayName\":\"Stale edit\",\"expectedRevision\":0}"
+        }
+      }
+    },
+    {
+      "name": "Create patient",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.test('patient persisted',()=>pm.expect(pm.response.json().data.id).to.be.a('string'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/patients",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"displayName\":\"Postman second patient\",\"timezone\":\"Asia/Dhaka\"}"
+        }
+      }
+    },
+    {
+      "name": "Caregiver CSRF",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const b=pm.response.json().data;",
+              "pm.collectionVariables.set('caregiverCsrf',b.csrfToken);",
+              "pm.collectionVariables.set('caregiverCookie',pm.response.headers.get('set-cookie').split(';')[0]);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/auth/csrf"
+      }
+    },
+    {
+      "name": "Register synthetic caregiver",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('caregiverCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('caregiverCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "const b=pm.response.json().data;",
+              "pm.collectionVariables.set('caregiverCsrf',b.csrfToken);",
+              "pm.collectionVariables.set('caregiverCookie',pm.response.headers.get('set-cookie').split(';')[0]);",
+              "pm.collectionVariables.set('caregiverId',b.user.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/auth/register",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"email\":\"caregiver-{{$guid}}@example.test\",\"password\":\"Synthetic-pass-123!\",\"displayName\":\"Postman caregiver\"}"
+        }
+      }
+    },
+    {
+      "name": "Invite registered caregiver by ID",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('grantId',pm.response.json().data.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/access-grants",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"userId\":\"{{caregiverId}}\",\"permissions\":[\"task.read\",\"task.write\"]}"
+        }
+      }
+    },
+    {
+      "name": "List grants as owner",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/access-grants"
+      }
+    },
+    {
+      "name": "Caregiver can read tasks",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('caregiverCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('caregiverCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/tasks"
+      }
+    },
+    {
+      "name": "Restrict caregiver to reading",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/access-grants/{{grantId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"expectedRevision\":0,\"permissions\":[\"task.read\"]}"
+        }
+      }
+    },
+    {
+      "name": "Reject caregiver write",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('caregiverCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('caregiverCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403',()=>pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/tasks",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"title\":\"Must not save\",\"assigneeUserId\":\"{{caregiverId}}\",\"type\":\"general\"}"
+        }
+      }
+    },
+    {
+      "name": "Reject caregiver administration",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('caregiverCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('caregiverCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403',()=>pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/access-grants"
+      }
+    },
+    {
+      "name": "Revoke caregiver",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/access-grants/{{grantId}}/revoke",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"expectedRevision\":1}"
+        }
+      }
+    },
+    {
+      "name": "Same caregiver session immediately denied",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('caregiverCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('caregiverCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404',()=>pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/tasks"
+      }
+    },
+    {
+      "name": "Discovery drops revoked patient",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('caregiverCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('caregiverCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('revocation reflected',()=>pm.expect(pm.response.json().data.patients.some(p=>p.id===pm.collectionVariables.get('patientId'))).to.eql(false));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/auth/me"
+      }
+    },
+    {
+      "name": "Restore named access",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/access-grants/{{grantId}}",
+        "body": {
+          "mode": "raw",
+          "raw": "{\"expectedRevision\":2,\"permissions\":[\"task.read\"]}"
+        }
+      }
+    },
+    {
+      "name": "Restored caregiver can read",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('caregiverCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('caregiverCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/patients/{{patientId}}/tasks"
+      }
+    }
+  ]
+}
