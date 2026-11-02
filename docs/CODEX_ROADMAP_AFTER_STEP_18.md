@@ -39,6 +39,8 @@ Implementation update (2 November 2026): [implemented tasks and Telegram prepara
 Implement create/assign/accept/complete/reopen task transitions, handover notes and status history. Link consenting test Telegram account, send task notice and record delivery attempts separately from acknowledgement. Test invalid transition, revoked caregiver, failed notification and duplicate retry. **Demo:** patient assigns, caregiver accepts/completes, patient sees history and a linked test account receives a notification.
 
 ### Step 24 — Integrate and demonstrate Module 1
+Implementation update (2 November 2026): [technical integration and demonstration materials](STEP_24_MODULE_1_INTEGRATION.md) verify one-patient A1/B1/C1 flows, the planned cabinet reference on instructions, actual browser OCR/live RxNorm, cross-feature revocation, archive/history and API restart readback. API/DOM/Newman and browser evidence are recorded. **Full Module 1 gate remains open:** real Telegram receipt, individual contribution/live-edit rehearsal, Jira and faculty acceptance are not supplied or claimed.
+
 Use one synthetic patient and real shared identifiers across A1/B1/C1. Run manual and OCR review, cabinet and caregiver task flows in the same application. Record screen/API/database evidence, failure handling, each member's own commits and Jira status. Recheck permissions and persistence after integration. Rehearse each member's explanation and live edit. **Gate:** A1/B1/C1 meet Step 11 acceptance checks; no disconnected mock data is presented as working CRUD.
 
 ## Module 2

@@ -34,7 +34,7 @@ The project has a zero-cost constraint. Integration terms and deployment options
 Notify linked, consenting contacts and track acknowledgements. Use a clearly labelled simulated hospital/provider dashboard for classroom demonstrations until a participating provider is secured. A notification does not establish ambulance dispatch.
 
 ## Next implementation milestone
-Next planned work is Step 24 integration of A1/B1/C1. The [Step 23 real Telegram demonstration gate](docs/STEP_23_CAREGIVER_TASKS.md) remains open because no bot/test recipient is available; Module 1 cannot be marked fully demonstrated yet. A1/B1 and task workflows are prepared for owner review. See [API setup](docs/STEP_17_API_IMPLEMENTATION.md).
+Next planned implementation is Step 25, the A2 confirmed schedule builder. [Step 24 technical integration](docs/STEP_24_MODULE_1_INTEGRATION.md) is verified; real Telegram receipt, individual contribution/rehearsal, Jira and faculty acceptance remain open, so Module 1 is not marked fully demonstrated. See [API setup](docs/STEP_17_API_IMPLEMENTATION.md).
 
 ## Links to add
 - Jira project: pending.
@@ -76,3 +76,6 @@ The six APIs are POST and GET for prescriptions, manual cabinet items and caregi
 
 ## Step 23 caregiver tasks and Telegram preparation
 [Task transitions, handover, acknowledgement, delivery worker and the open Telegram gate](docs/STEP_23_CAREGIVER_TASKS.md). [Step 23 Postman collection](postman/MediMate_Step23.postman_collection.json) uses synthetic accounts with Telegram disabled. Configure secrets privately and run the separate worker only when a dedicated bot and consenting test recipient are ready. Sahir's review/contribution and real receipt evidence remain open.
+
+## Step 24 Module 1 integration
+[Shared-patient demonstration, saved-medicine references, checks and open acceptance gates](docs/STEP_24_MODULE_1_INTEGRATION.md). Run `node verification/step24/run.mjs` for the controlled HTTP/database scenario, or add `--live-rxnorm` for actual NLM lookup with a labelled test-only outage. [Combined Postman collection](postman/MediMate_Step24.postman_collection.json). No real Telegram receipt or individual student contribution is claimed.

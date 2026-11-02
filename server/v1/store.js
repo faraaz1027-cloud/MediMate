@@ -92,6 +92,7 @@ model("PrescriptionInstruction", {
   prescriptionVersionId: oid,
   lineNumber: Number,
   medicineText: String,
+  cabinetItemId: oid,
   instructionsText: String,
   strengthText: String,
   doseQuantity: Schema.Types.Decimal128,

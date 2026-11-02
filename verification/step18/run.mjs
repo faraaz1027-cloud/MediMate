@@ -279,6 +279,9 @@ try {
   await u.selectOptions(getByLabelText(body,"Dose unit",{exact:true}),"tablet");
   await u.type(getByLabelText(body,"Timing from prescription",{exact:true}),"Synthetic timing");
   await u.type(getByLabelText(body,"Duration from prescription",{exact:true}),"Synthetic duration");
+  const sharedCabinetItem=await mongoose.model("CabinetItem").findOne({displayName:"DOM cabinet"});
+  await findByRole(body,"option",{name:/DOM cabinet/});
+  await u.selectOptions(getByLabelText(body,"Saved medicine (optional)",{exact:true}),String(sharedCabinetItem._id));
   await clickReady(getByRole(body,"checkbox",{name:"Needs clarification or review",exact:true}));
   await clickReady(getByRole(body,"button",{name:"Save draft",exact:true}));
   await waitFor(()=>assert.equal(getByRole(body,"button",{name:"Confirm reviewed version",exact:true}).matches(":disabled"),false),{container:body});
@@ -287,6 +290,7 @@ try {
   await findByRole(body,"heading",{name:"Confirmed version 1",exact:true});
   await clickReady(getByRole(body,"button",{name:"Create replacement draft",exact:true}));
   await waitFor(()=>assert.equal(getByLabelText(body,"Dose quantity",{exact:true}).value,"1.25"),{container:body});
+  assert.equal(getByLabelText(body,"Saved medicine (optional)",{exact:true}).value,String(sharedCabinetItem._id));
   await u.clear(getByLabelText(body,"Dose quantity",{exact:true}));
   await u.type(getByLabelText(body,"Dose quantity",{exact:true}),"2");
   await clickReady(getByRole(body,"button",{name:"Save draft",exact:true}));
@@ -306,6 +310,7 @@ try {
   await findByRole(body,"heading",{name:"Historical version 1",exact:true});
   const firstVersion=await mongoose.model("PrescriptionVersion").findOne({versionNumber:1});
   assert.equal((await mongoose.model("PrescriptionInstruction").findOne({prescriptionVersionId:firstVersion._id})).doseQuantity.toString(),"1.25");
+  assert.equal(String((await mongoose.model("PrescriptionInstruction").findOne({prescriptionVersionId:firstVersion._id})).cabinetItemId),String(sharedCabinetItem._id));
   // Step 22 uses a controlled upstream fixture; the live call is verified separately.
   await clickReady(getByRole(body,"button",{name:"Medicine cabinet",exact:true}));
   await findByText(body,"DOM cabinet",{exact:true});
@@ -414,6 +419,7 @@ try {
           "Step 22 no-match/outage manual fallback and archived history after remount",
           "Step 23 handover, explicit acknowledgement, accept/complete/reopen and edit after remount",
           "Step 23 Telegram disabled status is explicit; live delivery remains unverified",
+          "Step 24 explicit saved-medicine association survives replacement and remount in the shared patient workflow",
         ],
         counts,
         limitations:

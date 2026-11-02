@@ -39,8 +39,8 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 - [x] B1 implemented slice: live RxNorm search, explicit candidate review, manual fallback, persistent cabinet edit/filter/archive and history; [Step 22 evidence](STEP_22_MEDICINE_CABINET.md). Individual owner review and faculty acceptance remain open.
 - [x] C1 prepared code: task assignment/edit/transitions, handover/acknowledgement history, Telegram consent/linking and persisted delivery worker; [Step 23 tests and limits](STEP_23_CAREGIVER_TASKS.md). Owner review/personal contribution remain open.
 - [ ] C1 real Telegram demonstration: configure a dedicated bot, link a consenting test recipient and record actual receipt. No bot was available; controlled fixtures and CI do not satisfy this gate.
-- [ ] Integrate all three using shared patient data.
-- [ ] Test persistence, invalid input, external failure and revoked access.
+- [x] Verify A1/B1/C1 technical integration using shared patient/caregiver IDs and a persisted instruction-to-cabinet reference; [Step 24 evidence](STEP_24_MODULE_1_INTEGRATION.md). Full Module 1 acceptance remains open.
+- [x] Module 1 technical tests: persistence after API restart, invalid/cross-patient references, controlled RxNorm outage/manual fallback, and revocation across A1/B1/C1; see Step 24. Real Telegram receipt is still pending.
 - [ ] Update Jira and collect individual contribution evidence.
 - [ ] Rehearse the Module 1 demonstration.
 

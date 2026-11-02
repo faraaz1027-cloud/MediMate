@@ -558,7 +558,7 @@ export function createV1({
       );
     },
   );
-  installPrescriptions(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now });
+  installPrescriptions(patient, { db, csrf, scope, access, mutate, fail, id, object, text, publicDoc, now });
   installCabinet(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, rxnorm });
   installChannels(app, { db, authenticated, csrf, mutate, object, fail, id, telegram, now, throttle });
   installTasks(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now, telegram });

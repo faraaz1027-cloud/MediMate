@@ -1,0 +1,204 @@
+npm warn deprecated har-validator@5.1.5: this library is no longer supported
+npm warn deprecated uuid@3.4.0: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated @faker-js/faker@5.5.3: Please update to a newer version.
+newman
+
+MediMate Step 24 Module 1 shared-patient integration
+
+→ Owner CSRF
+  GET http://127.0.0.1:3008/api/v1/auth/csrf [200 OK, 569B, 28ms]
+  √  HTTP 200
+
+→ Register synthetic Module 1 organizer
+  POST http://127.0.0.1:3008/api/v1/auth/register [201 Created, 767B, 84ms]
+  √  HTTP 201
+
+→ Caregiver CSRF
+  GET http://127.0.0.1:3008/api/v1/auth/csrf [200 OK, 569B, 19ms]
+  √  HTTP 200
+
+→ Register synthetic Module 1 caregiver
+  POST http://127.0.0.1:3008/api/v1/auth/register [201 Created, 767B, 82ms]
+  √  HTTP 201
+
+→ Grant shared A1 B1 C1 access
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/access-grants [201 Created, 661B, 19ms]
+  √  HTTP 201
+
+→ B1 live candidate search
+  GET http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/medicine-search?q=cymbalta [200 OK, 983B, 3ms]
+  √  HTTP 200
+  √  Explicit candidate exists
+
+→ Inspect selected identity
+  GET http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/medicine-search/596928 [200 OK, 551B, 3ms]
+  √  HTTP 200
+
+→ Save external cabinet item
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/cabinet-items [201 Created, 708B, 20ms]
+  √  HTTP 201
+
+→ Save labelled manual fallback
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/cabinet-items [201 Created, 574B, 19ms]
+  √  HTTP 201
+
+→ A1 incomplete linked draft
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/prescriptions [201 Created, 1.34kB, 20ms]
+  √  HTTP 201
+
+→ Incomplete instructions cannot confirm
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/prescriptions/6ae7e64bfb047e1aee0aa3eb/versions/6ae7e64bfb047e1aee0aa3ec/confirm [422 Unprocessable Entity, 513B, 6ms]
+  √  HTTP 422
+
+→ Correct saved linked instructions
+  PATCH http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/prescriptions/6ae7e64bfb047e1aee0aa3eb/versions/6ae7e64bfb047e1aee0aa3ec [200 OK, 1.45kB, 18ms]
+  √  HTTP 200
+
+→ Confirm reviewed version
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/prescriptions/6ae7e64bfb047e1aee0aa3eb/versions/6ae7e64bfb047e1aee0aa3ec/confirm [200 OK, 1.57kB, 19ms]
+  √  HTTP 200
+  √  Same patient cabinet reference retained
+
+→ Source-metadata fallback fixture (not OCR engine)
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/prescriptions [201 Created, 1.68kB, 19ms]
+  √  HTTP 201
+
+→ Human-reviewed fallback confirms
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/prescriptions/6ae7e64bfb047e1aee0aa426/versions/6ae7e64bfb047e1aee0aa427/confirm [200 OK, 1.79kB, 19ms]
+  √  HTTP 200
+
+→ C1 assign task in same patient
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/tasks [201 Created, 783B, 19ms]
+  √  HTTP 201
+  √  Shared patient ID
+
+→ Caregiver app acknowledgement
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/tasks/6ae7e64bfb047e1aee0aa44c/acknowledgements [200 OK, 872B, 19ms]
+  √  HTTP 200
+
+→ Caregiver accepts
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/tasks/6ae7e64bfb047e1aee0aa44c/transitions [200 OK, 876B, 19ms]
+  √  HTTP 200
+
+→ Caregiver handover note
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/tasks/6ae7e64bfb047e1aee0aa44c/notes [201 Created, 1.28kB, 19ms]
+  √  HTTP 201
+
+→ Caregiver completes
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/tasks/6ae7e64bfb047e1aee0aa44c/transitions [200 OK, 877B, 18ms]
+  √  HTTP 200
+
+→ Organizer reopens with new generation
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/tasks/6ae7e64bfb047e1aee0aa44c/transitions [200 OK, 828B, 19ms]
+  √  HTTP 200
+  √  Current acknowledgement reset
+
+→ B1 edit preserves source
+  PATCH http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/cabinet-items/6ae7e64bfb047e1aee0aa3d3 [200 OK, 703B, 19ms]
+  √  HTTP 200
+
+→ B1 archive preserves references
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/cabinet-items/6ae7e64bfb047e1aee0aa3d3/archive [200 OK, 705B, 20ms]
+  √  HTTP 200
+
+→ A1 confirmed reference survives cabinet archive
+  GET http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/prescriptions/6ae7e64bfb047e1aee0aa3eb [200 OK, 1.59kB, 4ms]
+  √  HTTP 200
+  √  Confirmed reference still readable
+
+→ Cabinet revision history retained
+  GET http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/cabinet-items/6ae7e64bfb047e1aee0aa3d3/revisions [200 OK, 2.57kB, 3ms]
+  √  HTTP 200
+  √  Three cabinet revisions
+
+→ Replacement can retain old reference for review
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/prescriptions/6ae7e64bfb047e1aee0aa3eb/versions [201 Created, 1.55kB, 18ms]
+  √  HTTP 201
+
+→ Archived reference blocks new confirmation
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/prescriptions/6ae7e64bfb047e1aee0aa3eb/versions/6ae7e64cfb047e1aee0aa4cf/confirm [422 Unprocessable Entity, 531B, 7ms]
+  √  HTTP 422
+
+→ Review replacement with active saved item
+  PATCH http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/prescriptions/6ae7e64bfb047e1aee0aa3eb/versions/6ae7e64cfb047e1aee0aa4cf [200 OK, 1.55kB, 20ms]
+  √  HTTP 200
+
+→ Confirm reviewed replacement
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/prescriptions/6ae7e64bfb047e1aee0aa3eb/versions/6ae7e64cfb047e1aee0aa4cf/confirm [200 OK, 1.63kB, 18ms]
+  √  HTTP 200
+
+→ Compare changed cabinet reference
+  GET http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/prescriptions/6ae7e64bfb047e1aee0aa3eb/comparison?fromVersionId=6ae7e64bfb047e1aee0aa3ec&toVersionId=6ae7e64cfb047e1aee0aa4cf [200 OK, 689B, 7ms]
+  √  HTTP 200
+  √  Cabinet ID difference retained
+
+→ Revoke shared caregiver
+  POST http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/access-grants/6ae7e64afb047e1aee0aa3c1/revoke [200 OK, 695B, 23ms]
+  √  HTTP 200
+
+→ Revocation blocks A1
+  GET http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/prescriptions/6ae7e64bfb047e1aee0aa3eb [404 Not Found, 372B, 4ms]
+  √  HTTP 404
+
+→ Revocation blocks B1
+  GET http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/cabinet-items [404 Not Found, 372B, 4ms]
+  √  HTTP 404
+
+→ Revocation blocks C1
+  GET http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/tasks/6ae7e64bfb047e1aee0aa44c/history [404 Not Found, 372B, 3ms]
+  √  HTTP 404
+
+→ Owner reads original history
+  GET http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/prescriptions/6ae7e64bfb047e1aee0aa3eb/versions [200 OK, 2.25kB, 5ms]
+  √  HTTP 200
+  √  Original instruction preserved
+
+→ Task history remains traceable
+  GET http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/tasks/6ae7e64bfb047e1aee0aa44c/history [200 OK, 5.89kB, 5ms]
+  √  HTTP 200
+  √  Handover retained
+
+→ No false Telegram success
+  GET http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/tasks/6ae7e64bfb047e1aee0aa44c/notifications [200 OK, 740B, 5ms]
+  √  HTTP 200
+  √  Disabled with zero attempts
+
+→ Own Telegram status remains unconfigured
+  GET http://127.0.0.1:3008/api/v1/me/channel-links [200 OK, 394B, 4ms]
+  √  HTTP 200
+  √  No configured bot
+
+→ Restore existing shared grant
+  PATCH http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/access-grants/6ae7e64afb047e1aee0aa3c1 [200 OK, 673B, 23ms]
+  √  HTTP 200
+
+→ Caregiver readback after restore
+  GET http://127.0.0.1:3008/api/v1/patients/6ae7e64afb047e1aee0aa3ad/tasks/6ae7e64bfb047e1aee0aa44c [200 OK, 828B, 4ms]
+  √  HTTP 200
+  √  Same patient and task restored
+
+┌─────────────────────────┬──────────────────┬──────────────────┐
+│                         │         executed │           failed │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              iterations │                1 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│                requests │               40 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│            test-scripts │               40 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│      prerequest-scripts │               40 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              assertions │               52 │                0 │
+├─────────────────────────┴──────────────────┴──────────────────┤
+│ total run duration: 4.1s                                      │
+├───────────────────────────────────────────────────────────────┤
+│ total data received: 33.91kB (approx)                         │
+├───────────────────────────────────────────────────────────────┤
+│ average response time: 17ms [min: 3ms, max: 84ms, s.d.: 16ms] │
+└───────────────────────────────────────────────────────────────┘
+npm notice
+npm notice New major version of npm available! 11.20.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice
