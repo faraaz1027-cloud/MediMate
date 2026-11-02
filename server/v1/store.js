@@ -24,6 +24,10 @@ const collections = {
   Acknowledgement: "acknowledgements",
   Operation: "operations",
   AuditEvent: "auditEvents",
+  Schedule: "schedules",
+  ScheduleVersion: "scheduleVersions",
+  SchedulePreview: "schedulePreviews",
+  DoseOccurrence: "doseOccurrences",
 };
 function model(name, fields, indexes = []) {
   const schema = new Schema(
@@ -66,6 +70,7 @@ model(
   ],
 );
 model("Prescription", {
+  scheduleFence: { type: Number, select: false },
   patientId: oid,
   title: String,
   status: String,
@@ -102,6 +107,7 @@ model("PrescriptionInstruction", {
   clarificationRequired: Boolean,
 });
 model("CabinetItem", {
+  scheduleFence: { type: Number, select: false },
   patientId: oid,
   displayName: String,
   entryType: String,
@@ -265,7 +271,31 @@ model("AuditEvent", {
   action: String,
   requestId: String,
 });
-for (const name of ["Prescription", "CabinetItem", "Task"])
+model("Schedule", {
+  patientId: oid, cabinetItemId: oid, prescriptionInstructionId: oid, currentVersionId: oid,
+  status: String, pausedAt: Date, pauseReason: String,
+}, [[{ patientId: 1, prescriptionInstructionId: 1 }, { unique: true }]]);
+model("ScheduleVersion", {
+  patientId: oid, scheduleId: oid, versionNumber: Number,
+  prescriptionInstructionId: oid, confirmedByUserId: oid, confirmedAt: Date,
+  effectiveFromUTC: Date, endAtUTC: Date, timezone: String,
+  timingMode: String, localTimes: [String], intervalMinutes: Number, anchorAtUTC: Date,
+  doseQuantity: Schema.Types.Decimal128, doseUnit: String,
+  sourceSnapshot: Schema.Types.Mixed, occurrenceCount: Number,
+}, [[{ scheduleId: 1, versionNumber: 1 }, { unique: true }]]);
+model("SchedulePreview", {
+  patientId: oid, actorUserId: oid, tokenHash: String, expiresAt: Date,
+  consumedAt: Date, payload: Schema.Types.Mixed,
+}, [[{ tokenHash: 1 }, { unique: true }], [{ expiresAt: 1 }, { expireAfterSeconds: 0 }]]);
+model("DoseOccurrence", {
+  patientId: oid, scheduleId: oid, scheduleVersionId: oid, cabinetItemId: oid,
+  dueAtUTC: Date, doseQuantitySnapshot: Schema.Types.Decimal128, doseUnitSnapshot: String, timezoneSnapshot: String,
+  state: { type: String, enum: ["pending", "taken", "skipped", "cancelled"] },
+  reminderDueAtUTC: Date, snoozeCount: Number, actionRevision: Number,
+  cancelledAt: Date, cancellationReason: String,
+}, [[{ scheduleVersionId: 1, dueAtUTC: 1 }, { unique: true }],
+  [{ patientId: 1, scheduleId: 1, dueAtUTC: 1, _id: 1 }, {}]]);
+for (const name of ["Prescription", "CabinetItem", "Task", "Schedule"])
   models[name].schema.index({ patientId: 1, createdAt: -1, _id: -1 });
 models.PrescriptionInstruction.schema.index(
   { prescriptionVersionId: 1, lineNumber: 1 },
@@ -276,6 +306,15 @@ models.Operation.schema.index(
   { expireAfterSeconds: 30 * 24 * 3600 },
 );
 export const db = {
+  async fence(name, filter, session) {
+    return models[name].updateOne(filter, { $inc: { scheduleFence: 1 } }, { session });
+  },
+  async insertMany(name, docs, session) {
+    return models[name].insertMany(docs, { session });
+  },
+  async updateMany(name, filter, set, session) {
+    return models[name].updateMany(filter, { $set: set, $inc: { revision: 1 } }, { session });
+  },
   async init() {
     await Promise.all(Object.values(models).map((m) => m.init()));
   },

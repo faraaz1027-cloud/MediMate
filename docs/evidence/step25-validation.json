@@ -1,0 +1,89 @@
+{
+  "runAt": "2026-11-02T02:06:02.323Z",
+  "step": 25,
+  "function": "A2",
+  "owner": "Ihfaz Rashid Sadat",
+  "branch": "feature/step25-confirmed-schedules",
+  "baseCommit": "9a0d44a136c030350a3b667fef776221418dd17b",
+  "repositoryReview": {
+    "openStandaloneIssues": 0,
+    "basePR": 7,
+    "baseHeadUnchanged": true,
+    "baseCI": {
+      "run": 41373112177,
+      "conclusion": "success"
+    }
+  },
+  "validation": {
+    "productionBuild": "passed",
+    "api": {
+      "reportedTests": 66,
+      "failed": 0,
+      "skipped": 0,
+      "realExpressAndMongoDB": true
+    },
+    "dom": {
+      "passed": true,
+      "productionBundle": true,
+      "expiredSessionWriteRecovery": true
+    },
+    "newman": {
+      "requests": 31,
+      "assertions": 45,
+      "failed": 0
+    },
+    "browser": {
+      "engine": "Chromium",
+      "viewports": [
+        {
+          "width": 1440,
+          "height": 1000,
+          "documentWidth": 1425
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "documentWidth": 375
+        }
+      ],
+      "checks": [
+        "confirmed A1 source and B1 identity selected explicitly",
+        "source strength 500 mg separate from dose 1 tablet",
+        "preview and explicit confirmation",
+        "A1 replacement changed timing 08:00 to 09:00 before A2 replacement from 4 November",
+        "future replacement preserves original version/events",
+        "pause clears upcoming; resume from 4 November restores current-version events only",
+        "reload retains versions and upcoming/history",
+        "mobile duplicate local times rejected; focused localTimes has aria-invalid=true",
+        "mobile history wraps long identifiers",
+        "no captured console errors"
+      ],
+      "databaseReadback": "step25-browser-db.json",
+      "expectedDatabase": {
+        "schedules": 1,
+        "versions": 2,
+        "occurrences": 6,
+        "pending": 3,
+        "cancelled": 3
+      }
+    }
+  },
+  "decisions": {
+    "generation": "entire finite course persisted atomically",
+    "bounds": {
+      "elapsedDays": 90,
+      "events": 2000,
+      "end": "required exclusive"
+    },
+    "timezone": "Temporal polyfill 0.5.1; reject gaps/overlaps",
+    "sourceReview": "human acknowledgement; no clinical prose interpretation",
+    "upcomingWindow": "seven elapsed days"
+  },
+  "remaining": [
+    "Ihfaz personal review/contribution/live modifications",
+    "Jira and faculty/module acceptance",
+    "B2 Step 26, C2 Step 27, worker reconciliation Step 28",
+    "real Telegram bot and consenting recipient absent; no live delivery",
+    "deployment and comprehensive performance/accessibility audit"
+  ]
+}

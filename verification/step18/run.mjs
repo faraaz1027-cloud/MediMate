@@ -384,12 +384,79 @@ try {
   await findByText(body,"Task status: open",{exact:true});
   await findByText(body,"Synthetic DOM handover",{exact:true,selector:"p"});
   assert.ok(body.textContent.includes("reopened"));
+  // Step 25: actual production schedule editor backed by confirmed A1 + saved B1 IDs.
+  const scheduleStart = new Date(); scheduleStart.setUTCDate(scheduleStart.getUTCDate()+1); scheduleStart.setUTCHours(0,0,0,0);
+  const scheduleEnd = new Date(scheduleStart.getTime()+3*86400000), domPrescription = await mongoose.model("Prescription").findOne();
+  const domLine = await mongoose.model("PrescriptionInstruction").findOne({prescriptionVersionId:domPrescription.currentVersionId});
+  const scheduleReview = "I checked the medicine, dose, timing, duration and timezone against the confirmed source; no ambiguity remains.";
+  const fillSchedule = async time => {
+    await waitFor(()=>assert.equal(getByLabelText(body,"Source prescription",{exact:true}).disabled,false),{container:body});
+    await u.selectOptions(getByLabelText(body,"Source prescription",{exact:true}),String(domPrescription._id));
+    await findByRole(body,"option",{name:/1\. Demo medicine/});
+    await u.selectOptions(getByLabelText(body,"Confirmed instruction",{exact:true}),String(domLine._id));
+    await u.clear(getByLabelText(body,"Local times (HH:mm, comma separated)",{exact:true}));
+    await u.type(getByLabelText(body,"Local times (HH:mm, comma separated)",{exact:true}),time);
+    await u.type(getByLabelText(body,"Effective start UTC",{exact:true}),scheduleStart.toISOString());
+    await u.type(getByLabelText(body,"Exclusive end UTC",{exact:true}),scheduleEnd.toISOString());
+    await clickReady(getByRole(body,"checkbox",{name:scheduleReview,exact:true}));
+    await clickReady(getByRole(body,"button",{name:"Preview schedule",exact:true}));
+    await findByRole(body,"heading",{name:"Review schedule preview",exact:true});
+  };
+  const confirmSchedule = async () => {
+    await clickReady(getByRole(body,"checkbox",{name:"I confirm these dose events and the source review.",exact:true}));
+    await clickReady(getByRole(body,"button",{name:"Confirm schedule version",exact:true}));
+    await findByText(body,"Schedule confirmed and dose events saved.",{exact:true});
+  };
+  await clickReady(getByRole(body,"button",{name:"Medication schedules",exact:true}));
+  await findByText(body,"No schedules yet.",{exact:true});
+  await clickReady(getByRole(body,"button",{name:"New schedule",exact:true}));
+  await findByRole(body,"option",{name:"DOM prescription · confirmed",exact:true});
+  await fillSchedule("08:00");
+  assert.equal(await mongoose.model("Schedule").countDocuments(),0);
+  assert.equal(getByLabelText(body,"Quantity per dose",{exact:true}).value,"2");
+  // Changing an input invalidates both the preview and the previous source review.
+  await u.type(getByLabelText(body,"Local times (HH:mm, comma separated)",{exact:true}),", 20:00");
+  assert.ok(!body.textContent.includes("Review schedule preview"));
+  assert.equal(getByRole(body,"checkbox",{name:scheduleReview,exact:true}).checked,false);
+  await clickReady(getByRole(body,"checkbox",{name:scheduleReview,exact:true}));
+  await clickReady(getByRole(body,"button",{name:"Preview schedule",exact:true}));
+  await findByRole(body,"heading",{name:"Review schedule preview",exact:true});
+  await confirmSchedule();
+  await clickReady(getByRole(body,"button",{name:"Edit future schedule",exact:true}));
+  await fillSchedule("09:00"); await confirmSchedule();
+  await findByText(body,"Schedule version 1",{exact:true}); await findByText(body,"Schedule version 2",{exact:true});
+  await clickReady(getByRole(body,"button",{name:"Pause schedule",exact:true}));
+  await findByText(body,"Schedule status: paused",{exact:true});
+  await waitFor(()=>assert.equal(getByLabelText(body,"Resume from UTC",{exact:true}).matches(":disabled"),false),{container:body});
+  await u.type(getByLabelText(body,"Resume from UTC",{exact:true}),scheduleStart.toISOString());
+  await clickReady(getByRole(body,"button",{name:"Resume schedule",exact:true}));
+  await findByText(body,"Schedule status: active",{exact:true});
+  body=await mount();u=userEvent.setup({document:dom.window.document});
+  await findByRole(body,"heading",{name:"Hello, Reviewed profile"});
+  await u.selectOptions(getByRole(body,"combobox",{name:"Patient",exact:true}),(await mongoose.model("Patient").findOne({displayName:"DOM owner"}))._id.toString());
+  await clickReady(getByRole(body,"button",{name:"Medication schedules",exact:true}));
+  await clickReady(await findByRole(body,"button",{name:"View schedule Demo medicine",exact:true}));
+  await findByText(body,"Schedule version 1",{exact:true}); await findByText(body,"Schedule version 2",{exact:true});
+  await u.selectOptions(getByLabelText(body,"Dose event view",{exact:true}),"history");
+  await waitFor(()=>assert.ok(body.textContent.includes("cancelled · replaced")),{container:body});
+  assert.equal(await mongoose.model("DoseOccurrence").countDocuments({state:"pending"}),3);
+  // A rejected schedule write must release the parent lock after this editor unmounts.
+  await mongoose.model("Session").updateMany({userId:(await mongoose.model("User").findOne({emailNormalized:"dom@example.test"}))._id},{$set:{expiresAt:new Date(0)}});
+  await clickReady(getByRole(body,"button",{name:"Pause schedule",exact:true}));
+  await findByRole(body,"heading",{name:"Welcome back",exact:true});
+  await waitFor(()=>assert.equal(getByLabelText(body,"Email",{exact:true}).matches(":disabled"),false),{container:body});
+  await u.type(getByLabelText(body,"Email",{exact:true}),"dom@example.test");
+  await u.type(getByLabelText(body,"Password",{exact:true}),"Synthetic-pass-123!");
+  await clickReady(getByRole(body,"button",{name:"Sign in",exact:true}));
+  await findByRole(body,"heading",{name:"Hello, Reviewed profile"});
+  assert.equal((await mongoose.model("Schedule").findOne()).status,"active");
   const counts = {
     prescriptions: await mongoose.model("Prescription").countDocuments(),
     cabinet: await mongoose.model("CabinetItem").countDocuments(),
     tasks: await mongoose.model("Task").countDocuments(),
+    schedules: await mongoose.model("Schedule").countDocuments(),
   };
-  assert.deepEqual(counts, { prescriptions: 1, cabinet: 2, tasks: 1 });
+  assert.deepEqual(counts, { prescriptions: 1, cabinet: 2, tasks: 1, schedules: 1 });
   fs.writeFileSync(
     root + "/docs/evidence/step18-dom.json",
     JSON.stringify(
@@ -420,6 +487,8 @@ try {
           "Step 23 handover, explicit acknowledgement, accept/complete/reopen and edit after remount",
           "Step 23 Telegram disabled status is explicit; live delivery remains unverified",
           "Step 24 explicit saved-medicine association survives replacement and remount in the shared patient workflow",
+          "Step 25 A1/B1 source selection, invalidated preview, explicit schedule confirmation, future replacement, pause/resume, persisted history after remount",
+          "Step 25 expired-session write releases parent busy lock and permits sign-in without replaying the rejected mutation",
         ],
         counts,
         limitations:

@@ -48,6 +48,8 @@ Use one synthetic patient and real shared identifiers across A1/B1/C1. Run manua
 ### Step 25 — A2 verified medication schedule (Ihfaz)
 Use **confirmed** A1 instructions. Keep medicine strength, quantity per dose, time, interval, duration and timezone distinct; preview and confirm a schedule version, edit/pause future events without erasing past events. Reject ambiguous input until clarified. Test day boundaries, changes after prior events and duplicate event generation. **Gate:** persisted schedule and reproducible upcoming dose events.
 
+Implementation prepared on `feature/step25-confirmed-schedules`, stacked on Step 24. [Step 25 evidence and owner review](STEP_25_CONFIRMED_SCHEDULES.md) records the tested bounded finite-course design, API/UI/DB proof and remaining human gates. Full-course persistence (90-day/2000-event maximum, explicit end) replaces the proposed rolling horizon to avoid dependence on an unimplemented daily extension worker. The upcoming read window remains seven days. A2 stays Ihfaz's function; individual review/contribution, live modification, Jira/faculty evidence and Module 2 acceptance remain open. C2 reminders and dose recording are Step 27, worker reconciliation Step 28; Telegram remains unconfigured.
+
 ### Step 26 — B2 source-linked medicine information cards (Faraaz)
 Use the planned openFDA integration to retrieve a relevant label and display source link/identifier, retrieval date and the original relevant passage. Store personal notes separately from source facts. Confirm product/ingredient applicability; show unavailable when no valid label exists. Test source outage and a wrong candidate. **Gate:** cited passage in UI corresponds to a real source response.
 
