@@ -1,0 +1,1097 @@
+{
+  "info": {
+    "name": "MediMate Step 26 source-linked information cards",
+    "description": "Synthetic B1/B2 HTTP/database workflow. Requires an available openFDA adapter (live provider or explicitly controlled fixture). Sessions remain runtime-only; public upstream calls originate from the backend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:3001/api/v1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Owner CSRF",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const d=pm.response.json().data;pm.collectionVariables.set('ownerCsrf',d.csrfToken);pm.collectionVariables.set('ownerCookie',pm.response.headers.get('set-cookie').split(';')[0]);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/auth/csrf",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Register synthetic B2 owner",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "const d=pm.response.json().data;pm.collectionVariables.set('ownerCsrf',d.csrfToken);pm.collectionVariables.set('ownerCookie',pm.response.headers.get('set-cookie').split(';')[0]);",
+              "pm.collectionVariables.set('patientId',pm.response.json().data.patientId);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/auth/register",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"b2-owner-{{$guid}}@example.test\",\n  \"password\": \"Synthetic-pass-123!\",\n  \"displayName\": \"B2 Postman owner\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Create RxNorm sourced cabinet item",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "const d=pm.response.json().data;pm.collectionVariables.set('itemId',d.id);pm.collectionVariables.set('cabRevision',d.revision);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"entryType\": \"external\",\n  \"externalId\": \"198440\",\n  \"reviewed\": true,\n  \"strengthText\": \"500 mg\",\n  \"form\": \"tablet\"\n}"
+        }
+      }
+    },
+    {
+      "name": "New card is unavailable until selected",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const d=pm.response.json().data;pm.test('No fabricated evidence',()=>{pm.expect(d.availability).to.equal('unavailable');pm.expect(d.source).to.equal(null);pm.expect(d.revision).to.equal(null);});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{itemId}}/information-card",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "List applicable label candidates",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const d=pm.response.json().data,c=d.candidates[0];pm.test('Candidate has exact identity and original passages',()=>{pm.expect(c.rxcui).to.equal('198440');pm.expect(c.passages.length).to.be.above(0);});pm.collectionVariables.set('labelId',c.labelId);pm.collectionVariables.set('hash',c.contentHash);pm.collectionVariables.set('passages',JSON.stringify(c.passages));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{itemId}}/label-candidates",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Explicit applicability review required",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422',()=>pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{itemId}}/information-card",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"selectedLabelId\": \"{{labelId}}\",\n  \"expectedRevision\": null,\n  \"expectedCabinetRevision\": {{cabRevision}},\n  \"expectedContentHash\": \"{{hash}}\",\n  \"applicabilityConfirmed\": false\n}"
+        }
+      }
+    },
+    {
+      "name": "Reject unreviewed content hash",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{itemId}}/information-card",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"selectedLabelId\": \"{{labelId}}\",\n  \"expectedRevision\": null,\n  \"expectedCabinetRevision\": {{cabRevision}},\n  \"expectedContentHash\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\n  \"applicabilityConfirmed\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Reject forged source passages",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422',()=>pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{itemId}}/information-card",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"selectedLabelId\": \"{{labelId}}\",\n  \"expectedRevision\": null,\n  \"expectedCabinetRevision\": {{cabRevision}},\n  \"expectedContentHash\": \"{{hash}}\",\n  \"applicabilityConfirmed\": true,\n  \"selectedPassages\": [\n    {\n      \"text\": \"forged\"\n    }\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "Save selected immutable source",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});",
+              "pm.collectionVariables.set('selectKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('selectKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('revision',pm.response.json().data.revision);",
+              "const d=pm.response.json().data;pm.collectionVariables.set('sourceId',d.source.id);pm.test('Passages equal reviewed response and source is cited',()=>{pm.expect(d.selectedPassages).to.eql(JSON.parse(pm.collectionVariables.get('passages')));pm.expect(d.source.externalId).to.equal(pm.collectionVariables.get('labelId'));pm.expect(d.source.contentHash).to.equal(pm.collectionVariables.get('hash'));});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{itemId}}/information-card",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"selectedLabelId\": \"{{labelId}}\",\n  \"expectedRevision\": null,\n  \"expectedCabinetRevision\": {{cabRevision}},\n  \"expectedContentHash\": \"{{hash}}\",\n  \"applicabilityConfirmed\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Successful replay keeps same source",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('selectKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('No second effective source',()=>pm.expect(pm.response.json().data.source.id).to.equal(pm.collectionVariables.get('sourceId')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{itemId}}/information-card",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"selectedLabelId\": \"{{labelId}}\",\n  \"expectedRevision\": null,\n  \"expectedCabinetRevision\": {{cabRevision}},\n  \"expectedContentHash\": \"{{hash}}\",\n  \"applicabilityConfirmed\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Personal note is separate",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('revision',pm.response.json().data.revision);",
+              "const d=pm.response.json().data;pm.test('Note does not alter source',()=>{pm.expect(d.personalNote).to.equal('Synthetic private note, not a label claim.');pm.expect(d.source.id).to.equal(pm.collectionVariables.get('sourceId'));pm.expect(d.selectedPassages).to.eql(JSON.parse(pm.collectionVariables.get('passages')));});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{itemId}}/information-card/note",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": {{revision}},\n  \"personalNote\": \"Synthetic private note, not a label claim.\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Stale note revision conflicts",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{itemId}}/information-card/note",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 0,\n  \"personalNote\": \"stale\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Read persisted card and note",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Saved source and note retained',()=>{const d=pm.response.json().data;pm.expect(d.personalNote).to.equal('Synthetic private note, not a label claim.');pm.expect(d.source.sourceUrl).to.include('https://api.fda.gov/drug/label.json');});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{itemId}}/information-card",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Remove source association without note loss",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('revision',pm.response.json().data.revision);",
+              "const d=pm.response.json().data;pm.test('Explicit unavailable, personal note retained',()=>{pm.expect(d.availability).to.equal('unavailable');pm.expect(d.source).to.equal(null);pm.expect(d.selectedPassages).to.have.lengthOf(0);pm.expect(d.personalNote).to.equal('Synthetic private note, not a label claim.');});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{itemId}}/information-card",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"selectedLabelId\": null,\n  \"expectedRevision\": {{revision}},\n  \"expectedCabinetRevision\": {{cabRevision}}\n}"
+        }
+      }
+    },
+    {
+      "name": "Reselect source after removal",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('revision',pm.response.json().data.revision);",
+              "pm.test('Personal note survives reselection',()=>pm.expect(pm.response.json().data.personalNote).to.equal('Synthetic private note, not a label claim.'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{itemId}}/information-card",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"selectedLabelId\": \"{{labelId}}\",\n  \"expectedRevision\": {{revision}},\n  \"expectedCabinetRevision\": {{cabRevision}},\n  \"expectedContentHash\": \"{{hash}}\",\n  \"applicabilityConfirmed\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Create manual unverified item",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('manualId',pm.response.json().data.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"entryType\": \"manual\",\n  \"displayName\": \"Synthetic unverified B2 item\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Manual identity does not guess label",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Unavailable, not name matched',()=>pm.expect(pm.response.json().data.reason).to.equal('unverified_identity'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{manualId}}/label-candidates",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Manual note can exist without evidence",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Separate unavailable note',()=>{const d=pm.response.json().data;pm.expect(d.source).to.equal(null);pm.expect(d.personalNote).to.equal('Ask for a verified identity.');});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{manualId}}/information-card/note",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": null,\n  \"personalNote\": \"Ask for a verified identity.\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Reader CSRF",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('readerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('readerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const d=pm.response.json().data;pm.collectionVariables.set('readerCsrf',d.csrfToken);pm.collectionVariables.set('readerCookie',pm.response.headers.get('set-cookie').split(';')[0]);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/auth/csrf",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Register synthetic reader",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('readerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('readerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "const d=pm.response.json().data;pm.collectionVariables.set('readerCsrf',d.csrfToken);pm.collectionVariables.set('readerCookie',pm.response.headers.get('set-cookie').split(';')[0]);",
+              "pm.collectionVariables.set('readerId',pm.response.json().data.user.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/auth/register",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"b2-reader-{{$guid}}@example.test\",\n  \"password\": \"Synthetic-pass-123!\",\n  \"displayName\": \"B2 Postman reader\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Unrelated patient access denied",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('readerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('readerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404',()=>pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{itemId}}/information-card",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Grant cabinet read only",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('grantId',pm.response.json().data.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/access-grants",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{readerId}}\",\n  \"permissions\": [\n    \"cabinet.read\"\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "Reader sees scoped evidence and note",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('readerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('readerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Authorized note read',()=>pm.expect(pm.response.json().data.personalNote).to.equal('Synthetic private note, not a label claim.'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{itemId}}/information-card",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Reader cannot change note",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('readerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('readerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403',()=>pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PATCH",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{itemId}}/information-card/note",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": {{revision}},\n  \"personalNote\": \"denied\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Revoke reader",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/access-grants/{{grantId}}/revoke",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 0\n}"
+        }
+      }
+    },
+    {
+      "name": "Revocation blocks note and source immediately",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('readerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('readerCsrf')||''});",
+              "pm.request.headers.upsert({key:'Idempotency-Key',value:pm.variables.replaceIn('{{$guid}}')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404',()=>pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items/{{itemId}}/information-card",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    }
+  ]
+}

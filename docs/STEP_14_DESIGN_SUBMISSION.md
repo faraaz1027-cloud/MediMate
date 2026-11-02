@@ -1,6 +1,8 @@
 # Step 14 — Interface designs and submission
 Updated 1 November 2026.
 
+Step 26 implementation review (2 November): retrieved the actual B2 desktop frame/screenshot (node 4:525). [B2 implementation and evidence](STEP_26_MEDICINE_INFORMATION.md) follows its source-selection, original-passages, separate-note and source-evidence panels, with mobile stacking and real failure states. Native React/CSS controls reuse the established app rather than adding a runtime library solely for the prototype's Material kit examples. No new faculty submission or complete pixel-parity claim is made.
+
 Step 25 implementation review (2 November): the actual A2 desktop frame and screenshot were retrieved from Figma. [Implementation/adaptation notes and evidence](STEP_25_CONFIRMED_SCHEDULES.md) explain source selection, explicit UTC boundaries, full-course preview, immutable history and the shared list/detail layout. The original design/submission artifacts remain the course design baseline; no new faculty submission or exact pixel-parity claim is made.
 
 ## Deliverables

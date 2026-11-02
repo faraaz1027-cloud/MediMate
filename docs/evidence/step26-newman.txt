@@ -1,0 +1,147 @@
+npm warn deprecated har-validator@5.1.5: this library is no longer supported
+npm warn deprecated uuid@3.4.0: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated @faker-js/faker@5.5.3: Please update to a newer version.
+newman
+
+MediMate Step 26 source-linked information cards
+
+→ Owner CSRF
+  GET http://127.0.0.1:3010/api/v1/auth/csrf [200 OK, 597B, 31ms]
+  √  HTTP 200
+
+→ Register synthetic B2 owner
+  POST http://127.0.0.1:3010/api/v1/auth/register [201 Created, 785B, 83ms]
+  √  HTTP 201
+
+→ Create RxNorm sourced cabinet item
+  POST http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items [201 Created, 691B, 20ms]
+  √  HTTP 201
+
+→ New card is unavailable until selected
+  GET http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c76c6642c7c6aeb386f9/information-card [200 OK, 492B, 5ms]
+  √  HTTP 200
+  √  No fabricated evidence
+
+→ List applicable label candidates
+  GET http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c76c6642c7c6aeb386f9/label-candidates [200 OK, 13.02kB, 5ms]
+  √  HTTP 200
+  √  Candidate has exact identity and original passages
+
+→ Explicit applicability review required
+  PUT http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c76c6642c7c6aeb386f9/information-card [422 Unprocessable Entity, 563B, 4ms]
+  √  HTTP 422
+
+→ Reject unreviewed content hash
+  PUT http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c76c6642c7c6aeb386f9/information-card [409 Conflict, 457B, 1249ms]
+  √  HTTP 409
+
+→ Reject forged source passages
+  PUT http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c76c6642c7c6aeb386f9/information-card [422 Unprocessable Entity, 477B, 4ms]
+  √  HTTP 422
+
+→ Save selected immutable source
+  PUT http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c76c6642c7c6aeb386f9/information-card [200 OK, 8.13kB, 394ms]
+  √  HTTP 200
+  √  Passages equal reviewed response and source is cited
+
+→ Successful replay keeps same source
+  PUT http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c76c6642c7c6aeb386f9/information-card [200 OK, 8.13kB, 19ms]
+  √  HTTP 200
+  √  No second effective source
+
+→ Personal note is separate
+  PATCH http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c76c6642c7c6aeb386f9/information-card/note [200 OK, 8.17kB, 30ms]
+  √  HTTP 200
+  √  Note does not alter source
+
+→ Stale note revision conflicts
+  PATCH http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c76c6642c7c6aeb386f9/information-card/note [409 Conflict, 431B, 7ms]
+  √  HTTP 409
+
+→ Read persisted card and note
+  GET http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c76c6642c7c6aeb386f9/information-card [200 OK, 8.17kB, 5ms]
+  √  HTTP 200
+  √  Saved source and note retained
+
+→ Remove source association without note loss
+  PUT http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c76c6642c7c6aeb386f9/information-card [200 OK, 1.05kB, 20ms]
+  √  HTTP 200
+  √  Explicit unavailable, personal note retained
+
+→ Reselect source after removal
+  PUT http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c76c6642c7c6aeb386f9/information-card [200 OK, 8.17kB, 581ms]
+  √  HTTP 200
+  √  Personal note survives reselection
+
+→ Create manual unverified item
+  POST http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items [201 Created, 601B, 19ms]
+  √  HTTP 201
+
+→ Manual identity does not guess label
+  GET http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c7706642c7c6aeb3876c/label-candidates [200 OK, 442B, 4ms]
+  √  HTTP 200
+  √  Unavailable, not name matched
+
+→ Manual note can exist without evidence
+  PATCH http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c7706642c7c6aeb3876c/information-card/note [200 OK, 926B, 25ms]
+  √  HTTP 200
+  √  Separate unavailable note
+
+→ Reader CSRF
+  GET http://127.0.0.1:3010/api/v1/auth/csrf [200 OK, 597B, 18ms]
+  √  HTTP 200
+
+→ Register synthetic reader
+  POST http://127.0.0.1:3010/api/v1/auth/register [201 Created, 787B, 82ms]
+  √  HTTP 201
+
+→ Unrelated patient access denied
+  GET http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c76c6642c7c6aeb386f9/information-card [404 Not Found, 400B, 3ms]
+  √  HTTP 404
+
+→ Grant cabinet read only
+  POST http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/access-grants [201 Created, 584B, 28ms]
+  √  HTTP 201
+
+→ Reader sees scoped evidence and note
+  GET http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c76c6642c7c6aeb386f9/information-card [200 OK, 8.17kB, 6ms]
+  √  HTTP 200
+  √  Authorized note read
+
+→ Reader cannot change note
+  PATCH http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c76c6642c7c6aeb386f9/information-card/note [403 Forbidden, 415B, 3ms]
+  √  HTTP 403
+
+→ Revoke reader
+  POST http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/access-grants/6ae8c7706642c7c6aeb38796/revoke [200 OK, 618B, 28ms]
+  √  HTTP 200
+
+→ Revocation blocks note and source immediately
+  GET http://127.0.0.1:3010/api/v1/patients/6ae8c76c6642c7c6aeb386ec/cabinet-items/6ae8c76c6642c7c6aeb386f9/information-card [404 Not Found, 400B, 4ms]
+  √  HTTP 404
+
+┌─────────────────────────┬────────────────────┬────────────────────┐
+│                         │           executed │             failed │
+├─────────────────────────┼────────────────────┼────────────────────┤
+│              iterations │                  1 │                  0 │
+├─────────────────────────┼────────────────────┼────────────────────┤
+│                requests │                 26 │                  0 │
+├─────────────────────────┼────────────────────┼────────────────────┤
+│            test-scripts │                 26 │                  0 │
+├─────────────────────────┼────────────────────┼────────────────────┤
+│      prerequest-scripts │                 26 │                  0 │
+├─────────────────────────┼────────────────────┼────────────────────┤
+│              assertions │                 37 │                  0 │
+├─────────────────────────┴────────────────────┴────────────────────┤
+│ total run duration: 4.9s                                          │
+├───────────────────────────────────────────────────────────────────┤
+│ total data received: 65.61kB (approx)                             │
+├───────────────────────────────────────────────────────────────────┤
+│ average response time: 102ms [min: 3ms, max: 1249ms, s.d.: 262ms] │
+└───────────────────────────────────────────────────────────────────┘
+npm notice
+npm notice New major version of npm available! 11.20.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

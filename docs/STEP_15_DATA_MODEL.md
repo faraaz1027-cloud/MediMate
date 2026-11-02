@@ -37,12 +37,14 @@ Prescription version numbers are unique per prescription. Instructions are separ
 | Collection | Core fields |
 |---|---|
 | sourceRecords | provider: rxnorm/openfda/overpass, externalId, sourceUrl, retrievedAt, contentHash, snapshot, matchStatus: selected/unverified; optional sourceVersion |
-| medicineCards | patientId, cabinetItemId, sourceRecordId?, availability: available/unavailable, selectedPassages[], personalNote?, revisedAt |
+| medicineCards | patientId, cabinetItemId, sourceRecordId?, availability: available/unavailable, reason?, selectedPassages[{key,index,text}], personalNote, itemSnapshot (cabinet revision/identity/strength/form), applicabilityConfirmedBy/At?, revisedAt; common revision for CAS |
 | ingredientReviews | patientId, cabinetItemIds[], ingredientSnapshots[], evidenceRefs[], result: overlap/no_overlap_in_confirmed_ingredients/insufficient_information, acknowledgedAt?, acknowledgedByUserId?, note? |
 | assistantConversations | patientId, createdByUserId, title?, deletedAt? |
 | assistantMessages | patientId, conversationId, role: user/assistant, text, evidenceRefs[], outcome: answered/insufficient_evidence/error, feedback? |
 
 Evidence references contain sourceRecordId and a passage key plus immutable passage text snapshot. Snapshots preserve the evidence used even after a later retrieval. Source records contain public external information only; personal notes belong to patient-scoped cards. No-overlap is limited to compared confirmed ingredient identities and never claims overall safety. Manual items remain unverified until explicit ingredient confirmation. Conversation deletion removes message text and evidence payloads; retain only a minimal deletion audit event. No model training dataset is required by this design.
+
+**Step 26 B2 implementation:** one card per patient+cabinet item, separate note writes and immutable openFDA SourceRecord receipts. sourceVersion is the provider label version; externalId is its immutable record UUID, while snapshot retains setId, effectiveTime, exact RxCUI, product metadata and verbatim selected passages. contentHash is SHA-256 of JSON.stringify of the complete original raw label record (not a clinical validation). Each successful new selection records its own retrieval receipt; replay reuses the original result. Removing an association retains the public source receipt and personal note. Note-only cards are unavailable/not_selected until an explicit source selection. Archived items remain readable; itemSnapshot revision mismatch is exposed as itemChanged. Cabinet's hidden coordination counter (introduced by A2) also serializes B2 source confirmation/note writes with cabinet edits/archive, without changing its public revision.
 
 ## Schedules, occurrences and dose actions: A2, C2, C3
 | Collection | Core fields |
@@ -119,7 +121,8 @@ healthNotes: patientId, authorUserId, recordedAt, text, revision. reportExports:
 | sosIncidents | partial unique patientId where status=active |
 | sosAlerts | unique incidentId+emergencyContactId |
 | providerRequests | unique incidentId+providerKey |
-| sourceRecords | unique provider+externalId+contentHash |
+| sourceRecords | immutable per-selection receipts; provider/externalId/contentHash retained; proposed global composite uniqueness is not installed because separate selection retrieval times must remain identifiable |
+| medicineCards | unique patientId+cabinetItemId (Step 26) |
 | careTasks / taskEvents | patientId+assigneeUserId+status / taskId+occurredAt |
 
 Add patientId+createdAt to patient history collections when needed. Partial indexes apply only to the stated subset; optional unique fields must not accidentally make all missing values collide. Index creation and cross-reference validation belong in schema implementation, not only documentation.
