@@ -1,0 +1,216 @@
+npm warn deprecated har-validator@5.1.5: this library is no longer supported
+npm warn deprecated uuid@3.4.0: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated @faker-js/faker@5.5.3: Please update to a newer version.
+newman
+
+MediMate Step 27 persisted dose actions and reminder consent
+
+→ Owner CSRF
+  GET http://127.0.0.1:3011/api/v1/auth/csrf [200 OK, 597B, 29ms]
+  √  HTTP 200
+
+→ Register synthetic C2 owner
+  POST http://127.0.0.1:3011/api/v1/auth/register [201 Created, 795B, 84ms]
+  √  HTTP 201
+
+→ Create synthetic supply A
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/cabinet-items [201 Created, 630B, 20ms]
+  √  HTTP 201
+
+→ Create synthetic supply B
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/cabinet-items [201 Created, 630B, 19ms]
+  √  HTTP 201
+
+→ Create synthetic supply C
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/cabinet-items [201 Created, 630B, 21ms]
+  √  HTTP 201
+
+→ Create three synthetic A1 instruction lines
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/prescriptions [201 Created, 2.68kB, 19ms]
+  √  HTTP 201
+
+→ Confirm reviewed A1 source
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/prescriptions/6ae8d89870a816f85d9e5521/versions/6ae8d89870a816f85d9e5522/confirm [200 OK, 2.79kB, 20ms]
+  √  HTTP 200
+
+→ Plan future A2 start from actual server clock
+  GET http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses [200 OK, 600B, 9ms]
+  √  HTTP 200
+
+→ Preview synthetic A2 event A
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/schedule-previews [200 OK, 1.56kB, 20ms]
+  √  HTTP 200
+
+→ Confirm A2 event A
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/schedules [201 Created, 1.92kB, 35ms]
+  √  HTTP 201
+
+→ Preview synthetic A2 event B
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/schedule-previews [200 OK, 1.56kB, 19ms]
+  √  HTTP 200
+
+→ Confirm A2 event B
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/schedules [201 Created, 1.92kB, 19ms]
+  √  HTTP 201
+
+→ Preview synthetic A2 event C
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/schedule-previews [200 OK, 1.56kB, 20ms]
+  √  HTTP 200
+
+→ Confirm A2 event C
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/schedules [201 Created, 1.92kB, 19ms]
+  √  HTTP 201
+
+→ Wait for the real future events, then read due occurrences
+  GET http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses?fromUTC=2026-11-02T18:38:31.472Z&toUTC=2026-11-02T18:39:31.472Z&limit=100 [200 OK, 2.53kB, 9ms]
+  √  HTTP 200
+  √  Exactly three persisted due events
+
+→ Reject a future effective time
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89970a816f85d9e55b2/actions [422 Unprocessable Entity, 540B, 6ms]
+  √  HTTP 422
+
+→ Record taken with stable operation key
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89870a816f85d9e556c/actions [200 OK, 1.06kB, 20ms]
+  √  HTTP 200
+  √  Taken with action revision one
+
+→ Replay taken returns original effective action
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89870a816f85d9e556c/actions [200 OK, 1.06kB, 18ms]
+  √  HTTP 200
+
+→ History contains one action after replay
+  GET http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89870a816f85d9e556c [200 OK, 1.7kB, 7ms]
+  √  HTTP 200
+  √  No duplicate action
+
+→ New terminal action needs correction
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89870a816f85d9e556c/actions [409 Conflict, 454B, 5ms]
+  √  HTTP 409
+
+→ Snooze affects reminder only
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89870a816f85d9e558f/snoozes [200 OK, 1.06kB, 22ms]
+  √  HTTP 200
+  √  Scheduled time and state unchanged
+
+→ Reject repeated early snooze
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89870a816f85d9e558f/snoozes [409 Conflict, 457B, 5ms]
+  √  HTTP 409
+
+→ Record skipped after snooze
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89870a816f85d9e558f/actions [200 OK, 1.06kB, 19ms]
+  √  HTTP 200
+  √  One skipped projection
+
+→ Correction requires a reason
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89870a816f85d9e556c/corrections [422 Unprocessable Entity, 487B, 3ms]
+  √  HTTP 422
+
+→ Reasoned correction retains prior record
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89870a816f85d9e556c/corrections [200 OK, 1.06kB, 17ms]
+  √  HTTP 200
+
+→ Return to pending by correction
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89870a816f85d9e556c/corrections [200 OK, 1.06kB, 18ms]
+  √  HTTP 200
+
+→ Record taken after review
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89870a816f85d9e556c/actions [200 OK, 1.06kB, 18ms]
+  √  HTTP 200
+
+→ Read immutable action history
+  GET http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89870a816f85d9e556c [200 OK, 3.57kB, 5ms]
+  √  HTTP 200
+  √  All four actions retained, current taken
+
+→ Day/range totals come from the database
+  GET http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses?fromUTC=2026-11-02T18:38:31.472Z&toUTC=2026-11-02T18:39:31.472Z [200 OK, 2.52kB, 7ms]
+  √  HTTP 200
+  √  Correct taken/skipped/unconfirmed totals
+
+→ Reminder consent defaults off
+  GET http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/dose-reminder-settings [200 OK, 477B, 4ms]
+  √  HTTP 200
+  √  No implicit opt-in
+
+→ Explicit owner consent required
+  PUT http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/dose-reminder-settings [422 Unprocessable Entity, 544B, 3ms]
+  √  HTTP 422
+
+→ Owner enables generic reminder request
+  PUT http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/dose-reminder-settings [200 OK, 495B, 22ms]
+  √  HTTP 200
+  √  Preference is separate from delivery
+
+→ Dose remains unconfirmed regardless of reminder setup
+  GET http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89970a816f85d9e55b2 [200 OK, 1.1kB, 5ms]
+  √  HTTP 200
+  √  No invented action or delivery
+
+→ Reader CSRF
+  GET http://127.0.0.1:3011/api/v1/auth/csrf [200 OK, 597B, 19ms]
+  √  HTTP 200
+
+→ Register synthetic caregiver
+  POST http://127.0.0.1:3011/api/v1/auth/register [201 Created, 787B, 81ms]
+  √  HTTP 201
+
+→ Cross-patient access denied
+  GET http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89870a816f85d9e556c [404 Not Found, 400B, 3ms]
+  √  HTTP 404
+
+→ Grant dose read only
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/access-grants [201 Created, 581B, 18ms]
+  √  HTTP 201
+
+→ Authorized caregiver reads history
+  GET http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89870a816f85d9e556c [200 OK, 3.57kB, 5ms]
+  √  HTTP 200
+  √  Scoped history visible
+
+→ Read-only caregiver cannot record
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89970a816f85d9e55b2/actions [403 Forbidden, 415B, 4ms]
+  √  HTTP 403
+
+→ Read-only caregiver cannot enable reminders
+  PUT http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/dose-reminder-settings [403 Forbidden, 415B, 3ms]
+  √  HTTP 403
+
+→ Revoke caregiver grant
+  POST http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/access-grants/6ae8d8af70a816f85d9e5671/revoke [200 OK, 615B, 18ms]
+  √  HTTP 200
+
+→ Revoked history read denied immediately
+  GET http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/doses/6ae8d89870a816f85d9e556c [404 Not Found, 400B, 2ms]
+  √  HTTP 404
+
+→ Turn off synthetic reminder request before finishing
+  PUT http://127.0.0.1:3011/api/v1/patients/6ae8d89770a816f85d9e54f4/dose-reminder-settings [200 OK, 496B, 19ms]
+  √  HTTP 200
+  √  Synthetic opt-in disabled again
+
+┌─────────────────────────┬──────────────────┬──────────────────┐
+│                         │         executed │           failed │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              iterations │                1 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│                requests │               43 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│            test-scripts │               43 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│      prerequest-scripts │               43 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              assertions │               55 │                0 │
+├─────────────────────────┴──────────────────┴──────────────────┤
+│ total run duration: 24.5s                                     │
+├───────────────────────────────────────────────────────────────┤
+│ total data received: 38.17kB (approx)                         │
+├───────────────────────────────────────────────────────────────┤
+│ average response time: 17ms [min: 2ms, max: 84ms, s.d.: 16ms] │
+└───────────────────────────────────────────────────────────────┘
+npm notice
+npm notice New major version of npm available! 11.20.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

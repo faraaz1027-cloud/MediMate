@@ -58,6 +58,8 @@ Technical slice prepared on `feature/step26-medicine-information`, stacked on St
 ### Step 27 — C2 reminders and dose recording (Sahir)
 Use A2 occurrences, send reminders and record taken/skipped/snoozed actions. Store notification attempts and dose status as separate objects; repeated action must not create a second effective record. Snooze affects the notification timing, not the prescribed schedule. Test all three actions and a failed channel. **Gate:** accurate, persistent dose history and no double action.
 
+Technical slice prepared on feature/step27-dose-reminders, stacked on Step 26. [Step 27 evidence and Sahir review](STEP_27_DOSE_REMINDERS.md) records persistent action history, concurrency/replay/rollback tests, reminder consent and separate notification outcomes, production-bundle/browser/DB proof and the real disabled worker command. The user has no bot or consenting test account: no live Telegram send/receipt is claimed. Stock effects remain A3, follow-up remains C3, and individual contribution/Jira/faculty acceptance remain open. Next work is Step 28's broader timezone/restart audit; basic restart cases here do not close that gate.
+
 ### Step 28 — Timezone and restart behavior
 Persist due events and processing state. Test Asia/Dhaka date boundary, schedule edits, worker restart, delayed execution, duplicate retry and a notification outage. Define whether overdue reminders are delivered late or marked missed according to recorded time, without inventing a taken/skipped dose. **Gate:** a restart cannot silently lose an event or generate duplicate dose/stock effects. Record process availability limits.
 

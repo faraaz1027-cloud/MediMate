@@ -77,6 +77,14 @@ export function createTelegram({
         throw new TelegramError("RESPONSE_INVALID", true);
       return { messageId: String(r.message_id) };
     },
+    async sendDoseNotice(chatId) {
+      const r = await call("sendMessage", {
+        chat_id: chatId,
+        text: "MediMate: a scheduled dose needs your attention. Sign in to review your doses and record what happened.",
+      });
+      if (!Number.isSafeInteger(r?.message_id)) throw new TelegramError("RESPONSE_INVALID", true);
+      return { messageId: String(r.message_id) };
+    },
     async updates(offset) {
       const r = await call(
         "getUpdates",

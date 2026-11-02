@@ -163,6 +163,14 @@ footer {
   color: #6c6578;
   margin: 40px 0 10px;
 }
+.dose-columns { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.dose-columns > * { min-width: 0; }
+.dose-columns .card, .dose-filters { margin-bottom: 24px; }
+.dose-workspace p, .dose-workspace li { overflow-wrap: anywhere; }
+.dose-workspace button { margin: 6px 8px 6px 0; }
+.dose-workspace .check input { flex: 0 0 20px; }
+.dose-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 720px) { .dose-columns { grid-template-columns: 1fr; } }
 .information-picker { margin-bottom: 24px; }
 .information-columns { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 24px; align-items: start; }
 .information-columns > div > .card { margin-bottom: 24px; }

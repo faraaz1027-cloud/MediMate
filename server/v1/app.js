@@ -7,6 +7,7 @@ import { installTasks } from "./tasks.js";
 import { installSchedules } from "./schedules.js";
 import { createOpenFDA } from "./openfda.js";
 import { installInformationCards } from "./information-cards.js";
+import { installDoses } from "./doses.js";
 import express from "express";
 import mongoose from "mongoose";
 import {
@@ -568,6 +569,7 @@ export function createV1({
   installTasks(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now, telegram });
   installSchedules(patient, { db, csrf, scope, access, mutate, fail, id, object, text, publicDoc, now, send });
   installInformationCards(patient, { db, csrf, scope, mutate, fail, id, object, publicDoc, now, send, openfda });
+  installDoses(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now, send, telegram });
   const resources = [
     ["prescriptions", "Prescription", "prescription"],
   ];

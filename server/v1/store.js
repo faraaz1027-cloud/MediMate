@@ -29,6 +29,10 @@ const collections = {
   SchedulePreview: "schedulePreviews",
   DoseOccurrence: "doseOccurrences",
   MedicineCard: "medicineCards",
+  DoseAction: "doseActions",
+  DoseReminderSettings: "doseReminderSettings",
+  DoseReminderJob: "doseReminderJobs",
+  DoseReminderAttempt: "doseReminderAttempts",
 };
 function model(name, fields, indexes = []) {
   const schema = new Schema(
@@ -209,7 +213,7 @@ model("TelegramReceipt", { updateId: Number }, [
   [{ updateId: 1 }, { unique: true }],
   [{ createdAt: 1 }, { expireAfterSeconds: 604800 }],
 ]);
-model("WorkerState", { name: String, offset: Number, lastActiveAt: Date }, [
+model("WorkerState", { name: String, offset: Number, cursor: oid, lastActiveAt: Date }, [
   [{ name: 1 }, { unique: true }],
 ]);
 model(
@@ -300,9 +304,34 @@ model("DoseOccurrence", {
   dueAtUTC: Date, doseQuantitySnapshot: Schema.Types.Decimal128, doseUnitSnapshot: String, timezoneSnapshot: String,
   state: { type: String, enum: ["pending", "taken", "skipped", "cancelled"] },
   reminderDueAtUTC: Date, snoozeCount: Number, actionRevision: Number,
+  reminderQueuedRevision: Number,
   cancelledAt: Date, cancellationReason: String,
 }, [[{ scheduleVersionId: 1, dueAtUTC: 1 }, { unique: true }],
   [{ patientId: 1, scheduleId: 1, dueAtUTC: 1, _id: 1 }, {}]]);
+models.DoseOccurrence.schema.index({ patientId: 1, dueAtUTC: 1, _id: 1 });
+models.DoseOccurrence.schema.index({ patientId: 1, state: 1, reminderDueAtUTC: 1 });
+model("DoseAction", {
+  patientId: oid, occurrenceId: oid, revisionNumber: Number, action: String,
+  previousState: String, newState: String, actorUserId: oid, recordedAt: Date,
+  effectiveAt: Date, reason: String, isCorrection: Boolean, clientRequestId: String,
+  reminderDueAtUTC: Date, stockSyncStatus: String,
+}, [[{ occurrenceId: 1, revisionNumber: 1 }, { unique: true }],
+  [{ patientId: 1, clientRequestId: 1 }, { unique: true }],
+  [{ patientId: 1, occurrenceId: 1, createdAt: -1, _id: -1 }, {}]]);
+model("DoseReminderSettings", {
+  patientId: oid, ownerUserId: oid, enabled: Boolean, consentedAt: Date,
+}, [[{ patientId: 1 }, { unique: true }], [{ enabled: 1, _id: 1 }, {}]]);
+model("DoseReminderJob", {
+  patientId: oid, occurrenceId: oid, recipientId: oid, actionRevision: Number,
+  settingsRevision: Number, channelLinkId: oid, channelRevision: Number,
+  status: String, errorCode: String, attemptCount: Number,
+  runAtUTC: Date, expiresAtUTC: Date, leaseUntil: Date,
+}, [[{ occurrenceId: 1, actionRevision: 1, recipientId: 1 }, { unique: true }],
+  [{ status: 1, runAtUTC: 1 }, {}], [{ patientId: 1, occurrenceId: 1, createdAt: -1, _id: -1 }, {}]]);
+model("DoseReminderAttempt", {
+  patientId: oid, jobId: oid, attemptNumber: Number, attemptedAt: Date,
+  providerCallAt: Date, status: String, externalMessageId: String, errorCode: String,
+}, [[{ jobId: 1, attemptNumber: 1 }, { unique: true }]]);
 for (const name of ["Prescription", "CabinetItem", "Task", "Schedule"])
   models[name].schema.index({ patientId: 1, createdAt: -1, _id: -1 });
 models.PrescriptionInstruction.schema.index(
@@ -314,6 +343,7 @@ models.Operation.schema.index(
   { expireAfterSeconds: 30 * 24 * 3600 },
 );
 export const db = {
+  async count(name, filter) { return models[name].countDocuments(filter); },
   async fence(name, filter, session) {
     return models[name].updateOne(filter, { $inc: { scheduleFence: 1 } }, { session });
   },

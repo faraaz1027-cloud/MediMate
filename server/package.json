@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "node --env-file=.env --watch index.js",
     "start": "node --env-file=.env index.js",
-    "worker": "node --env-file-if-exists=.env worker.js"
+    "worker": "node --env-file-if-exists=.env worker.js",
+    "dose-worker": "node --env-file-if-exists=.env dose-worker.js"
   },
   "dependencies": {
     "@js-temporal/polyfill": "0.5.1",

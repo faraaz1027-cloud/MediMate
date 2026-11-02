@@ -60,7 +60,7 @@ A pending occurrence past due plus the configured follow-up delay is displayed a
 
 **Step 25 implementation decision:** persist the entire finite course atomically, with a required exclusive end, at most 90 elapsed days and 2000 events. This supersedes the proposed rolling seven-day generation horizon: a rolling horizon without its later worker would silently stop on day eight and postpone DST validation. The upcoming read view still covers seven days. Indefinite/longer courses require a separately reviewed extension or later bounded-worker design; do not silently assume an end. All prospective events are reproducible from immutable version rules. Fixed times follow the saved timezone; intervals follow elapsed minutes from anchor UTC. Reject nonexistent/ambiguous local times throughout the course. Version edits cancel pending future occurrences across earlier versions at the effective boundary and generate replacements. Past and acted occurrences remain unchanged. Pause cancels pending future occurrences; resume restores only this version's rows cancelled by pause, at/after the explicit future resume time, without inserting duplicates. A changed source requires a reviewed replacement version; paused versions can be replaced. Source changes do not silently rewrite existing schedules. Historical pending events are unconfirmed, never automatically skipped.
 
-Source parent/cabinet documents have a hidden scheduleFence coordination counter, written during confirmation/resume to conflict with concurrent archive/edit. It does not change their content or public revision. Dose actions, reminder execution, restart scans, expiry and overdue follow-up are **future C2/C3/Step 28 work**, not implemented by Step 25. Their planned default reminder expiry is 60 minutes after due time.
+Source parent/cabinet documents have a hidden scheduleFence coordination counter, written during confirmation/resume to conflict with concurrent archive/edit. It does not change their content or public revision. Step 25 did not implement dose actions or reminder execution. Step 27 now adds C2 actions, queue/restart scans and 60-minute expiry after the current reminder time; see the implementation update below. Broader restart/timezone auditing remains Step 28 and caregiver follow-up remains C3.
 
 ## Stock, refill and pharmacy: A3–A4
 | Collection | Core fields |
@@ -110,7 +110,7 @@ healthNotes: patientId, authorUserId, recordedAt, text, revision. reportExports:
 | scheduleVersions | unique scheduleId+versionNumber |
 | schedules | unique patientId+current prescriptionInstructionId; edit the existing schedule instead of duplicating the same instruction |
 | schedulePreviews | unique tokenHash; TTL expiresAt; application also checks expiry/actor/patient/single use |
-| doseOccurrences | unique scheduleVersionId+dueAtUTC; patientId+scheduleId+dueAtUTC+id (Step 25); reminder-worker indexes deferred to C2 |
+| doseOccurrences | unique scheduleVersionId+dueAtUTC; patientId+scheduleId+dueAtUTC+id (Step 25); patientId+dueAtUTC+id and patientId+state+reminderDueAtUTC worker indexes installed in Step 27 |
 | doseActions | unique occurrenceId+revisionNumber; unique patientId+clientRequestId |
 | stockTransactions | unique patientId+operationKey; patientId+cabinetItemId+createdAt |
 | inventorySettings | unique patientId+cabinetItemId |
@@ -155,3 +155,16 @@ C1 adds Task assignment generation and acknowledgement projection, plus immutabl
 
 ## Step 24 implementation update — 2 November 2026
 The planned optional PrescriptionInstruction.cabinetItemId is implemented. New links require cabinet.read and an active item in the same patient; retained historical links grant no cabinet access. Confirmed instruction text/IDs/references are immutable after cabinet edit/archive. A replacement draft may retain its old archived reference for correction, but confirmation requires active references or clearing/replacing them. Existing unlinked records need no backfill. C1 uses the same patient/caregiver IDs; example handover description IDs are text, not new structured task foreign keys. [Step 24 integration and evidence](STEP_24_MODULE_1_INTEGRATION.md) keeps real Telegram and student/faculty acceptance gates open.
+
+## Step 27 implementation update — 3 November 2026
+C2 adds immutable DoseAction with previousState/newState, isCorrection, actorUserId, recordedAt/effectiveAt, reason, reminderDueAtUTC and stockSyncStatus:not_implemented, in addition to revisionNumber/action/clientRequestId. Unique occurrenceId+revisionNumber and patientId+clientRequestId enforce ordered history and cross-route deduplication; patientId+occurrenceId+createdAt/id indexes history. Only transactions update the occurrence/action/audit/idempotency projection. The earlier stock-ledger atomicity paragraph remains a future A3 design; C2 does not create stock or reconciliation records.
+
+DoseOccurrence.reminderQueuedRevision tracks the last action revision queued, separately from public actionRevision and internal schema revision. Missing markers on existing A2 rows are eligible for scanning; there is no destructive backfill or fabricated historical action. WorkerState adds an optional settings-scan cursor for round-robin batches. New collections are separate from C1 task notifications because that worker has task-specific subjects and consent:
+
+| Collection | Implemented fields/indexes |
+|---|---|
+| doseReminderSettings | patientId,ownerUserId,enabled,consentedAt,revision; unique patientId, enabled+id scan |
+| doseReminderJobs | patientId,occurrenceId,recipientId,actionRevision,settingsRevision,channelLinkId?,channelRevision?,status,errorCode?,attemptCount,runAtUTC,expiresAtUTC,leaseUntil?; unique occurrenceId+actionRevision+recipientId; status+runAtUTC and patientId+occurrenceId+createdAt/id |
+| doseReminderAttempts | patientId,jobId,attemptNumber,attemptedAt,providerCallAt?,status,externalMessageId?,errorCode?; unique jobId+attemptNumber |
+
+Owner opt-in defaults off and is distinct from private ChannelLink consent. Queue insertion and occurrence marker commit together; lease claim/attempt creation and completion also transact. Each claim rechecks current eligibility before the external call, which cannot participate in a Mongo transaction. Interrupted/uncertain outcomes remain unknown, never automatically resent. No reminder outcome changes dose state. Snapshot quantity/unit/timezone/source text remain the saved A2 prescription values. [Step 27 evidence, policy and owner review](STEP_27_DOSE_REMINDERS.md).

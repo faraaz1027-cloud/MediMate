@@ -180,19 +180,30 @@ Worker produces outcome answered/insufficient_evidence/error. Answered requires 
 
 Owner may transition assigned tasks; a caregiver needs task.write and must be the assignee to accept/complete. Reopening needs the creator/owner and task.write. Handover notes are append-only for participants. All assignments require owner or active read/write caregiver access. Reopen/reassignment clears the current acknowledgement while retaining history. The dedicated bot poller deduplicates update IDs, requires matching private sender/chat IDs and stores only a hashed challenge. The app account separately confirms consent. Generic notices contain no patient/task/medicine text. Missing configuration is disabled, not delivered; uncertain sends stay unknown with no automatic resend. See Step 23 for dedicated bot/database, queue lease, retry and setup limits. Generic job/notification routes below remain future contracts; C1 implements task-scoped routes above.
 
-## C2 Doses and C3 follow-up
+## C2 Doses (Step 27 implemented) and C3 follow-up (planned)
 | Route | Permission | Request | Success |
 |---|---|---|---|
-| GET /doses | dose.read | fromUTC,toUTC,state?,cursor?,limit? | 200 list Dose; half-open range |
-| GET /doses/{id} | dose.read | None | 200 Dose + allowed action history |
-| POST /doses/{id}/actions | dose.record | {expectedRevision,action:taken/skipped,clientRequestId,effectiveAt?} | 200 Dose + actionId + stockSyncStatus |
-| POST /doses/{id}/snoozes | dose.record | {expectedRevision,minutes:10,clientRequestId} | 200 Dose; reminderDueAt changes, dueAtUTC unchanged |
-| POST /doses/{id}/corrections | dose.record | {expectedRevision,newState:pending/taken/skipped,reason,clientRequestId} | 200 Dose + corrective action + stockSyncStatus |
+| GET /doses | dose.read | date?,timezone? OR fromUTC,toUTC; state?,cursor?,limit? | 200 Dose list; half-open range, day summary and serverNow |
+| GET /doses/{id} | dose.read | None | 200 {dose,actions,nextActionCursor,reminders,nextReminderCursor}; latest 20 histories |
+| GET /doses/{id}/actions | dose.read | cursor?,limit? | 200 immutable action history |
+| GET /doses/{id}/reminders | dose.read | cursor?,limit? | 200 reminder jobs with processing attempts; no chat/link/provider IDs |
+| GET /dose-reminder-settings | dose.read | None | 200 enabled/revision/consentedAt, configured, channelLinked, recipient, workerLastActiveAt |
+| PUT /dose-reminder-settings | dose.record + owner | {expectedRevision:null/integer,enabled,consent:true when enabling} | 200 preference; explicit opt-in, default off |
+| POST /doses/{id}/reminders/{jobId}/retry | dose.record + owner | {expectedRevision:job.revision} | 200 current eligible unsent job queued again |
+| POST /doses/{id}/actions | dose.record | {expectedRevision,action:taken/skipped,clientRequestId,effectiveAt?} | 200 {dose,actionId,stockSyncStatus:not_implemented} |
+| POST /doses/{id}/snoozes | dose.record | {expectedRevision,minutes:10,clientRequestId} | 200 {dose,actionId,stockSyncStatus:not_implemented}; reminderDueAtUTC changes, dueAtUTC unchanged |
+| POST /doses/{id}/corrections | dose.record | {expectedRevision,newState:pending/taken/skipped,reason,clientRequestId} | 200 {dose,actionId,stockSyncStatus:not_implemented}; prior actions retained |
 | GET /followups | dose.read | status?,cursor?,limit? | 200 list follow-up |
 | POST /followups/{id}/acknowledge | dose.record | {expectedRevision} | 200 acknowledged follow-up |
 | POST /followups/{id}/resolve | dose.record | {expectedRevision,outcome,note?} | 200 resolved follow-up; stop pending escalation |
 
-expectedRevision maps to dose.actionRevision for dose routes. Repeated clientRequestId must match Idempotency-Key and returns the original result. Only pending can take a first terminal action; another terminal action returns 409 and requires correction. Reject future effectiveAt; record server recordedAt separately. Snooze requires pending occurrence and maximum 3 snoozes per occurrence in the initial version. Owner may resolve; caregiver additionally needs active assigned follow-up access, defined by its persisted recipient set. Follow-up creation is internal worker work, unique per occurrence; an unconfirmed event is never auto-skipped.
+expectedRevision maps to dose.actionRevision for dose routes. Repeated clientRequestId must match Idempotency-Key and returns the original result. Only pending can take a first terminal action; another terminal action returns 409 and requires correction. All actions require dueAtUTC <= server now and reject cancelled events. Optional effectiveAt must be between dueAtUTC and server now; recordedAt is the server time. Correction requires an existing taken/skipped record, a different new state and a nonempty reason; returning to pending preserves the prior reminder time. Snooze requires pending and reminderDueAtUTC <= now, allows at most 3 snoozes, and defers from server now by 10 minutes. It changes neither the prescribed due time nor dose quantity/state. Failed/stale/early actions do not append history. The unique patientId+clientRequestId key also prevents reuse across action routes. Operations recheck current permission on replay.
+
+The list defaults to today in the patient's IANA timezone; date is YYYY-MM-DD and optional timezone overrides its calendar boundaries. Explicit UTC bounds must both be supplied, end in Z and span a positive maximum of 31 elapsed days. Date and explicit bounds cannot be combined. State is pending/taken/skipped/cancelled; limit 1–100 (default 20). Dose pages ascend by dueAtUTC/id; histories descend by createdAt/id. Cursors bind their filters; invalid reuse returns 400. Summary counts cover the entire window regardless of state filter/page. overdueUnconfirmed means pending past due in this slice, not a C3 escalation or skipped event. It is not a terminal state. List meta includes fromUTC,toUTC,date,timezone,serverNow,summary,nextCursor. Generic schema revision and reminderQueuedRevision are hidden; actionRevision is the client write revision.
+
+Reminder consent belongs only to the patient owner and is separate from C1's task-channel consent. Enable requires consent:true even with no bot/link; configured/channelLinked are shown separately and no delivery is implied. Changing the enabled value suppresses pending jobs; saving an unchanged value is a no-op. Settings use their revision, null before first save. Retry needs the current pending dose/action revision, enabled consent, current active private link, configured adapter, an unexpired 60-minute window and fewer than 3 processing attempts; only failed/disabled/suppressed jobs qualify. Sent/unknown/processing/expired jobs cannot retry. The worker checks active patient/schedule/cabinet, dose revision/time, consent and link revision immediately before calling the provider. This is a point-in-time check, not cancellation of an already in-flight send. Reminder projections include actionRevision, status, errorCode, attemptCount, runAtUTC, expiresAtUTC and bounded attempts with attemptedAt/providerCallAt/status/errorCode. Attempts count processing claims, so a suppressed claim may have no provider call.
+
+Jobs are pending/processing/sent/failed/unknown/disabled/suppressed/expired. Sent means Telegram accepted a message, never receipt or reading. Unknown outcomes and interrupted leases are never blindly resent. Telegram disabled produces disabled/NOT_CONFIGURED with zero attempts for newly queued work. Expiry is 60 minutes after the current reminder time (including a snooze); expired reminders leave doses pending. Dedicated C2 collections/worker prevent the C1 task poller from claiming dose jobs. Stock writes/reconciliation are Step 30/A3 and currently return not_implemented. C3 follow-up routes in the table remain unimplemented: owner may resolve; caregivers will additionally need active assigned follow-up access. Silence is never automatically skipped.
 
 ## A3 Inventory and A4 refill coordination
 | Route | Permission | Request | Success |
@@ -256,7 +267,7 @@ Request:
 ```
 Response 200:
 ```json
-{"data":{"id":"222222222222222222222222","state":"taken","actionRevision":1,"stockSyncStatus":"pending","actionId":"333333333333333333333333"},"meta":{"requestId":"example-request"}}
+{"data":{"dose":{"id":"222222222222222222222222","state":"taken","actionRevision":1,"stockSyncStatus":"not_implemented"},"stockSyncStatus":"not_implemented","actionId":"333333333333333333333333"},"meta":{"requestId":"example-request"}}
 ```
 All example IDs and values are synthetic. Success records the dose, not an external delivery guarantee. Retry rechecks access and returns the same action; conflicting body or a stale expectedRevision under a new key returns 409.
 

@@ -1,0 +1,14 @@
+
+> test
+> node --experimental-vm-modules run.mjs
+
+(node:20376) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+DOM integration passed {
+  prescriptions: 1,
+  cabinet: 3,
+  tasks: 1,
+  schedules: 1,
+  medicineCards: 1,
+  doseActions: 4
+}

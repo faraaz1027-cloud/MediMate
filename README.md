@@ -79,3 +79,6 @@ The six APIs are POST and GET for prescriptions, manual cabinet items and caregi
 
 ## Step 24 Module 1 integration
 [Shared-patient demonstration, saved-medicine references, checks and open acceptance gates](docs/STEP_24_MODULE_1_INTEGRATION.md). Run `node verification/step24/run.mjs` for the controlled HTTP/database scenario, or add `--live-rxnorm` for actual NLM lookup with a labelled test-only outage. [Combined Postman collection](postman/MediMate_Step24.postman_collection.json). No real Telegram receipt or individual student contribution is claimed.
+
+## Step 27 dose records and reminder preparation
+[C2 implementation, tests, worker setup and Sahir's owner-review guide](docs/STEP_27_DOSE_REMINDERS.md). [Postman collection](postman/MediMate_Step27.postman_collection.json). Record taken/skipped/snoozed actions and reasoned corrections against real A2 occurrences. The separate dose worker requires a replica-set DB and owner opt-in; Telegram is currently unconfigured and live delivery remains unverified. Stock deduction is later A3 work. Step 28 is the broader timezone/restart audit.

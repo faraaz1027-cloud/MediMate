@@ -49,7 +49,8 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 - [ ] Ihfaz personally reviews/contributes A2, explains timezone/version logic and completes frontend/backend live edits. Assistant-authored work is not individual course contribution evidence.
 - [x] B2 technical slice prepared: exact product candidates, explicit label review, original cited passages/retrieval metadata, independent private notes, unavailable/outage states and live openFDA proof; [Step 26](STEP_26_MEDICINE_INFORMATION.md).
 - [ ] Faraaz personally reviews/contributes B2, demonstrates the real external request and performs frontend/backend live edits; assistant work is not individual contribution evidence.
-- [ ] C2: reminders and dose recording using A2.
+- [x] C2 technical slice prepared: A2 dose taken/skipped/snooze, reasoned correction, immutable history and consent-gated reminder worker; [Step 27 tests and limitations](STEP_27_DOSE_REMINDERS.md).
+- [ ] Sahir personally reviews/contributes C2, explains duplicate/worker behavior and performs frontend/backend live edits. Real Telegram receipt remains unverified; controlled fixtures do not close that gate.
 - [ ] Test timezone boundaries, duplicate actions and backend restarts.
 - [ ] Complete the agreed deployment arrangement and regression checks.
 - [ ] Update Jira and demonstrate all three Module 2 functions.
