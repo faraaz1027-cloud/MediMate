@@ -1,0 +1,79 @@
+{
+  "runAt": "2026-11-02T17:31:48.951Z",
+  "step": 26,
+  "function": "B2",
+  "owner": "Faraaz Jamil Chowdhury",
+  "branch": "feature/step26-medicine-information",
+  "baseCommit": "3e486023e6ca65a27c4f6ba6e7e54f39c34e1190",
+  "repositoryReview": {
+    "openStandaloneIssues": 0,
+    "basePR": 8,
+    "baseCI": 41376333627,
+    "baseConclusion": "success"
+  },
+  "validation": {
+    "build": "passed",
+    "api": {
+      "reportedTests": 81,
+      "failed": 0,
+      "skipped": 0
+    },
+    "dom": {
+      "passed": true,
+      "realMongoAndProductionBundle": true,
+      "fixtures": "clearly synthetic controlled openFDA/RxNorm"
+    },
+    "newman": {
+      "requests": 26,
+      "assertions": 37,
+      "failures": 0,
+      "providers": "live backend RxNorm/openFDA"
+    },
+    "live": {
+      "evidence": "step26-live-openfda.json",
+      "originalPassages": 5,
+      "checksPassed": 6,
+      "realOpenFDARequests": 2,
+      "outage": "explicitly injected test-only"
+    },
+    "browser": {
+      "viewports": [
+        {
+          "width": 1440,
+          "height": 1000,
+          "documentWidth": 1425
+        },
+        {
+          "width": 390,
+          "height": 844,
+          "documentWidth": 375
+        }
+      ],
+      "checks": [
+        "live product/candidate review and source save",
+        "original source link/identity/version/retrieval date",
+        "independent personal note and reload",
+        "mobile injected outage retains saved evidence",
+        "personal note saves during outage",
+        "manual identity is unavailable without name-only guessing"
+      ],
+      "consoleErrors": [],
+      "databaseEvidence": "step26-browser-db.json",
+      "exactOriginalPassages": 5
+    }
+  },
+  "decisions": {
+    "matching": "exact saved RxCUI plus explicit actual product/ingredient/strength/form review; no clinical proof",
+    "selection": "refetch immutable label UUID and compare reviewed hash/cabinet/card revision",
+    "notes": "private and separate; no upstream request",
+    "removal": "clear current source association; retain note and immutable public receipts",
+    "limits": "five candidates/page, newest 105; 8s/4MiB fetch bounds; bounded cache/queue/per-process budget"
+  },
+  "remaining": [
+    "Faraaz personal review/contribution/live external API demonstration and modifications",
+    "Jira/faculty and Module 2 acceptance",
+    "Step 27 C2, worker integration, deployment",
+    "Real Telegram bot/consenting recipient absent; delivery unverified",
+    "No clinical package match/safety, ingredient checking or comprehensive accessibility/performance claim"
+  ]
+}

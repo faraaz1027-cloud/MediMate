@@ -163,6 +163,18 @@ footer {
   color: #6c6578;
   margin: 40px 0 10px;
 }
+.information-picker { margin-bottom: 24px; }
+.information-columns { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.information-columns > div > .card { margin-bottom: 24px; }
+.information-columns > * { min-width: 0; }
+.information-workspace button { margin: 6px 8px 6px 0; }
+.information-workspace p, .information-workspace a, .information-workspace li { overflow-wrap: anywhere; }
+.information-workspace .check input { flex: 0 0 20px; }
+.label-passages { max-height: 540px; overflow-y: auto; padding-right: 10px; }
+.label-passages blockquote { white-space: pre-wrap; overflow-wrap: anywhere; margin: 12px 0; padding-left: 14px; border-left: 3px solid #d4c8e2; }
+.label-passages h4 { text-transform: capitalize; }
+.personal-note { background: #faf7ff; }
+@media (max-width: 720px) { .information-columns { grid-template-columns: 1fr; } }
 .schedule-workspace { align-items: start; }
 .schedule-workspace button { margin: 6px 8px 6px 0; }
 .schedule-workspace .check input { flex: 0 0 20px; }

@@ -47,7 +47,8 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 ## 5. Module 2 — Lab 6
 - [x] A2 technical slice prepared: current confirmed source → full preview → explicit confirmation → persisted events, immutable replacement, pause/resume; [Step 25 tests/contracts/review](STEP_25_CONFIRMED_SCHEDULES.md).
 - [ ] Ihfaz personally reviews/contributes A2, explains timezone/version logic and completes frontend/backend live edits. Assistant-authored work is not individual course contribution evidence.
-- [ ] B2: source-linked information cards.
+- [x] B2 technical slice prepared: exact product candidates, explicit label review, original cited passages/retrieval metadata, independent private notes, unavailable/outage states and live openFDA proof; [Step 26](STEP_26_MEDICINE_INFORMATION.md).
+- [ ] Faraaz personally reviews/contributes B2, demonstrates the real external request and performs frontend/backend live edits; assistant work is not individual contribution evidence.
 - [ ] C2: reminders and dose recording using A2.
 - [ ] Test timezone boundaries, duplicate actions and backend restarts.
 - [ ] Complete the agreed deployment arrangement and regression checks.

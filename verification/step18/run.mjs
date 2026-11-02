@@ -15,6 +15,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { SourceTextModule } from "node:vm";
+import { openFDAFixture, fixtureId, fixtureLabel } from "../step26/fixture.mjs";
+const labelFixture = openFDAFixture();
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../..",
@@ -50,7 +52,7 @@ try {
   await db.init();
   const app = express(),
     origins = [];
-  app.use("/api/v1", createV1({ db, origins, rxnorm }));
+  app.use("/api/v1", createV1({ db, origins, rxnorm, openfda:labelFixture.adapter }));
   server = app.listen(0, "127.0.0.1");
   await new Promise((r) => server.once("listening", r));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -450,13 +452,66 @@ try {
   await clickReady(getByRole(body,"button",{name:"Sign in",exact:true}));
   await findByRole(body,"heading",{name:"Hello, Reviewed profile"});
   assert.equal((await mongoose.model("Schedule").findOne()).status,"active");
+  // Step 26: create a current B1 identity through the UI, then inspect real persisted B2 facts/notes.
+  await u.selectOptions(getByRole(body,"combobox",{name:"Patient",exact:true}),(await mongoose.model("Patient").findOne({displayName:"DOM owner"}))._id.toString());
+  await clickReady(getByRole(body,"button",{name:"Medicine cabinet",exact:true}));
+  await u.type(getByLabelText(body,"Medicine search",{exact:true}),"demo");
+  await clickReady(getByRole(body,"button",{name:"Search medicines",exact:true}));
+  await clickReady(await findByRole(body,"button",{name:"Select 198440",exact:true}));
+  await findByRole(body,"heading",{name:"Review selected medicine",exact:true});
+  await u.type(getByLabelText(body,"Strength (optional)",{exact:true}),"500 mg");
+  await u.type(getByLabelText(body,"Form (optional)",{exact:true}),"tablet");
+  await clickReady(getByRole(body,"checkbox",{name:"I reviewed the selected name, strength and form",exact:true}));
+  await clickReady(getByRole(body,"button",{name:"Save medicine",exact:true}));
+  await findByRole(body,"heading",{name:"Cabinet item",exact:true});
+  const b2Item=await mongoose.model("CabinetItem").findOne({entryType:"external",status:"active"});
+  await clickReady(getByRole(body,"button",{name:"Medicine information",exact:true}));
+  await findByRole(body,"option",{name:"DOM cabinet · active",exact:true});
+  await u.selectOptions(getByLabelText(body,"Cabinet item",{exact:true}),String(sharedCabinetItem._id));
+  await clickReady(await findByRole(body,"button",{name:"Find label candidates",exact:true}));
+  await findByText(body,"Label information unavailable: this medicine has no verified RxNorm product identity. No name-only match is used.",{exact:true});
+  await u.selectOptions(getByLabelText(body,"Cabinet item",{exact:true}),String(b2Item._id));
+  await clickReady(await findByRole(body,"button",{name:"Find label candidates",exact:true}));
+  await clickReady(await findByRole(body,"button",{name:"Review label "+fixtureId,exact:true}));
+  const labelReview="I checked this label applies to the actual product, ingredient, strength and form, and reviewed its passages.";
+  await u.type(getByLabelText(body,"Personal note",{exact:true}),"Unsaved note draft");
+  await clickReady(getByRole(body,"checkbox",{name:labelReview,exact:true}));
+  await clickReady(getByRole(body,"button",{name:"Save selected label",exact:true}));
+  await findByText(body,"Source label saved. Personal notes remain separate.",{exact:true});
+  assert.equal(getByLabelText(body,"Personal note",{exact:true}).value,"Unsaved note draft");
+  assert.equal((await mongoose.model("MedicineCard").findOne()).personalNote,"");
+  await u.clear(getByLabelText(body,"Personal note",{exact:true}));
+  assert.ok([...body.querySelectorAll("blockquote")].some(e=>e.textContent===fixtureLabel().warnings[0]));
+  const b2Source=await mongoose.model("SourceRecord").findOne({provider:"openfda"}).lean();
+  labelFixture.control.down=true;
+  await clickReady(getByRole(body,"button",{name:"Refresh label candidates",exact:true}));
+  await findByText(body,"openFDA is unavailable. Retry later; saved evidence and notes are retained.",{exact:true});
+  assert.ok(getByRole(body,"link",{name:"Open original source record",exact:true}));
+  await u.type(getByLabelText(body,"Personal note",{exact:true}),"DOM personal note <script>text only</script>");
+  await clickReady(getByRole(body,"button",{name:"Save personal note",exact:true}));
+  await findByText(body,"Personal note saved separately from source evidence.",{exact:true});
+  assert.deepEqual(await mongoose.model("SourceRecord").findById(b2Source._id).lean(),b2Source);
+  labelFixture.control.down=false;
+  body=await mount();u=userEvent.setup({document:dom.window.document});
+  await findByRole(body,"heading",{name:"Hello, Reviewed profile"});
+  await u.selectOptions(getByRole(body,"combobox",{name:"Patient",exact:true}),(await mongoose.model("Patient").findOne({displayName:"DOM owner"}))._id.toString());
+  await clickReady(getByRole(body,"button",{name:"Medicine information",exact:true}));
+  await findByRole(body,"option",{name:"acetaminophen 500 MG Oral Tablet · active",exact:true});
+  await u.selectOptions(getByLabelText(body,"Cabinet item",{exact:true}),String(b2Item._id));
+  await waitFor(()=>assert.equal(getByLabelText(body,"Personal note",{exact:true}).value,"DOM personal note <script>text only</script>"),{container:body});
+  assert.equal(body.querySelectorAll("script").length,0);
+  await clickReady(getByRole(body,"button",{name:"Remove saved label",exact:true}));
+  await findByText(body,"Source association removed. Personal note retained.",{exact:true});
+  assert.equal(getByLabelText(body,"Personal note",{exact:true}).value,"DOM personal note <script>text only</script>");
+  assert.ok(await mongoose.model("SourceRecord").findById(b2Source._id));
   const counts = {
     prescriptions: await mongoose.model("Prescription").countDocuments(),
     cabinet: await mongoose.model("CabinetItem").countDocuments(),
     tasks: await mongoose.model("Task").countDocuments(),
     schedules: await mongoose.model("Schedule").countDocuments(),
+    medicineCards: await mongoose.model("MedicineCard").countDocuments(),
   };
-  assert.deepEqual(counts, { prescriptions: 1, cabinet: 2, tasks: 1, schedules: 1 });
+  assert.deepEqual(counts, { prescriptions: 1, cabinet: 3, tasks: 1, schedules: 1, medicineCards: 1 });
   fs.writeFileSync(
     root + "/docs/evidence/step18-dom.json",
     JSON.stringify(
@@ -489,6 +544,7 @@ try {
           "Step 24 explicit saved-medicine association survives replacement and remount in the shared patient workflow",
           "Step 25 A1/B1 source selection, invalidated preview, explicit schedule confirmation, future replacement, pause/resume, persisted history after remount",
           "Step 25 expired-session write releases parent busy lock and permits sign-in without replaying the rejected mutation",
+          "Step 26 current cabinet identity to explicit label review/selection, exact source text, separate note during outage, persistence/remount, escaped note text and source removal retaining note/immutable source",
         ],
         counts,
         limitations:

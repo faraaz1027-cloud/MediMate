@@ -28,6 +28,7 @@ const collections = {
   ScheduleVersion: "scheduleVersions",
   SchedulePreview: "schedulePreviews",
   DoseOccurrence: "doseOccurrences",
+  MedicineCard: "medicineCards",
 };
 function model(name, fields, indexes = []) {
   const schema = new Schema(
@@ -117,6 +118,7 @@ model("CabinetItem", {
   sourceRecordId: oid,
 });
 model("SourceRecord", {
+  sourceVersion: String,
   provider: String,
   externalId: String,
   sourceUrl: String,
@@ -125,6 +127,12 @@ model("SourceRecord", {
   snapshot: Schema.Types.Mixed,
   matchStatus: String,
 });
+model("MedicineCard", {
+  patientId: oid, cabinetItemId: oid, sourceRecordId: oid,
+  availability: String, reason: String, selectedPassages: [Schema.Types.Mixed],
+  personalNote: String, itemSnapshot: Schema.Types.Mixed,
+  applicabilityConfirmedBy: oid, applicabilityConfirmedAt: Date, revisedAt: Date,
+}, [[{ patientId: 1, cabinetItemId: 1 }, { unique: true }]]);
 model(
   "CabinetRevision",
   {

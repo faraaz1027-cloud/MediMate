@@ -5,6 +5,8 @@ import { createTelegram } from "./telegram.js";
 import { installChannels } from "./channels.js";
 import { installTasks } from "./tasks.js";
 import { installSchedules } from "./schedules.js";
+import { createOpenFDA } from "./openfda.js";
+import { installInformationCards } from "./information-cards.js";
 import express from "express";
 import mongoose from "mongoose";
 import {
@@ -119,6 +121,7 @@ function authInput(body, register = false) {
 export function createV1({
   db,
   rxnorm = createRxNorm(),
+  openfda = createOpenFDA(),
   telegram = createTelegram(),
   secure = process.env.NODE_ENV === "production",
   origins = ["http://localhost:5173", "http://127.0.0.1:5173"],
@@ -564,6 +567,7 @@ export function createV1({
   installChannels(app, { db, authenticated, csrf, mutate, object, fail, id, telegram, now, throttle });
   installTasks(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now, telegram });
   installSchedules(patient, { db, csrf, scope, access, mutate, fail, id, object, text, publicDoc, now, send });
+  installInformationCards(patient, { db, csrf, scope, mutate, fail, id, object, publicDoc, now, send, openfda });
   const resources = [
     ["prescriptions", "Prescription", "prescription"],
   ];
