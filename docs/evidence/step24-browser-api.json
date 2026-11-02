@@ -1,0 +1,41 @@
+{
+  "step": 24,
+  "runAt": "2026-11-02T00:54:13.906Z",
+  "upstreamMode": "live NLM RxNorm with controlled test-only outage; Telegram disabled",
+  "checks": [
+    "B1 explicit external selection, controlled outage and labelled manual fallback persisted for one patient",
+    "A1 manual draft completeness/review gate and A1–B1 persisted same-patient reference",
+    "Saved source-metadata fixture remains untrusted; independent confirmer needs no cabinet.read",
+    "Missing/cross-patient cabinet references rejected without partial prescription writes",
+    "New associations require cabinet.read; retained references and confirmation preserve independent permissions",
+    "C1 uses the same patient/caregiver IDs; acknowledgement, transitions and handover persist without false Telegram success",
+    "Grant revocation blocks all three features and previously successful mutation replay; restore uses the existing grant",
+    "Cabinet edits/archive preserve confirmed instruction text/IDs; replacement drafts retain historical references but require active/cleared links to confirm",
+    "API restart/readback retains shared IDs, confirmed history, source/archive state and caregiver task state"
+  ],
+  "records": {
+    "patientId": "6ae7df32fb047e1aee0aa072",
+    "organizerUserId": "6ae7df32fb047e1aee0aa070",
+    "caregiverUserId": "6ae7df33fb047e1aee0aa07a",
+    "prescriptionIds": [
+      "6ae7df35fb047e1aee0aa0c8",
+      "6ae7df35fb047e1aee0aa103"
+    ],
+    "currentVersionIds": [
+      "6ae7df35fb047e1aee0aa284",
+      "6ae7df35fb047e1aee0aa104"
+    ],
+    "originalVersionId": "6ae7df35fb047e1aee0aa0c9",
+    "cabinetItemIds": [
+      "6ae7df35fb047e1aee0aa0a2",
+      "6ae7df35fb047e1aee0aa0b0"
+    ],
+    "taskId": "6ae7df35fb047e1aee0aa1c3"
+  },
+  "ocr": "This API scenario exercises a labelled source-metadata fixture, not an OCR engine; browser OCR evidence is separate.",
+  "openGates": [
+    "Real Telegram bot/consenting recipient and actual receipt evidence",
+    "Individual contribution/review/viva and Jira/faculty acceptance"
+  ],
+  "secretsIncluded": false
+}

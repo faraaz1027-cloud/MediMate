@@ -1,0 +1,122 @@
+{
+  "step": 24,
+  "runAt": "2026-11-02T00:51:48.125Z",
+  "upstreamMode": "live NLM RxNorm with explicitly injected test-only outage",
+  "checks": [
+    "B1 explicit external selection, controlled outage and labelled manual fallback persisted for one patient",
+    "A1 manual draft completeness/review gate and A1–B1 persisted same-patient reference",
+    "Saved source-metadata fixture remains untrusted; independent confirmer needs no cabinet.read",
+    "Missing/cross-patient cabinet references rejected without partial prescription writes",
+    "New associations require cabinet.read; retained references and confirmation preserve independent permissions",
+    "C1 uses the same patient/caregiver IDs; acknowledgement, transitions and handover persist without false Telegram success",
+    "Grant revocation blocks all three features and previously successful mutation replay; restore uses the existing grant",
+    "Cabinet edits/archive preserve confirmed instruction text/IDs; replacement drafts retain historical references but require active/cleared links to confirm",
+    "API restart/readback retains shared IDs, confirmed history, source/archive state and caregiver task state"
+  ],
+  "records": {
+    "patientId": "6ae7dea10efbd833da6f0657",
+    "organizerUserId": "6ae7dea10efbd833da6f0655",
+    "caregiverUserId": "6ae7dea10efbd833da6f065f",
+    "prescriptionIds": [
+      "6ae7dea30efbd833da6f06ad",
+      "6ae7dea30efbd833da6f06e8"
+    ],
+    "currentVersionIds": [
+      "6ae7dea40efbd833da6f0869",
+      "6ae7dea30efbd833da6f06e9"
+    ],
+    "originalVersionId": "6ae7dea30efbd833da6f06ae",
+    "cabinetItemIds": [
+      "6ae7dea30efbd833da6f0687",
+      "6ae7dea30efbd833da6f0695"
+    ],
+    "taskId": "6ae7dea30efbd833da6f07a8"
+  },
+  "ocr": "This API scenario exercises a labelled source-metadata fixture, not an OCR engine; browser OCR evidence is separate.",
+  "openGates": [
+    "Real Telegram bot/consenting recipient and actual receipt evidence",
+    "Individual contribution/review/viva and Jira/faculty acceptance"
+  ],
+  "secretsIncluded": false,
+  "externalRequests": [
+    {
+      "at": "2026-11-02T00:51:47.183Z",
+      "url": "https://rxnav.nlm.nih.gov/REST/drugs.json?name=cymbalta",
+      "status": 200,
+      "payload": {
+        "drugGroup": {
+          "name": null,
+          "conceptGroup": [
+            {
+              "tty": "BPCK"
+            },
+            {
+              "tty": "SBD",
+              "conceptProperties": [
+                {
+                  "rxcui": "596928",
+                  "name": "duloxetine 20 MG Delayed Release Oral Capsule [Cymbalta]",
+                  "synonym": "Cymbalta 20 MG Delayed Release Oral Capsule",
+                  "tty": "SBD",
+                  "language": "ENG",
+                  "suppress": "N",
+                  "umlscui": ""
+                },
+                {
+                  "rxcui": "596932",
+                  "name": "duloxetine 30 MG Delayed Release Oral Capsule [Cymbalta]",
+                  "synonym": "Cymbalta 30 MG Delayed Release Oral Capsule",
+                  "tty": "SBD",
+                  "language": "ENG",
+                  "suppress": "N",
+                  "umlscui": ""
+                },
+                {
+                  "rxcui": "615186",
+                  "name": "duloxetine 60 MG Delayed Release Oral Capsule [Cymbalta]",
+                  "synonym": "Cymbalta 60 MG (as duloxetine HCl 67.3 MG) Delayed Release Oral Capsule",
+                  "tty": "SBD",
+                  "language": "ENG",
+                  "suppress": "N",
+                  "umlscui": ""
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "at": "2026-11-02T00:51:47.463Z",
+      "url": "https://rxnav.nlm.nih.gov/REST/rxcui/596928/properties.json",
+      "status": 200,
+      "payload": {
+        "properties": {
+          "rxcui": "596928",
+          "name": "duloxetine 20 MG Delayed Release Oral Capsule [Cymbalta]",
+          "synonym": "Cymbalta 20 MG Delayed Release Oral Capsule",
+          "tty": "SBD",
+          "language": "ENG",
+          "suppress": "N",
+          "umlscui": ""
+        }
+      }
+    }
+  ],
+  "controlledFaults": [
+    {
+      "kind": "RxNorm outage",
+      "testOnly": true
+    }
+  ],
+  "databaseCounts": {
+    "Prescription": 2,
+    "PrescriptionVersion": 4,
+    "PrescriptionInstruction": 4,
+    "CabinetItem": 2,
+    "CabinetRevision": 4,
+    "Task": 1,
+    "TaskEvent": 6,
+    "NotificationJob": 2
+  }
+}

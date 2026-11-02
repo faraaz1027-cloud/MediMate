@@ -4,6 +4,7 @@ import ValidatedForm from "./ValidatedForm.jsx";
 const emptyLine = (lineNumber = 1) => ({
   lineNumber,
   medicineText: "",
+  cabinetItemId: "",
   instructionsText: "",
   strengthText: "",
   doseQuantity: "",
@@ -33,6 +34,12 @@ export default function PrescriptionReview({
   const read = permissions.includes("prescription.read"),
     write = permissions.includes("prescription.write"),
     confirm = permissions.includes("prescription.confirm");
+  const cabinetRead = permissions.includes("cabinet.read");
+  const [cabinetChoices, setCabinetChoices] = useState([]),
+    [cabinetCursor, setCabinetCursor] = useState(null),
+    [cabinetLoading, setCabinetLoading] = useState(false),
+    [cabinetError, setCabinetError] = useState("");
+  const cabinetGeneration = useRef(0);
   const [rows, setRows] = useState([]),
     [cursor, setCursor] = useState(null),
     [listError, setListError] = useState(""),
@@ -78,6 +85,42 @@ export default function PrescriptionReview({
     };
   }, [patient, read]);
   const current = () => alive.current;
+  useEffect(() => {
+    if (cabinetRead) loadCabinetChoices();
+    else {
+      setCabinetChoices([]);
+      setCabinetCursor(null);
+      setCabinetLoading(false);
+    }
+    return () => {
+      cabinetGeneration.current++;
+    };
+  }, [patient, cabinetRead]);
+  async function loadCabinetChoices(append = false) {
+    const token = ++cabinetGeneration.current;
+    setCabinetLoading(true);
+    setCabinetError("");
+    try {
+      const r = await api(
+        `/patients/${patient}/cabinet-items?status=active&limit=100` +
+          (append && cabinetCursor
+            ? "&cursor=" + encodeURIComponent(cabinetCursor)
+            : ""),
+        { isCurrent: () => current() && token === cabinetGeneration.current },
+      );
+      if (!current() || token !== cabinetGeneration.current) return;
+      setCabinetChoices((old) => (append ? [...old, ...r.data] : r.data));
+      setCabinetCursor(r.meta.nextCursor);
+    } catch (e) {
+      if (current() && token === cabinetGeneration.current) {
+        setCabinetError(e.message);
+        if ([403, 404].includes(e.status)) setCabinetChoices([]);
+      }
+    } finally {
+      if (current() && token === cabinetGeneration.current)
+        setCabinetLoading(false);
+    }
+  }
   async function reload(append = false) {
     const token = ++listGeneration.current;
     setLoading(true);
@@ -175,6 +218,7 @@ export default function PrescriptionReview({
               "clarificationRequired",
             ].includes(key) ||
             ([
+              "cabinetItemId",
               "strengthText",
               "doseQuantity",
               "doseUnit",
@@ -472,6 +516,33 @@ export default function PrescriptionReview({
                   </button>
                 </>
               )}
+              {cabinetRead && (
+                <div>
+                  <button
+                    disabled={saving || scanning || cabinetLoading}
+                    onClick={() => loadCabinetChoices()}
+                  >
+                    Refresh saved medicine choices
+                  </button>
+                  {cabinetLoading && (
+                    <p role="status">Loading saved medicine choices…</p>
+                  )}
+                  {cabinetError && (
+                    <p role="alert">
+                      Saved medicine choices unavailable: {cabinetError} Retry
+                      above or leave the reference empty.
+                    </p>
+                  )}
+                  {cabinetCursor && (
+                    <button
+                      disabled={saving || scanning || cabinetLoading}
+                      onClick={() => loadCabinetChoices(true)}
+                    >
+                      More saved medicine choices
+                    </button>
+                  )}
+                </div>
+              )}
               <ValidatedForm onSubmit={save}>
                 <fieldset disabled={saving || scanning}>
                   <label>
@@ -491,6 +562,45 @@ export default function PrescriptionReview({
                       key={line.lineNumber}
                     >
                       <legend>Instruction {line.lineNumber}</legend>
+                      <label>
+                        Saved medicine (optional)
+                        <select
+                          name={`instructions.${i}.cabinetItemId`}
+                          value={line.cabinetItemId || ""}
+                          onChange={(e) =>
+                            edit(i, "cabinetItemId", e.target.value)
+                          }
+                        >
+                          <option value="">No cabinet reference</option>
+                          {line.cabinetItemId &&
+                            !cabinetChoices.some(
+                              (c) => c.id === line.cabinetItemId,
+                            ) && (
+                              <option value={line.cabinetItemId}>
+                                Saved reference {line.cabinetItemId} (not in
+                                loaded active choices)
+                              </option>
+                            )}
+                          {cabinetChoices.map((c) => (
+                            <option value={c.id} key={c.id}>
+                              {c.displayName} ·{" "}
+                              {c.entryType === "external"
+                                ? "RxNorm"
+                                : "Manual, unverified"}
+                              {c.strengthText ? " · " + c.strengthText : ""}
+                              {c.form ? " · " + c.form : ""}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <p className="hint">
+                        An optional reference to this patient's saved medicine.
+                        Review the identity, strength and form yourself; linking
+                        does not verify a clinical match or change the
+                        transcribed instructions.
+                        {!cabinetRead &&
+                          " Cabinet read access is needed to choose an item. You can clear an existing reference."}
+                      </p>
                       {[
                         ["medicineText", "Medicine name", true, 200],
                         [
@@ -641,6 +751,12 @@ export default function PrescriptionReview({
                   <li key={x.id}>
                     {x.medicineText}: {x.instructionsText} · {x.doseQuantity}{" "}
                     {x.doseUnit} · {x.frequencyText} · {x.durationText}
+                    {x.cabinetItemId && (
+                      <small>
+                        {" "}
+                        · Saved medicine reference: {x.cabinetItemId}
+                      </small>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -657,6 +773,12 @@ export default function PrescriptionReview({
                     {x.clarificationRequired
                       ? "Needs clarification"
                       : "Reviewed transcription"}
+                    {x.cabinetItemId && (
+                      <small>
+                        {" "}
+                        · Saved medicine reference: {x.cabinetItemId}
+                      </small>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -709,6 +831,7 @@ export default function PrescriptionReview({
                     Object.fromEntries(
                       Object.entries(x).filter(([key]) =>
                         [
+                          "cabinetItemId",
                           "lineNumber",
                           "medicineText",
                           "instructionsText",
@@ -859,6 +982,12 @@ export default function PrescriptionReview({
                         {x.medicineText}: {x.instructionsText} ·{" "}
                         {x.doseQuantity} {x.doseUnit} · {x.frequencyText} ·{" "}
                         {x.durationText}
+                        {x.cabinetItemId && (
+                          <small>
+                            {" "}
+                            · Saved medicine reference: {x.cabinetItemId}
+                          </small>
+                        )}
                       </li>
                     ))}
                   </ul>

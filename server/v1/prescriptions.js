@@ -2,9 +2,10 @@ import mongoose from "mongoose";
 
 export function installPrescriptions(
   patient,
-  { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now },
+  { db, csrf, scope, access, mutate, fail, id, object, text, publicDoc, now },
 ) {
   const fields = [
+    "cabinetItemId",
     "medicineText",
     "instructionsText",
     "strengthText",
@@ -67,6 +68,17 @@ export function installPrescriptions(
         ),
         clarificationRequired: line.clarificationRequired,
       };
+      if (line.cabinetItemId !== undefined) {
+        if (
+          typeof line.cabinetItemId !== "string" ||
+          !/^[a-f0-9]{24}$/i.test(line.cabinetItemId)
+        )
+          invalid(
+            `instructions.${i}.cabinetItemId`,
+            "Choose a saved medicine or leave the reference empty.",
+          );
+        out.cabinetItemId = id(line.cabinetItemId);
+      }
       for (const key of ["strengthText", "frequencyText", "durationText"])
         if (line[key] !== undefined)
           out[key] = text(line[key], `instructions.${i}.${key}`);
@@ -171,7 +183,48 @@ export function installPrescriptions(
         .map(publicDoc),
     };
   }
-  async function writeLines(req, versionId, lines, s) {
+  async function validateCabinetLinks(
+    req,
+    lines,
+    s,
+    selecting = true,
+    retained = [],
+  ) {
+    if (!lines.some((line) => line.cabinetItemId)) return;
+    const existing = new Set(
+      retained.map((line) => String(line.cabinetItemId || "")),
+    );
+    if (
+      selecting &&
+      lines.some(
+        (line) =>
+          line.cabinetItemId && !existing.has(String(line.cabinetItemId)),
+      )
+    )
+      await access(req, "cabinet.read", s);
+    const checked = new Set();
+    for (const [i, line] of lines.entries()) {
+      if (!line.cabinetItemId || checked.has(String(line.cabinetItemId)))
+        continue;
+      const item = await db.one(
+        "CabinetItem",
+        { _id: id(String(line.cabinetItemId)), patientId: req.patient._id },
+        s,
+      );
+      if (
+        !item ||
+        (item.status !== "active" &&
+          (!selecting || !existing.has(String(item._id))))
+      )
+        invalid(
+          `instructions.${i}.cabinetItemId`,
+          "Choose an active saved medicine for this patient, or clear this reference.",
+        );
+      checked.add(String(item._id));
+    }
+  }
+  async function writeLines(req, versionId, lines, s, retained = []) {
+    await validateCabinetLinks(req, lines, s, true, retained);
     for (const line of lines)
       await db.insert(
         "PrescriptionInstruction",
@@ -303,7 +356,13 @@ export function installPrescriptions(
           s,
         );
         const updated = await parentUpdate(p, { draftVersionId: v._id }, s);
-        await writeLines(req, v._id, lines, s);
+        await writeLines(
+          req,
+          v._id,
+          lines,
+          s,
+          (await withLines(previous, s)).instructions,
+        );
         return {
           prescription: publicDoc(updated),
           draftVersion: await withLines(v, s),
@@ -361,12 +420,13 @@ export function installPrescriptions(
           if (!updated)
             fail(409, "REVISION_CONFLICT", "Reload the draft and retry.");
           const parent = await parentUpdate(p, { draftVersionId: v._id }, s);
+          const oldInstructions = (await withLines(v, s)).instructions;
           await db.remove(
             "PrescriptionInstruction",
             { patientId: req.patient._id, prescriptionVersionId: v._id },
             s,
           );
-          await writeLines(req, v._id, lines, s);
+          await writeLines(req, v._id, lines, s, oldInstructions);
           return {
             prescription: publicDoc(parent),
             draftVersion: await withLines(updated, s),
@@ -434,6 +494,9 @@ export function installPrescriptions(
                   "Reviewed timing and duration are required on every line.",
                 );
           }
+          // A confirmer can review the saved instruction without cabinet.read;
+          // validate its existing reference without exposing cabinet contents.
+          await validateCabinetLinks(req, full.instructions, s, false);
           const confirmed = await db.update(
             "PrescriptionVersion",
             { _id: v._id, revision: b.expectedRevision, status: "draft" },

@@ -1,5 +1,11 @@
 # Change log
 
+## Step 24 — Module 1 technical integration
+- Implemented the planned optional instruction-to-cabinet reference with patient/permission checks, explicit UI selection and immutable historical references.
+- Preserved correction of archived references in replacement drafts while blocking new confirmation until an active reference is selected or cleared.
+- Added one-patient A1/B1/C1 API integration, live/controlled runner, shared UI regression checks and combined Postman evidence; verified actual browser OCR and DB readback.
+- Prepared owner demonstration/review materials. Full Module 1 acceptance remains open for real Telegram receipt, individual contributions/rehearsal, Jira and faculty sign-off.
+
 ## Step 23 — C1 tasks and Telegram preparation
 - Added assignment/edit/accept/complete/reopen, append-only handover snapshots and separate authenticated acknowledgement.
 - Added private-chat proof plus in-app consent linking, hashed one-time codes, unlinking, a persisted task delivery queue/attempts and a separate Telegram polling worker.
