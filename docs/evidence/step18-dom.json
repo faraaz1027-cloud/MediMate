@@ -1,5 +1,5 @@
 {
-  "runAt": "2026-11-02T01:29:34.069Z",
+  "runAt": "2026-11-02T02:01:45.241Z",
   "runner": "JSDOM + Testing Library user-event; production React bundle; real MongoDB 7.0.24 replica set",
   "passed": [
     "registration",
@@ -23,12 +23,15 @@
     "Step 22 no-match/outage manual fallback and archived history after remount",
     "Step 23 handover, explicit acknowledgement, accept/complete/reopen and edit after remount",
     "Step 23 Telegram disabled status is explicit; live delivery remains unverified",
-    "Step 24 explicit saved-medicine association survives replacement and remount in the shared patient workflow"
+    "Step 24 explicit saved-medicine association survives replacement and remount in the shared patient workflow",
+    "Step 25 A1/B1 source selection, invalidated preview, explicit schedule confirmation, future replacement, pause/resume, persisted history after remount",
+    "Step 25 expired-session write releases parent busy lock and permits sign-in without replaying the rejected mutation"
   ],
   "counts": {
     "prescriptions": 1,
     "cabinet": 2,
-    "tasks": 1
+    "tasks": 1,
+    "schedules": 1
   },
   "limitations": "JSDOM does not verify browser layout or accessibility; see separate Step 19 browser smoke evidence."
 }

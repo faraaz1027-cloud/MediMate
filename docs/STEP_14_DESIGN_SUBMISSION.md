@@ -1,6 +1,8 @@
 # Step 14 — Interface designs and submission
 Updated 1 November 2026.
 
+Step 25 implementation review (2 November): the actual A2 desktop frame and screenshot were retrieved from Figma. [Implementation/adaptation notes and evidence](STEP_25_CONFIRMED_SCHEDULES.md) explain source selection, explicit UTC boundaries, full-course preview, immutable history and the shared list/detail layout. The original design/submission artifacts remain the course design baseline; no new faculty submission or exact pixel-parity claim is made.
+
 ## Deliverables
 - [Editable Figma designs](https://www.figma.com/design/1Zy0JqsSdfzL9Lno6GlWbB?node-id=2-2409): detailed desktop, mobile, error and success designs for six screens, preserving original wireframes.
 - [Word submission](submission/MediMate_Step14_Design_Submission.docx): 16 pages, with member allocations, labelled figures, Figma links, mobile/error views, interaction rules and C5 SOS specification.

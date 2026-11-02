@@ -9,6 +9,7 @@
     "worker": "node --env-file-if-exists=.env worker.js"
   },
   "dependencies": {
+    "@js-temporal/polyfill": "0.5.1",
     "express": "^5.0.0",
     "mongoose": "^8.0.0"
   }

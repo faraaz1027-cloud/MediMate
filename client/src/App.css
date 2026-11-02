@@ -163,6 +163,15 @@ footer {
   color: #6c6578;
   margin: 40px 0 10px;
 }
+.schedule-workspace { align-items: start; }
+.schedule-workspace button { margin: 6px 8px 6px 0; }
+.schedule-workspace .check input { flex: 0 0 20px; }
+.schedule-workspace > .card { min-width: 0; }
+.schedule-workspace p, .schedule-workspace small, .schedule-preview li { overflow-wrap: anywhere; }
+.schedule-preview { border: 1px solid #d4c8e2; border-radius: 8px; padding: 16px; margin-top: 20px; }
+.schedule-preview ol { max-height: 360px; overflow-y: auto; padding-left: 24px; }
+.schedule-preview li { padding: 8px 0; }
+.source-summary { background: #f5f1fa; border-radius: 6px; padding: 12px; margin: 12px 0; }
 @media (max-width: 720px) {
   header {
     gap: 12px;

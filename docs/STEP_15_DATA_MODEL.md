@@ -47,15 +47,18 @@ Evidence references contain sourceRecordId and a passage key plus immutable pass
 ## Schedules, occurrences and dose actions: A2, C2, C3
 | Collection | Core fields |
 |---|---|
-| schedules | patientId, cabinetItemId, currentVersionId?, status: draft/active/paused/ended |
-| scheduleVersions | patientId, scheduleId, versionNumber, prescriptionInstructionId, confirmedByUserId, confirmedAt, effectiveFromUTC, endAtUTC?, timezone, timingMode: fixed_times/interval, localTimes[] or intervalMinutes+anchorAtUTC, doseQuantity, doseUnit |
-| doseOccurrences | patientId, scheduleId, scheduleVersionId, cabinetItemId, dueAtUTC, doseQuantitySnapshot, doseUnitSnapshot, state: pending/taken/skipped/cancelled, reminderDueAtUTC, snoozeCount, actionRevision |
+| schedules | patientId, cabinetItemId, prescriptionInstructionId, currentVersionId, status: active/paused; pausedAt?, pauseReason? |
+| scheduleVersions | patientId, scheduleId, versionNumber, prescriptionInstructionId, confirmedByUserId, confirmedAt, effectiveFromUTC, required endAtUTC, timezone, timingMode: fixed_times/interval, localTimes[] or intervalMinutes+anchorAtUTC, doseQuantity, doseUnit, immutable sourceSnapshot, occurrenceCount |
+| schedulePreviews | patientId, actorUserId, tokenHash, expiresAt, consumedAt?, payload: normalized input, deterministic events, source snapshot/fingerprint, optional scheduleId+expectedRevision |
+| doseOccurrences | patientId, scheduleId, scheduleVersionId, cabinetItemId, dueAtUTC, doseQuantitySnapshot, doseUnitSnapshot, timezoneSnapshot, state: pending/taken/skipped/cancelled, reminderDueAtUTC, snoozeCount, actionRevision, cancelledAt?, cancellationReason? |
 | doseActions | patientId, occurrenceId, revisionNumber, action: taken/skipped/corrected_to_pending/snoozed, actorUserId, recordedAt, effectiveAt?, reason?, clientRequestId |
 | followups | patientId, occurrenceId, status: open/acknowledged/resolved/cancelled, overdueAtUTC, nextAttemptAtUTC?, acknowledgedByUserId?, acknowledgedAt?, outcome?, resolvedAt? |
 
 A pending occurrence past due plus the configured follow-up delay is displayed as overdue-unconfirmed, never automatically skipped. Occurrence state is the current projection; doseActions is immutable history. Snooze only changes reminderDueAtUTC and count; it is not a terminal dose status. First terminal action uses an atomic compare-and-set on pending state and actionRevision. Repeated clientRequestId returns the original result; another terminal action returns conflict. Corrections require expected revision and reason.
 
-Generate a rolling seven-day horizon, extended daily by the worker, bounded by the schedule end. Fixed times follow the saved timezone; intervals follow elapsed minutes from anchor UTC. Reject nonexistent/ambiguous local times unless the user explicitly resolves them. Version edits/timezone changes cancel unacted future occurrences from the old version at the effective boundary and generate replacements. Past and acted occurrences remain unchanged. Pause cancels unacted future occurrences; resume generates only future occurrences without retroactive reminders. Restart scans persisted work; expired reminder jobs are marked expired with a visible reason rather than silently sent late. Default reminder expiry is 60 minutes after due time; overdue follow-up remains a separate job with configurable patient delay.
+**Step 25 implementation decision:** persist the entire finite course atomically, with a required exclusive end, at most 90 elapsed days and 2000 events. This supersedes the proposed rolling seven-day generation horizon: a rolling horizon without its later worker would silently stop on day eight and postpone DST validation. The upcoming read view still covers seven days. Indefinite/longer courses require a separately reviewed extension or later bounded-worker design; do not silently assume an end. All prospective events are reproducible from immutable version rules. Fixed times follow the saved timezone; intervals follow elapsed minutes from anchor UTC. Reject nonexistent/ambiguous local times throughout the course. Version edits cancel pending future occurrences across earlier versions at the effective boundary and generate replacements. Past and acted occurrences remain unchanged. Pause cancels pending future occurrences; resume restores only this version's rows cancelled by pause, at/after the explicit future resume time, without inserting duplicates. A changed source requires a reviewed replacement version; paused versions can be replaced. Source changes do not silently rewrite existing schedules. Historical pending events are unconfirmed, never automatically skipped.
+
+Source parent/cabinet documents have a hidden scheduleFence coordination counter, written during confirmation/resume to conflict with concurrent archive/edit. It does not change their content or public revision. Dose actions, reminder execution, restart scans, expiry and overdue follow-up are **future C2/C3/Step 28 work**, not implemented by Step 25. Their planned default reminder expiry is 60 minutes after due time.
 
 ## Stock, refill and pharmacy: A3–A4
 | Collection | Core fields |
@@ -103,7 +106,9 @@ healthNotes: patientId, authorUserId, recordedAt, text, revision. reportExports:
 | prescriptionInstructions | unique prescriptionVersionId+lineNumber |
 | cabinetRevisions | unique cabinetItemId+revisionNumber |
 | scheduleVersions | unique scheduleId+versionNumber |
-| doseOccurrences | unique scheduleVersionId+dueAtUTC; patientId+dueAtUTC; state+reminderDueAtUTC |
+| schedules | unique patientId+current prescriptionInstructionId; edit the existing schedule instead of duplicating the same instruction |
+| schedulePreviews | unique tokenHash; TTL expiresAt; application also checks expiry/actor/patient/single use |
+| doseOccurrences | unique scheduleVersionId+dueAtUTC; patientId+scheduleId+dueAtUTC+id (Step 25); reminder-worker indexes deferred to C2 |
 | doseActions | unique occurrenceId+revisionNumber; unique patientId+clientRequestId |
 | stockTransactions | unique patientId+operationKey; patientId+cabinetItemId+createdAt |
 | inventorySettings | unique patientId+cabinetItemId |

@@ -1,0 +1,170 @@
+npm warn deprecated har-validator@5.1.5: this library is no longer supported
+npm warn deprecated uuid@3.4.0: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated @faker-js/faker@5.5.3: Please update to a newer version.
+newman
+
+MediMate Step 25 confirmed schedule integration
+
+→ Owner CSRF
+  GET http://127.0.0.1:3009/api/v1/auth/csrf [200 OK, 597B, 31ms]
+  √  HTTP 200
+
+→ Register synthetic A2 owner
+  POST http://127.0.0.1:3009/api/v1/auth/register [201 Created, 779B, 101ms]
+  √  HTTP 201
+
+→ Manual saved medicine
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/cabinet-items [201 Created, 634B, 20ms]
+  √  HTTP 201
+
+→ Create A1 source draft
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/prescriptions [201 Created, 1.44kB, 20ms]
+  √  HTTP 201
+
+→ Draft cannot schedule
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedule-previews [422 Unprocessable Entity, 576B, 9ms]
+  √  HTTP 422
+
+→ Confirm reviewed A1
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/prescriptions/6ae7edb201ca4fd916a96d70/versions/6ae7edb201ca4fd916a96d71/confirm [200 OK, 1.55kB, 18ms]
+  √  HTTP 200
+
+→ Strength is not dose quantity
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedule-previews [422 Unprocessable Entity, 555B, 9ms]
+  √  HTTP 422
+
+→ Reject duplicate clock times
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedule-previews [422 Unprocessable Entity, 498B, 3ms]
+  √  HTTP 422
+
+→ Preview confirmed course
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedule-previews [200 OK, 1.51kB, 19ms]
+  √  HTTP 200
+  √  Three deterministic events and distinct strength
+
+→ Preview created no active schedule
+  GET http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules [200 OK, 361B, 4ms]
+  √  HTTP 200
+  √  No schedules yet
+
+→ Explicit confirmation required
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules [422 Unprocessable Entity, 499B, 5ms]
+  √  HTTP 422
+
+→ Confirm entire schedule course
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules [201 Created, 1.81kB, 23ms]
+  √  HTTP 201
+
+→ Successful replay has same schedule
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules [200 OK, 1.8kB, 19ms]
+  √  HTTP 200
+  √  Same schedule id
+
+→ Consumed preview cannot generate twice
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules [409 Conflict, 451B, 5ms]
+  √  HTTP 409
+
+→ Read persisted events
+  GET http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules/6ae7edb201ca4fd916a96dbd/occurrences [200 OK, 1.97kB, 5ms]
+  √  HTTP 200
+  √  Exactly three pending events
+
+→ Future replacement preview
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedule-previews [200 OK, 1.51kB, 19ms]
+  √  HTTP 200
+
+→ Confirm replacement version
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules/6ae7edb201ca4fd916a96dbd/versions [201 Created, 1.81kB, 34ms]
+  √  HTTP 201
+  √  Second version
+
+→ History keeps old cancelled and new pending
+  GET http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules/6ae7edb201ca4fd916a96dbd/occurrences?view=history [200 OK, 3.8kB, 4ms]
+  √  HTTP 200
+  √  Six rows with three cancelled replacements
+
+→ Stale pause revision conflicts
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules/6ae7edb201ca4fd916a96dbd/pause [409 Conflict, 440B, 5ms]
+  √  HTTP 409
+
+→ Pause future events
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules/6ae7edb201ca4fd916a96dbd/pause [200 OK, 744B, 23ms]
+  √  HTTP 200
+  √  Paused
+
+→ Paused upcoming view empty
+  GET http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules/6ae7edb201ca4fd916a96dbd/occurrences [200 OK, 361B, 4ms]
+  √  HTTP 200
+  √  No pending upcoming events
+
+→ Resume only future events
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules/6ae7edb201ca4fd916a96dbd/resume [200 OK, 744B, 18ms]
+  √  HTTP 200
+  √  Active
+
+→ Resume reuses original occurrence rows
+  GET http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules/6ae7edb201ca4fd916a96dbd/occurrences?view=history [200 OK, 3.93kB, 5ms]
+  √  HTTP 200
+  √  Six rows, three active, no duplicate IDs
+
+→ Read immutable versions
+  GET http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules/6ae7edb201ca4fd916a96dbd/versions [200 OK, 2.57kB, 4ms]
+  √  HTTP 200
+  √  Both versions retained
+
+→ Event cursor first page
+  GET http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules/6ae7edb201ca4fd916a96dbd/occurrences?view=history&limit=2 [200 OK, 1.64kB, 4ms]
+  √  HTTP 200
+  √  Bounded first page
+
+→ Event cursor next page
+  GET http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules/6ae7edb201ca4fd916a96dbd/occurrences?view=history&limit=2&cursor=eyJpZCI6IjZhZTdlZGIzMDFjYTRmZDkxNmE5NmRmNiIsInRpbWUiOiIyMDI2LTExLTAzVDAzOjAwOjAwLjAwMFoifQ [200 OK, 1.64kB, 5ms]
+  √  HTTP 200
+  √  No repeated page IDs
+
+→ Reader CSRF
+  GET http://127.0.0.1:3009/api/v1/auth/csrf [200 OK, 597B, 19ms]
+  √  HTTP 200
+
+→ Register synthetic reader
+  POST http://127.0.0.1:3009/api/v1/auth/register [201 Created, 787B, 83ms]
+  √  HTTP 201
+
+→ Grant schedule read only
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/access-grants [201 Created, 585B, 19ms]
+  √  HTTP 201
+
+→ Reader sees saved source snapshot
+  GET http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules/6ae7edb201ca4fd916a96dbd [200 OK, 1.87kB, 4ms]
+  √  HTTP 200
+  √  Source snapshot is retained
+
+→ Reader cannot pause
+  POST http://127.0.0.1:3009/api/v1/patients/6ae7edb101ca4fd916a96d5b/schedules/6ae7edb201ca4fd916a96dbd/pause [403 Forbidden, 415B, 3ms]
+  √  HTTP 403
+
+┌─────────────────────────┬───────────────────┬──────────────────┐
+│                         │          executed │           failed │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              iterations │                 1 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│                requests │                31 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│            test-scripts │                31 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│      prerequest-scripts │                31 │                0 │
+├─────────────────────────┼───────────────────┼──────────────────┤
+│              assertions │                45 │                0 │
+├─────────────────────────┴───────────────────┴──────────────────┤
+│ total run duration: 3.2s                                       │
+├────────────────────────────────────────────────────────────────┤
+│ total data received: 29.48kB (approx)                          │
+├────────────────────────────────────────────────────────────────┤
+│ average response time: 17ms [min: 3ms, max: 101ms, s.d.: 21ms] │
+└────────────────────────────────────────────────────────────────┘
+npm notice
+npm notice New major version of npm available! 11.20.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

@@ -1,0 +1,256 @@
+{
+  "at": "2026-11-02T02:02:06.13Z",
+  "synthetic": true,
+  "patientId": "6ae7ed0f01ca4fd916a96ccd",
+  "schedules": [
+    {
+      "_id": "6ae7ed6901ca4fd916a96d39",
+      "patientId": "6ae7ed0f01ca4fd916a96ccd",
+      "cabinetItemId": "6ae7ed0f01ca4fd916a96cd6",
+      "prescriptionInstructionId": "6ae7ee0101ca4fd916a96eae",
+      "status": "active",
+      "schemaVersion": 1,
+      "revision": 4,
+      "createdAt": "2026-11-02T01:54:49.548Z",
+      "updatedAt": "2026-11-02T02:01:54.336Z",
+      "__v": 0,
+      "currentVersionId": "6ae7ef0601ca4fd916a96f18",
+      "pauseReason": "",
+      "pausedAt": "2026-11-02T02:01:50.404Z"
+    }
+  ],
+  "versions": [
+    {
+      "_id": "6ae7ed6901ca4fd916a96d3b",
+      "patientId": "6ae7ed0f01ca4fd916a96ccd",
+      "scheduleId": "6ae7ed6901ca4fd916a96d39",
+      "versionNumber": 1,
+      "prescriptionInstructionId": "6ae7ed0f01ca4fd916a96cea",
+      "confirmedByUserId": "6ae7ed0f01ca4fd916a96ccb",
+      "confirmedAt": "2026-11-02T01:54:49.548Z",
+      "effectiveFromUTC": "2026-11-03T00:00:00Z",
+      "endAtUTC": "2026-11-06T00:00:00Z",
+      "timezone": "Asia/Dhaka",
+      "timingMode": "fixed_times",
+      "localTimes": [
+        "08:00"
+      ],
+      "doseQuantity": {
+        "$numberDecimal": "1"
+      },
+      "doseUnit": "tablet",
+      "sourceSnapshot": {
+        "prescriptionId": "6ae7ed0f01ca4fd916a96ce2",
+        "prescriptionVersionId": "6ae7ed0f01ca4fd916a96ce3",
+        "prescriptionRevision": 1,
+        "instructionId": "6ae7ed0f01ca4fd916a96cea",
+        "medicineText": "Demo medicine A",
+        "strengthText": "500 mg",
+        "instructionsText": "Synthetic test only — not medical directions",
+        "doseQuantity": "1",
+        "doseUnit": "tablet",
+        "frequencyText": "08:00 daily",
+        "durationText": "Three days",
+        "cabinetItemId": "6ae7ed0f01ca4fd916a96cd6",
+        "cabinetRevision": 0,
+        "cabinetName": "Demo medicine A",
+        "cabinetStrength": "500 mg"
+      },
+      "occurrenceCount": 3,
+      "schemaVersion": 1,
+      "revision": 0,
+      "createdAt": "2026-11-02T01:54:49.549Z",
+      "updatedAt": "2026-11-02T01:54:49.549Z",
+      "__v": 0
+    },
+    {
+      "_id": "6ae7ef0601ca4fd916a96f18",
+      "patientId": "6ae7ed0f01ca4fd916a96ccd",
+      "scheduleId": "6ae7ed6901ca4fd916a96d39",
+      "versionNumber": 2,
+      "prescriptionInstructionId": "6ae7ee0101ca4fd916a96eae",
+      "confirmedByUserId": "6ae7ed0f01ca4fd916a96ccb",
+      "confirmedAt": "2026-11-02T02:01:42.728Z",
+      "effectiveFromUTC": "2026-11-04T00:00:00Z",
+      "endAtUTC": "2026-11-07T00:00:00Z",
+      "timezone": "Asia/Dhaka",
+      "timingMode": "fixed_times",
+      "localTimes": [
+        "09:00"
+      ],
+      "doseQuantity": {
+        "$numberDecimal": "1"
+      },
+      "doseUnit": "tablet",
+      "sourceSnapshot": {
+        "prescriptionId": "6ae7ed0f01ca4fd916a96ce2",
+        "prescriptionVersionId": "6ae7edfc01ca4fd916a96e87",
+        "prescriptionRevision": 4,
+        "instructionId": "6ae7ee0101ca4fd916a96eae",
+        "medicineText": "Demo medicine A",
+        "strengthText": "500 mg",
+        "instructionsText": "Synthetic test only — not medical directions",
+        "doseQuantity": "1",
+        "doseUnit": "tablet",
+        "frequencyText": "09:00 daily",
+        "durationText": "Three days",
+        "cabinetItemId": "6ae7ed0f01ca4fd916a96cd6",
+        "cabinetRevision": 0,
+        "cabinetName": "Demo medicine A",
+        "cabinetStrength": "500 mg"
+      },
+      "occurrenceCount": 3,
+      "schemaVersion": 1,
+      "revision": 0,
+      "createdAt": "2026-11-02T02:01:42.728Z",
+      "updatedAt": "2026-11-02T02:01:42.728Z",
+      "__v": 0
+    }
+  ],
+  "events": [
+    {
+      "_id": "6ae7ed6901ca4fd916a96d3e",
+      "patientId": "6ae7ed0f01ca4fd916a96ccd",
+      "scheduleId": "6ae7ed6901ca4fd916a96d39",
+      "scheduleVersionId": "6ae7ed6901ca4fd916a96d3b",
+      "cabinetItemId": "6ae7ed0f01ca4fd916a96cd6",
+      "dueAtUTC": "2026-11-03T02:00:00Z",
+      "doseQuantitySnapshot": {
+        "$numberDecimal": "1"
+      },
+      "doseUnitSnapshot": "tablet",
+      "timezoneSnapshot": "Asia/Dhaka",
+      "state": "cancelled",
+      "reminderDueAtUTC": "2026-11-03T02:00:00Z",
+      "snoozeCount": 0,
+      "actionRevision": 0,
+      "schemaVersion": 1,
+      "revision": 1,
+      "__v": 0,
+      "createdAt": "2026-11-02T01:54:49.551Z",
+      "updatedAt": "2026-11-02T02:01:50.405Z",
+      "cancellationReason": "paused",
+      "cancelledAt": "2026-11-02T02:01:50.405Z"
+    },
+    {
+      "_id": "6ae7ed6901ca4fd916a96d3f",
+      "patientId": "6ae7ed0f01ca4fd916a96ccd",
+      "scheduleId": "6ae7ed6901ca4fd916a96d39",
+      "scheduleVersionId": "6ae7ed6901ca4fd916a96d3b",
+      "cabinetItemId": "6ae7ed0f01ca4fd916a96cd6",
+      "dueAtUTC": "2026-11-04T02:00:00Z",
+      "doseQuantitySnapshot": {
+        "$numberDecimal": "1"
+      },
+      "doseUnitSnapshot": "tablet",
+      "timezoneSnapshot": "Asia/Dhaka",
+      "state": "cancelled",
+      "reminderDueAtUTC": "2026-11-04T02:00:00Z",
+      "snoozeCount": 0,
+      "actionRevision": 0,
+      "schemaVersion": 1,
+      "revision": 1,
+      "__v": 0,
+      "createdAt": "2026-11-02T01:54:49.552Z",
+      "updatedAt": "2026-11-02T02:01:42.729Z",
+      "cancellationReason": "replaced",
+      "cancelledAt": "2026-11-02T02:01:42.729Z"
+    },
+    {
+      "_id": "6ae7ef0601ca4fd916a96f1c",
+      "patientId": "6ae7ed0f01ca4fd916a96ccd",
+      "scheduleId": "6ae7ed6901ca4fd916a96d39",
+      "scheduleVersionId": "6ae7ef0601ca4fd916a96f18",
+      "cabinetItemId": "6ae7ed0f01ca4fd916a96cd6",
+      "dueAtUTC": "2026-11-04T03:00:00Z",
+      "doseQuantitySnapshot": {
+        "$numberDecimal": "1"
+      },
+      "doseUnitSnapshot": "tablet",
+      "timezoneSnapshot": "Asia/Dhaka",
+      "state": "pending",
+      "reminderDueAtUTC": "2026-11-04T03:00:00Z",
+      "snoozeCount": 0,
+      "actionRevision": 0,
+      "schemaVersion": 1,
+      "revision": 2,
+      "__v": 0,
+      "createdAt": "2026-11-02T02:01:42.731Z",
+      "updatedAt": "2026-11-02T02:01:54.336Z",
+      "cancellationReason": "",
+      "cancelledAt": null
+    },
+    {
+      "_id": "6ae7ed6901ca4fd916a96d40",
+      "patientId": "6ae7ed0f01ca4fd916a96ccd",
+      "scheduleId": "6ae7ed6901ca4fd916a96d39",
+      "scheduleVersionId": "6ae7ed6901ca4fd916a96d3b",
+      "cabinetItemId": "6ae7ed0f01ca4fd916a96cd6",
+      "dueAtUTC": "2026-11-05T02:00:00Z",
+      "doseQuantitySnapshot": {
+        "$numberDecimal": "1"
+      },
+      "doseUnitSnapshot": "tablet",
+      "timezoneSnapshot": "Asia/Dhaka",
+      "state": "cancelled",
+      "reminderDueAtUTC": "2026-11-05T02:00:00Z",
+      "snoozeCount": 0,
+      "actionRevision": 0,
+      "schemaVersion": 1,
+      "revision": 1,
+      "__v": 0,
+      "createdAt": "2026-11-02T01:54:49.552Z",
+      "updatedAt": "2026-11-02T02:01:42.729Z",
+      "cancellationReason": "replaced",
+      "cancelledAt": "2026-11-02T02:01:42.729Z"
+    },
+    {
+      "_id": "6ae7ef0601ca4fd916a96f1d",
+      "patientId": "6ae7ed0f01ca4fd916a96ccd",
+      "scheduleId": "6ae7ed6901ca4fd916a96d39",
+      "scheduleVersionId": "6ae7ef0601ca4fd916a96f18",
+      "cabinetItemId": "6ae7ed0f01ca4fd916a96cd6",
+      "dueAtUTC": "2026-11-05T03:00:00Z",
+      "doseQuantitySnapshot": {
+        "$numberDecimal": "1"
+      },
+      "doseUnitSnapshot": "tablet",
+      "timezoneSnapshot": "Asia/Dhaka",
+      "state": "pending",
+      "reminderDueAtUTC": "2026-11-05T03:00:00Z",
+      "snoozeCount": 0,
+      "actionRevision": 0,
+      "schemaVersion": 1,
+      "revision": 2,
+      "__v": 0,
+      "createdAt": "2026-11-02T02:01:42.731Z",
+      "updatedAt": "2026-11-02T02:01:54.337Z",
+      "cancellationReason": "",
+      "cancelledAt": null
+    },
+    {
+      "_id": "6ae7ef0601ca4fd916a96f1e",
+      "patientId": "6ae7ed0f01ca4fd916a96ccd",
+      "scheduleId": "6ae7ed6901ca4fd916a96d39",
+      "scheduleVersionId": "6ae7ef0601ca4fd916a96f18",
+      "cabinetItemId": "6ae7ed0f01ca4fd916a96cd6",
+      "dueAtUTC": "2026-11-06T03:00:00Z",
+      "doseQuantitySnapshot": {
+        "$numberDecimal": "1"
+      },
+      "doseUnitSnapshot": "tablet",
+      "timezoneSnapshot": "Asia/Dhaka",
+      "state": "pending",
+      "reminderDueAtUTC": "2026-11-06T03:00:00Z",
+      "snoozeCount": 0,
+      "actionRevision": 0,
+      "schemaVersion": 1,
+      "revision": 2,
+      "__v": 0,
+      "createdAt": "2026-11-02T02:01:42.731Z",
+      "updatedAt": "2026-11-02T02:01:54.338Z",
+      "cancellationReason": "",
+      "cancelledAt": null
+    }
+  ]
+}

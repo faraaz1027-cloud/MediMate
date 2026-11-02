@@ -45,7 +45,8 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 - [ ] Rehearse the Module 1 demonstration.
 
 ## 5. Module 2 — Lab 6
-- [ ] A2: confirmed schedule builder.
+- [x] A2 technical slice prepared: current confirmed source → full preview → explicit confirmation → persisted events, immutable replacement, pause/resume; [Step 25 tests/contracts/review](STEP_25_CONFIRMED_SCHEDULES.md).
+- [ ] Ihfaz personally reviews/contributes A2, explains timezone/version logic and completes frontend/backend live edits. Assistant-authored work is not individual course contribution evidence.
 - [ ] B2: source-linked information cards.
 - [ ] C2: reminders and dose recording using A2.
 - [ ] Test timezone boundaries, duplicate actions and backend restarts.

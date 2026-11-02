@@ -4,6 +4,7 @@ import { createRxNorm } from "./rxnorm.js";
 import { createTelegram } from "./telegram.js";
 import { installChannels } from "./channels.js";
 import { installTasks } from "./tasks.js";
+import { installSchedules } from "./schedules.js";
 import express from "express";
 import mongoose from "mongoose";
 import {
@@ -562,6 +563,7 @@ export function createV1({
   installCabinet(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, rxnorm });
   installChannels(app, { db, authenticated, csrf, mutate, object, fail, id, telegram, now, throttle });
   installTasks(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now, telegram });
+  installSchedules(patient, { db, csrf, scope, access, mutate, fail, id, object, text, publicDoc, now, send });
   const resources = [
     ["prescriptions", "Prescription", "prescription"],
   ];
