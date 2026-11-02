@@ -5,6 +5,15 @@ const config = {
   token: "123456:TEST_TOKEN_FOR_UNIT_TESTING_ONLY",
   username: "MediMateTestBot",
 };
+test("C2 Telegram adapter sends a generic notice only and stays disabled without configuration", async () => {
+  let sent;
+  const p = createTelegram({ ...config, fetchImpl: async (url, options) => { sent = { url, body: JSON.parse(options.body) }; return Response.json({ok:true,result:{message_id:43}}); } });
+  assert.deepEqual(await p.sendDoseNotice("900000001"), {messageId:"43"});
+  assert.equal(sent.url,`https://api.telegram.org/bot${config.token}/sendMessage`);
+  assert.deepEqual(sent.body,{chat_id:"900000001",text:"MediMate: a scheduled dose needs your attention. Sign in to review your doses and record what happened."});
+  let calls=0;const disabled=createTelegram({token:"",username:"",fetchImpl:async()=>{calls++;}});
+  await assert.rejects(()=>disabled.sendDoseNotice("900000001"),e=>e.code==="NOT_CONFIGURED");assert.equal(calls,0);
+});
 test("Telegram stays disabled without private configuration and never makes a request", async () => {
   let called = false;
   const p = createTelegram({

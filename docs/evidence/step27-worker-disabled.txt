@@ -1,0 +1,2 @@
+Telegram is not configured. Due reminder requests will be recorded as disabled; no messages are sent.
+{"queued":5,"processed":0,"telegramConfigured":false}

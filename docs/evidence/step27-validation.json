@@ -1,0 +1,23 @@
+{
+  "reviewDate": "2026-11-03",
+  "reviewTimezone": "Asia/Dhaka",
+  "syntheticOnly": true,
+  "baseCommit": "ebd4a120d8bcb6d45fca6cdc7987df81b20b87b2",
+  "api": { "tests": 96, "passed": 96, "failed": 0, "skipped": 0 },
+  "productionBundleDom": { "passed": true, "doseActions": 4 },
+  "newman": { "requests": 43, "assertions": 55, "failed": 0 },
+  "browser": {
+    "viewports": [
+      { "width": 1440, "height": 1000, "documentWidth": 1425 },
+      { "width": 390, "height": 844, "documentWidth": 375 }
+    ],
+    "capturedConsoleErrors": 0,
+    "verified": ["owner dose consent", "actual disabled worker command", "taken", "skipped", "snoozed with unchanged due time", "reasoned correction retains original", "reload persistence", "separate disabled status with zero attempts"]
+  },
+  "browserDatabase": { "occurrences": 12, "actions": 4, "uniqueClientRequestIds": 4, "skipped": 2, "pending": 10, "disabledReminderJobs": 5, "processingAttempts": 0 },
+  "actualWorkerCli": { "exitCode": 0, "queued": 5, "processed": 0, "telegramConfigured": false },
+  "realTelegramSendOrReceiptVerified": false,
+  "stockImplemented": false,
+  "individualStudentContributionOrFacultyAcceptanceClaimed": false,
+  "limitations": "Controlled upstream outcomes and disposable MongoDB do not prove live Telegram receipt. Step 28 broader restart/timezone audit, A3 stock effects, C3 follow-up, deployment and owner/faculty acceptance remain open. Browser fixture creation clock was shifted before UI actions; it is not medical history."
+}

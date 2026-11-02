@@ -10,7 +10,7 @@ const replica = await MongoMemoryReplSet.create({
   replSet: { count: 1, args: ["--setParameter", "ttlMonitorEnabled=false"] },
 });
 try {
-  const child = spawn(process.execPath, ["--test", "server/test/api.test.js", "server/test/prescriptions.test.js", "server/test/cabinet.test.js", "server/test/rxnorm.test.js", "server/test/tasks.test.js", "server/test/telegram.test.js", "server/test/module1.test.js", "server/test/schedules.test.js", "server/test/openfda.test.js", "server/test/information-cards.test.js"], {
+  const child = spawn(process.execPath, ["--test", "server/test/api.test.js", "server/test/prescriptions.test.js", "server/test/cabinet.test.js", "server/test/rxnorm.test.js", "server/test/tasks.test.js", "server/test/telegram.test.js", "server/test/module1.test.js", "server/test/schedules.test.js", "server/test/openfda.test.js", "server/test/information-cards.test.js", "server/test/doses.test.js", "server/test/dose-worker-cli.test.js"], {
     cwd: fileURLToPath(new URL("../../", import.meta.url)),
     env: { ...process.env, MONGODB_TEST_URI: replica.getUri() },
     stdio: "inherit",

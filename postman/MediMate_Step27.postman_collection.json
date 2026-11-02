@@ -1,0 +1,1803 @@
+{
+  "info": {
+    "name": "MediMate Step 27 persisted dose actions and reminder consent",
+    "description": "Creates three synthetic A1/B1/A2 events 15 seconds ahead of the API server clock, waits 20 seconds, then verifies real C2 HTTP/database behavior. No bot/account linking or external message. Dose worker is run separately; no delivery is fabricated. Use a disposable local replica-set app; sessions stay runtime-only.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://127.0.0.1:3001/api/v1"
+    }
+  ],
+  "item": [
+    {
+      "name": "Owner CSRF",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const d=pm.response.json().data;pm.collectionVariables.set('ownerCsrf',d.csrfToken);pm.collectionVariables.set('ownerCookie',pm.response.headers.get('set-cookie').split(';')[0]);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/auth/csrf",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Register synthetic C2 owner",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "const d=pm.response.json().data;pm.collectionVariables.set('ownerCsrf',d.csrfToken);pm.collectionVariables.set('ownerCookie',pm.response.headers.get('set-cookie').split(';')[0]);",
+              "pm.collectionVariables.set('patientId',pm.response.json().data.patientId);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/auth/register",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"c2-owner-{{$guid}}@example.test\",\n  \"password\": \"Synthetic-pass-123!\",\n  \"displayName\": \"C2 Postman synthetic owner\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Create synthetic supply A",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('cabinetA',pm.response.json().data.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"entryType\": \"manual\",\n  \"displayName\": \"C2 Postman dose A\",\n  \"strengthText\": \"500 mg\",\n  \"form\": \"tablet\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Create synthetic supply B",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('cabinetB',pm.response.json().data.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"entryType\": \"manual\",\n  \"displayName\": \"C2 Postman dose B\",\n  \"strengthText\": \"500 mg\",\n  \"form\": \"tablet\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Create synthetic supply C",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('cabinetC',pm.response.json().data.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/cabinet-items",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"entryType\": \"manual\",\n  \"displayName\": \"C2 Postman dose C\",\n  \"strengthText\": \"500 mg\",\n  \"form\": \"tablet\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Create three synthetic A1 instruction lines",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "const d=pm.response.json().data;pm.collectionVariables.set('rxId',d.prescription.id);pm.collectionVariables.set('versionId',d.draftVersion.id);d.draftVersion.instructions.forEach((x,i)=>pm.collectionVariables.set('instruction'+['A','B','C'][i],x.id));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/prescriptions",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"C2 Postman synthetic course\",\n  \"instructions\": [\n    {\n      \"lineNumber\": 1,\n      \"cabinetItemId\": \"{{cabinetA}}\",\n      \"medicineText\": \"C2 Postman dose A\",\n      \"strengthText\": \"500 mg\",\n      \"instructionsText\": \"Synthetic functional test, not medical directions\",\n      \"doseQuantity\": \"1\",\n      \"doseUnit\": \"tablet\",\n      \"frequencyText\": \"One synthetic test event\",\n      \"durationText\": \"One-minute synthetic test course\",\n      \"clarificationRequired\": false\n    },\n    {\n      \"lineNumber\": 2,\n      \"cabinetItemId\": \"{{cabinetB}}\",\n      \"medicineText\": \"C2 Postman dose B\",\n      \"strengthText\": \"500 mg\",\n      \"instructionsText\": \"Synthetic functional test, not medical directions\",\n      \"doseQuantity\": \"1\",\n      \"doseUnit\": \"tablet\",\n      \"frequencyText\": \"One synthetic test event\",\n      \"durationText\": \"One-minute synthetic test course\",\n      \"clarificationRequired\": false\n    },\n    {\n      \"lineNumber\": 3,\n      \"cabinetItemId\": \"{{cabinetC}}\",\n      \"medicineText\": \"C2 Postman dose C\",\n      \"strengthText\": \"500 mg\",\n      \"instructionsText\": \"Synthetic functional test, not medical directions\",\n      \"doseQuantity\": \"1\",\n      \"doseUnit\": \"tablet\",\n      \"frequencyText\": \"One synthetic test event\",\n      \"durationText\": \"One-minute synthetic test course\",\n      \"clarificationRequired\": false\n    }\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "Confirm reviewed A1 source",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/prescriptions/{{rxId}}/versions/{{versionId}}/confirm",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 0,\n  \"reviewed\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Plan future A2 start from actual server clock",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const n=Date.parse(pm.response.json().meta.serverNow),start=new Date(n+15000);pm.collectionVariables.set('start',start.toISOString());pm.collectionVariables.set('end',new Date(start.getTime()+60000).toISOString());pm.collectionVariables.set('futureUTC',new Date(n+3600000).toISOString());"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Preview synthetic A2 event A",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('previewA',pm.response.json().data.previewToken);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/schedule-previews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prescriptionInstructionId\": \"{{instructionA}}\",\n  \"cabinetItemId\": \"{{cabinetA}}\",\n  \"timingMode\": \"interval\",\n  \"timezone\": \"Asia/Dhaka\",\n  \"doseQuantity\": \"1\",\n  \"doseUnit\": \"tablet\",\n  \"effectiveFromUTC\": \"{{start}}\",\n  \"endAtUTC\": \"{{end}}\",\n  \"intervalMinutes\": 1,\n  \"anchorAtUTC\": \"{{start}}\",\n  \"reviewedAgainstSource\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Confirm A2 event A",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/schedules",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"previewToken\": \"{{previewA}}\",\n  \"confirmed\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Preview synthetic A2 event B",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('previewB',pm.response.json().data.previewToken);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/schedule-previews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prescriptionInstructionId\": \"{{instructionB}}\",\n  \"cabinetItemId\": \"{{cabinetB}}\",\n  \"timingMode\": \"interval\",\n  \"timezone\": \"Asia/Dhaka\",\n  \"doseQuantity\": \"1\",\n  \"doseUnit\": \"tablet\",\n  \"effectiveFromUTC\": \"{{start}}\",\n  \"endAtUTC\": \"{{end}}\",\n  \"intervalMinutes\": 1,\n  \"anchorAtUTC\": \"{{start}}\",\n  \"reviewedAgainstSource\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Confirm A2 event B",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/schedules",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"previewToken\": \"{{previewB}}\",\n  \"confirmed\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Preview synthetic A2 event C",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.collectionVariables.set('previewC',pm.response.json().data.previewToken);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/schedule-previews",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"prescriptionInstructionId\": \"{{instructionC}}\",\n  \"cabinetItemId\": \"{{cabinetC}}\",\n  \"timingMode\": \"interval\",\n  \"timezone\": \"Asia/Dhaka\",\n  \"doseQuantity\": \"1\",\n  \"doseUnit\": \"tablet\",\n  \"effectiveFromUTC\": \"{{start}}\",\n  \"endAtUTC\": \"{{end}}\",\n  \"intervalMinutes\": 1,\n  \"anchorAtUTC\": \"{{start}}\",\n  \"reviewedAgainstSource\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Confirm A2 event C",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/schedules",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"previewToken\": \"{{previewC}}\",\n  \"confirmed\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Wait for the real future events, then read due occurrences",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});",
+              "setTimeout(function(){},20000);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const r=pm.response.json();pm.test('Exactly three persisted due events',()=>{pm.expect(r.data).to.have.lengthOf(3);pm.expect(r.meta.summary.pending).to.equal(3);pm.expect(r.data.every(x=>Date.parse(x.dueAtUTC)<=Date.parse(r.meta.serverNow))).to.equal(true);});r.data.forEach(d=>{const letter=d.medicineText.slice(-1);pm.collectionVariables.set('dose'+letter,d.id);});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses?fromUTC={{start}}&toUTC={{end}}&limit=100",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Reject a future effective time",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422',()=>pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseC}}/actions",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 0,\n  \"action\": \"taken\",\n  \"effectiveAt\": \"{{futureUTC}}\",\n  \"clientRequestId\": \"{{requestKey}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Record taken with stable operation key",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});",
+              "pm.collectionVariables.set('takeKey',pm.collectionVariables.get('requestKey'));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Taken with action revision one',()=>{const d=pm.response.json().data.dose;pm.expect(d.state).to.equal('taken');pm.expect(d.actionRevision).to.equal(1);});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseA}}/actions",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 0,\n  \"action\": \"taken\",\n  \"clientRequestId\": \"{{requestKey}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Replay taken returns original effective action",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});",
+              "pm.collectionVariables.set('requestKey',pm.collectionVariables.get('takeKey'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('takeKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseA}}/actions",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 0,\n  \"action\": \"taken\",\n  \"clientRequestId\": \"{{requestKey}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "History contains one action after replay",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('No duplicate action',()=>pm.expect(pm.response.json().data.actions).to.have.lengthOf(1));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseA}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "New terminal action needs correction",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseA}}/actions",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 1,\n  \"action\": \"skipped\",\n  \"clientRequestId\": \"{{requestKey}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Snooze affects reminder only",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const d=pm.response.json().data.dose;pm.test('Scheduled time and state unchanged',()=>{pm.expect(d.state).to.equal('pending');pm.expect(d.dueAtUTC).to.equal(pm.collectionVariables.get('start'));pm.expect(d.snoozeCount).to.equal(1);pm.expect(Date.parse(d.reminderDueAtUTC)).to.be.above(Date.parse(d.dueAtUTC));});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseB}}/snoozes",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 0,\n  \"minutes\": 10,\n  \"clientRequestId\": \"{{requestKey}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Reject repeated early snooze",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409',()=>pm.response.to.have.status(409));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseB}}/snoozes",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 1,\n  \"minutes\": 10,\n  \"clientRequestId\": \"{{requestKey}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Record skipped after snooze",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('One skipped projection',()=>pm.expect(pm.response.json().data.dose.state).to.equal('skipped'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseB}}/actions",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 1,\n  \"action\": \"skipped\",\n  \"clientRequestId\": \"{{requestKey}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Correction requires a reason",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422',()=>pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseA}}/corrections",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 1,\n  \"newState\": \"skipped\",\n  \"reason\": \" \",\n  \"clientRequestId\": \"{{requestKey}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Reasoned correction retains prior record",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseA}}/corrections",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 1,\n  \"newState\": \"skipped\",\n  \"reason\": \"Synthetic correction for the demo\",\n  \"clientRequestId\": \"{{requestKey}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Return to pending by correction",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseA}}/corrections",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 2,\n  \"newState\": \"pending\",\n  \"reason\": \"Synthetic review reopened\",\n  \"clientRequestId\": \"{{requestKey}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Record taken after review",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseA}}/actions",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 3,\n  \"action\": \"taken\",\n  \"clientRequestId\": \"{{requestKey}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Read immutable action history",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const d=pm.response.json().data;pm.test('All four actions retained, current taken',()=>{pm.expect(d.actions).to.have.lengthOf(4);pm.expect(d.dose.state).to.equal('taken');pm.expect(d.dose.stockSyncStatus).to.equal('not_implemented');});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseA}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Day/range totals come from the database",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Correct taken/skipped/unconfirmed totals',()=>{const s=pm.response.json().meta.summary;pm.expect(s.taken).to.equal(1);pm.expect(s.skipped).to.equal(1);pm.expect(s.pending).to.equal(1);});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses?fromUTC={{start}}&toUTC={{end}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Reminder consent defaults off",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('No implicit opt-in',()=>pm.expect(pm.response.json().data.enabled).to.equal(false));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/dose-reminder-settings",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Explicit owner consent required",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 422',()=>pm.response.to.have.status(422));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/patients/{{patientId}}/dose-reminder-settings",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": null,\n  \"enabled\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Owner enables generic reminder request",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Preference is separate from delivery',()=>{const d=pm.response.json().data;pm.expect(d.enabled).to.equal(true);pm.expect(d.recipient).to.equal('patient_owner');});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/patients/{{patientId}}/dose-reminder-settings",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": null,\n  \"enabled\": true,\n  \"consent\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Dose remains unconfirmed regardless of reminder setup",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('No invented action or delivery',()=>{const d=pm.response.json().data;pm.expect(d.dose.state).to.equal('pending');pm.expect(d.actions).to.have.lengthOf(0);});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseC}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Reader CSRF",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('readerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('readerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "const d=pm.response.json().data;pm.collectionVariables.set('readerCsrf',d.csrfToken);pm.collectionVariables.set('readerCookie',pm.response.headers.get('set-cookie').split(';')[0]);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/auth/csrf",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Register synthetic caregiver",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('readerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('readerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "const d=pm.response.json().data;pm.collectionVariables.set('readerCsrf',d.csrfToken);pm.collectionVariables.set('readerCookie',pm.response.headers.get('set-cookie').split(';')[0]);",
+              "pm.collectionVariables.set('readerId',pm.response.json().data.user.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/auth/register",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"c2-reader-{{$guid}}@example.test\",\n  \"password\": \"Synthetic-pass-123!\",\n  \"displayName\": \"C2 Postman reader\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Cross-patient access denied",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('readerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('readerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404',()=>pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseA}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Grant dose read only",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201',()=>pm.response.to.have.status(201));",
+              "pm.collectionVariables.set('grantId',pm.response.json().data.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/access-grants",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"userId\": \"{{readerId}}\",\n  \"permissions\": [\n    \"dose.read\"\n  ]\n}"
+        }
+      }
+    },
+    {
+      "name": "Authorized caregiver reads history",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('readerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('readerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Scoped history visible',()=>pm.expect(pm.response.json().data.actions).to.have.lengthOf(4));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseA}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Read-only caregiver cannot record",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('readerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('readerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403',()=>pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseC}}/actions",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 0,\n  \"action\": \"taken\",\n  \"clientRequestId\": \"{{requestKey}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "Read-only caregiver cannot enable reminders",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('readerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('readerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 403',()=>pm.response.to.have.status(403));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/patients/{{patientId}}/dose-reminder-settings",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 0,\n  \"enabled\": true,\n  \"consent\": true\n}"
+        }
+      }
+    },
+    {
+      "name": "Revoke caregiver grant",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/patients/{{patientId}}/access-grants/{{grantId}}/revoke",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 0\n}"
+        }
+      }
+    },
+    {
+      "name": "Revoked history read denied immediately",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('readerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('readerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 404',()=>pm.response.to.have.status(404));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/doses/{{doseA}}",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Turn off synthetic reminder request before finishing",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('ownerCookie')||''});",
+              "pm.request.headers.upsert({key:'X-CSRF-Token',value:pm.collectionVariables.get('ownerCsrf')||''});",
+              "pm.collectionVariables.set('requestKey',pm.variables.replaceIn('{{$guid}}'));pm.request.headers.upsert({key:'Idempotency-Key',value:pm.collectionVariables.get('requestKey')});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200',()=>pm.response.to.have.status(200));",
+              "pm.test('Synthetic opt-in disabled again',()=>pm.expect(pm.response.json().data.enabled).to.equal(false));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "url": "{{baseUrl}}/patients/{{patientId}}/dose-reminder-settings",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"expectedRevision\": 0,\n  \"enabled\": false\n}"
+        }
+      }
+    }
+  ]
+}

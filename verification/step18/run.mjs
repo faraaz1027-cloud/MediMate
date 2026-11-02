@@ -7,6 +7,7 @@ import {
   findByText,
   findByRole,
   waitFor,
+  fireEvent,
 } from "@testing-library/dom";
 import userEvent from "@testing-library/user-event";
 import fs from "node:fs";
@@ -25,6 +26,10 @@ const serverRequire = createRequire(path.join(root, "server/package.json"));
 const mongoose = serverRequire("mongoose"), express = serverRequire("express");
 const { createV1 } = await import(pathToFileURL(path.join(root, "server/v1/app.js")).href);
 const { db } = await import(pathToFileURL(path.join(root, "server/v1/store.js")).href);
+const { createDoseWorker } = await import(pathToFileURL(path.join(root, "server/v1/doseReminders.js")).href);
+const { createTelegram } = await import(pathToFileURL(path.join(root, "server/v1/telegram.js")).href);
+let c2Clock = null;
+const disabledTelegram = createTelegram({token:"",username:""});
 const { createRxNorm } = await import(pathToFileURL(path.join(root, "server/v1/rxnorm.js")).href);
 let rxnormDown=false;
 const rxnorm=createRxNorm({spacingMs:0,fetchImpl:async url=>{
@@ -52,7 +57,7 @@ try {
   await db.init();
   const app = express(),
     origins = [];
-  app.use("/api/v1", createV1({ db, origins, rxnorm, openfda:labelFixture.adapter }));
+  app.use("/api/v1", createV1({ db, origins, rxnorm, openfda:labelFixture.adapter,telegram:disabledTelegram,now:()=>c2Clock?new Date(c2Clock):new Date() }));
   server = app.listen(0, "127.0.0.1");
   await new Promise((r) => server.once("listening", r));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -504,14 +509,45 @@ try {
   await findByText(body,"Source association removed. Personal note retained.",{exact:true});
   assert.equal(getByLabelText(body,"Personal note",{exact:true}).value,"DOM personal note <script>text only</script>");
   assert.ok(await mongoose.model("SourceRecord").findById(b2Source._id));
+  // Step 27 consumes the actual persisted A2 course; advance only this test server's clock.
+  c2Clock = new Date(scheduleStart.getTime()+2*86400000+3*3600000+5*60000);
+  await clickReady(getByRole(body,"button",{name:"Today’s doses",exact:true}));
+  await findByRole(body,"heading",{name:"Welcome back",exact:true});
+  await u.type(getByLabelText(body,"Email",{exact:true}),"dom@example.test");await u.type(getByLabelText(body,"Password",{exact:true}),"Synthetic-pass-123!");
+  await clickReady(getByRole(body,"button",{name:"Sign in",exact:true}));await findByRole(body,"heading",{name:"Hello, Reviewed profile"});
+  await u.selectOptions(getByRole(body,"combobox",{name:"Patient",exact:true}),(await mongoose.model("Patient").findOne({displayName:"DOM owner"}))._id.toString());
+  await clickReady(getByRole(body,"button",{name:"Today’s doses",exact:true}));
+  const currentEvents=await mongoose.model("DoseOccurrence").find({state:"pending"}).sort({dueAtUTC:1}).lean();
+  const setDoseDate=async value=>{const input=getByLabelText(body,"Local date",{exact:true});await waitFor(()=>assert.equal(input.matches(":disabled"),false),{container:body});fireEvent.change(input,{target:{value}});await clickReady(getByRole(body,"button",{name:"Apply dose filters",exact:true}));};
+  const rowFor=async d=>{await waitFor(()=>assert.ok(body.querySelector(`[data-testid="dose-${d._id}"]`),"Missing C2 row; date="+getByLabelText(body,"Local date",{exact:true}).value+"; view="+body.textContent.slice(-5000)),{container:body});return body.querySelector(`[data-testid="dose-${d._id}"]`);};
+  await setDoseDate(scheduleStart.toISOString().slice(0,10));
+  let row=await rowFor(currentEvents[0]);await clickReady(getByRole(row,"button",{name:"Snooze reminder 10 min",exact:true}));
+  await findByText(body,"Reminder deferred 10 minutes. Scheduled time and dose status are unchanged.",{exact:true});
+  assert.equal((await mongoose.model("DoseOccurrence").findById(currentEvents[0]._id)).dueAtUTC.toISOString(),currentEvents[0].dueAtUTC.toISOString());
+  row=await rowFor(currentEvents[0]);await clickReady(getByRole(row,"button",{name:"Record taken",exact:true}));await findByText(body,"Current state: taken",{exact:false});
+  await u.selectOptions(getByLabelText(body,"Corrected dose state",{exact:true}),"skipped");await u.type(getByLabelText(body,"Reason for correction",{exact:true}),"Synthetic DOM correction");
+  await clickReady(getByRole(body,"button",{name:"Save dose correction",exact:true}));await findByText(body,"Synthetic DOM correction",{exact:true,selector:"p"});
+  const dayTwo=new Date(scheduleStart.getTime()+86400000).toISOString().slice(0,10);await setDoseDate(dayTwo);row=await rowFor(currentEvents[1]);
+  await clickReady(getByRole(row,"button",{name:"Record taken",exact:true}));await findByText(body,"Saved to dose history.",{exact:true});
+  await clickReady(getByRole(body,"checkbox",{name:"I request generic dose reminders for this patient’s owner through their linked private Telegram account.",exact:true}));
+  await clickReady(getByRole(body,"button",{name:"Save dose reminder preference",exact:true}));await findByText(body,"Owner reminder preference saved. Channel readiness is shown separately.",{exact:true});
+  const c2Worker=createDoseWorker({db,telegram:disabledTelegram,now:()=>new Date(c2Clock)});await c2Worker.queueDue();
+  assert.equal(await mongoose.model("DoseReminderJob").countDocuments({status:"disabled"}),1);
+  body=await mount();u=userEvent.setup({document:dom.window.document});await findByRole(body,"heading",{name:"Hello, Reviewed profile"});
+  await u.selectOptions(getByRole(body,"combobox",{name:"Patient",exact:true}),(await mongoose.model("Patient").findOne({displayName:"DOM owner"}))._id.toString());
+  await clickReady(getByRole(body,"button",{name:"Today’s doses",exact:true}));
+  await setDoseDate(new Date(scheduleStart.getTime()+2*86400000).toISOString().slice(0,10));row=await rowFor(currentEvents[2]);await clickReady(getByRole(row,"button",{name:"View history",exact:true}));
+  await findByText(body,"NOT_CONFIGURED",{exact:false});assert.equal((await mongoose.model("DoseOccurrence").findById(currentEvents[2]._id)).state,"pending");
+  assert.equal(await mongoose.model("DoseAction").countDocuments(),4);assert.equal(await mongoose.model("DoseReminderAttempt").countDocuments(),0);
   const counts = {
     prescriptions: await mongoose.model("Prescription").countDocuments(),
     cabinet: await mongoose.model("CabinetItem").countDocuments(),
     tasks: await mongoose.model("Task").countDocuments(),
     schedules: await mongoose.model("Schedule").countDocuments(),
     medicineCards: await mongoose.model("MedicineCard").countDocuments(),
+    doseActions: await mongoose.model("DoseAction").countDocuments(),
   };
-  assert.deepEqual(counts, { prescriptions: 1, cabinet: 3, tasks: 1, schedules: 1, medicineCards: 1 });
+  assert.deepEqual(counts, { prescriptions: 1, cabinet: 3, tasks: 1, schedules: 1, medicineCards: 1, doseActions: 4 });
   fs.writeFileSync(
     root + "/docs/evidence/step18-dom.json",
     JSON.stringify(
@@ -545,6 +581,7 @@ try {
           "Step 25 A1/B1 source selection, invalidated preview, explicit schedule confirmation, future replacement, pause/resume, persisted history after remount",
           "Step 25 expired-session write releases parent busy lock and permits sign-in without replaying the rejected mutation",
           "Step 26 current cabinet identity to explicit label review/selection, exact source text, separate note during outage, persistence/remount, escaped note text and source removal retaining note/immutable source",
+          "Step 27 actual A2 events to snooze/taken/skipped correction and immutable history, separate owner consent/disabled reminders, date filtering and persistence after remount",
         ],
         counts,
         limitations:
