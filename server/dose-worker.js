@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { db } from "./v1/store.js";
 import { createTelegram } from "./v1/telegram.js";
 import { createDoseWorker } from "./v1/doseReminders.js";
+import { requireTransactions } from "./runtime-config.js";
 
 if (!process.env.MONGODB_URI) {
   console.error(
@@ -20,6 +21,7 @@ if (!process.env.MONGODB_URI) {
     await mongoose.connect(process.env.MONGODB_URI, {
       serverSelectionTimeoutMS: 5000,
     });
+    if(process.env.NODE_ENV === 'production') await requireTransactions(mongoose.connection);
     await db.init();
     const telegram = createTelegram(),
       worker = createDoseWorker({ db, telegram });

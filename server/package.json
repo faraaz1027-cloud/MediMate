@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "node --env-file=.env --watch index.js",
-    "start": "node --env-file=.env index.js",
+    "start": "node --env-file-if-exists=.env index.js",
     "worker": "node --env-file-if-exists=.env worker.js",
     "dose-worker": "node --env-file-if-exists=.env dose-worker.js"
   },

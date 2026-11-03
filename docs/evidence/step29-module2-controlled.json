@@ -1,0 +1,296 @@
+{
+  "runAt": "2026-11-03T21:27:54.303Z",
+  "mode": "Controlled source fixtures; Telegram explicitly disabled; local-only rehearsal",
+  "synthetic": true,
+  "controlledClock": "2026-11-04T00:26:00.000Z",
+  "checks": [
+    "A1/B1/A2 share the same saved medicine and patient; preview/confirmation persists 12 occurrences",
+    "B2 chosen exact product label passages equal original response fields and retain source link/time",
+    "Deliberately injected source outage preserves B2 passages and permits independent note persistence",
+    "C2 taken replay produces one action, caregiver skip retains actor, and snooze changes reminder only",
+    "Whole-day counts reconcile to 1 taken / 1 skipped / 10 pending, with disabled notices and no false receipt",
+    "Module 1 C1 acknowledgement and caregiver transitions still work on the Module 2 patient",
+    "Server recreation preserves A2/C2/B2/C1 references, history, source facts and private note",
+    "Revoked caregiver loses dose reads/actions immediately across the integrated workflow"
+  ],
+  "exchanges": [
+    {
+      "method": "GET",
+      "path": "/auth/csrf",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/auth/register",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/auth/csrf",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/auth/register",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6aea51d9dbba6d4015a97708/access-grants",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6aea51d9dbba6d4015a97708/cabinet-items",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6aea51d9dbba6d4015a97708/prescriptions",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6aea51d9dbba6d4015a97708/prescriptions/6aea51dadbba6d4015a97736/versions/6aea51dadbba6d4015a97737/confirm",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6aea51d9dbba6d4015a97708/schedule-previews",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6aea51d9dbba6d4015a97708/schedules",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6aea51d9dbba6d4015a97708/schedules/6aea51dadbba6d4015a9776c/occurrences?view=history&limit=100",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6aea51d9dbba6d4015a97708/cabinet-items/6aea51d9dbba6d4015a9772a/label-candidates",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/patients/6aea51d9dbba6d4015a97708/cabinet-items/6aea51d9dbba6d4015a9772a/information-card",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6aea51d9dbba6d4015a97708/cabinet-items/6aea51d9dbba6d4015a9772a/label-candidates?refresh=true",
+      "status": 503
+    },
+    {
+      "method": "PATCH",
+      "path": "/patients/6aea51d9dbba6d4015a97708/cabinet-items/6aea51d9dbba6d4015a9772a/information-card/note",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/patients/6aea51d9dbba6d4015a97708/dose-reminder-settings",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6aea51d9dbba6d4015a97708/doses/6aea51dadbba6d4015a97771/actions",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6aea51d9dbba6d4015a97708/doses/6aea51dadbba6d4015a97771/actions",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6aea51d9dbba6d4015a97708/doses/6aea51dadbba6d4015a97772/actions",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6aea51d9dbba6d4015a97708/doses/6aea51dadbba6d4015a97773/snoozes",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6aea51d9dbba6d4015a97708/doses/6aea51dadbba6d4015a97771",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6aea51d9dbba6d4015a97708/doses/6aea51dadbba6d4015a97772",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6aea51d9dbba6d4015a97708/doses",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6aea51d9dbba6d4015a97708/tasks",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6aea51d9dbba6d4015a97708/tasks/6aea51dadbba6d4015a97836/acknowledgements",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6aea51d9dbba6d4015a97708/tasks/6aea51dadbba6d4015a97836/transitions",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6aea51d9dbba6d4015a97708/tasks/6aea51dadbba6d4015a97836/transitions",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6aea51d9dbba6d4015a97708/cabinet-items/6aea51d9dbba6d4015a9772a/information-card",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6aea51d9dbba6d4015a97708/doses/6aea51dadbba6d4015a97771",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6aea51d9dbba6d4015a97708/tasks/6aea51dadbba6d4015a97836",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6aea51d9dbba6d4015a97708/access-grants/6aea51d9dbba6d4015a9771c/revoke",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6aea51d9dbba6d4015a97708/doses",
+      "status": 404
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6aea51d9dbba6d4015a97708/doses/6aea51dadbba6d4015a97773/actions",
+      "status": 404
+    }
+  ],
+  "records": {
+    "patientId": "6aea51d9dbba6d4015a97708",
+    "cabinetItemId": "6aea51d9dbba6d4015a9772a",
+    "scheduleId": "6aea51dadbba6d4015a9776c",
+    "doseIds": [
+      "6aea51dadbba6d4015a97771",
+      "6aea51dadbba6d4015a97772",
+      "6aea51dadbba6d4015a97773",
+      "6aea51dadbba6d4015a97774",
+      "6aea51dadbba6d4015a97775",
+      "6aea51dadbba6d4015a97776",
+      "6aea51dadbba6d4015a97777",
+      "6aea51dadbba6d4015a97778",
+      "6aea51dadbba6d4015a97779",
+      "6aea51dadbba6d4015a9777a",
+      "6aea51dadbba6d4015a9777b",
+      "6aea51dadbba6d4015a9777c"
+    ],
+    "cardId": "6aea51dadbba6d4015a97798",
+    "taskId": "6aea51dadbba6d4015a97836"
+  },
+  "source": {
+    "labelId": "11111111-1111-4111-8111-111111111111",
+    "url": "https://api.fda.gov/drug/label.json?search=id%3A%2211111111-1111-4111-8111-111111111111%22",
+    "retrievedAt": "2026-11-03T21:27:54.089Z",
+    "passageCount": 3,
+    "contentHash": "e20336e3a6a2b34e8ac8b73e66065f6695353a50c7770bb7239868bdf7c8797a",
+    "originalResponseFields": {
+      "id": "11111111-1111-4111-8111-111111111111",
+      "set_id": "33333333-3333-4333-8333-333333333333",
+      "version": "1",
+      "effective_time": "20260101",
+      "openfda": {
+        "rxcui": [
+          "198440"
+        ],
+        "brand_name": [
+          "Synthetic label fixture"
+        ],
+        "generic_name": [
+          "SYNTHETIC INGREDIENT"
+        ],
+        "manufacturer_name": [
+          "Test fixture, not a manufacturer"
+        ],
+        "route": [
+          "ORAL"
+        ],
+        "product_ndc": [
+          "00000-0000"
+        ],
+        "substance_name": [
+          "SYNTHETIC INGREDIENT"
+        ],
+        "product_type": [
+          "CONTROLLED TEST DATA"
+        ]
+      },
+      "active_ingredient": [
+        "Synthetic ingredient fixture 500 mg"
+      ],
+      "warnings": [
+        "Synthetic warning fixture — not medical guidance.  Preserve original spacing.\nSecond line."
+      ],
+      "storage_and_handling": [
+        "Synthetic storage fixture."
+      ]
+    },
+    "savedPassages": [
+      {
+        "key": "active_ingredient",
+        "index": 0,
+        "text": "Synthetic ingredient fixture 500 mg"
+      },
+      {
+        "key": "warnings",
+        "index": 0,
+        "text": "Synthetic warning fixture — not medical guidance.  Preserve original spacing.\nSecond line."
+      },
+      {
+        "key": "storage_and_handling",
+        "index": 0,
+        "text": "Synthetic storage fixture."
+      }
+    ]
+  },
+  "expected": {
+    "doses": 12,
+    "doseActions": 3,
+    "taken": 1,
+    "skipped": 1,
+    "pending": 10,
+    "disabledReminderJobs": 3,
+    "notificationAttempts": 0
+  },
+  "openGates": [
+    "Public deployment and cloud MongoDB not configured",
+    "Faculty online/local decision unconfirmed",
+    "Real Telegram send/receipt unavailable",
+    "Individual contribution/Jira/viva/faculty acceptance"
+  ],
+  "database": {
+    "doses": 12,
+    "doseActions": 3,
+    "medicineCards": 1,
+    "reminderJobs": 3,
+    "reminderAttempts": 0,
+    "stockTransactions": 0
+  },
+  "requests": [],
+  "realTelegramVerified": false,
+  "publicDeploymentVerified": false,
+  "facultyLocalAcceptanceVerified": false
+}

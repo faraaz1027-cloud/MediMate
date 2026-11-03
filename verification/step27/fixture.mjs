@@ -10,16 +10,19 @@ export async function seedDoseSchedule(
   patientPath,
   at,
   label = "Synthetic C2 medicine",
+  existingCabinet = null,
 ) {
-  const cabinet = expectStatus(
-    await client.call("POST", patientPath + "/cabinet-items", {
-      entryType: "manual",
-      displayName: label,
-      strengthText: "500 mg",
-      form: "tablet",
-    }),
-    201,
-  );
+  const cabinet =
+    existingCabinet ||
+    expectStatus(
+      await client.call("POST", patientPath + "/cabinet-items", {
+        entryType: "manual",
+        displayName: label,
+        strengthText: "500 mg",
+        form: "tablet",
+      }),
+      201,
+    );
   const draft = expectStatus(
     await client.call("POST", patientPath + "/prescriptions", {
       title: label + " source",

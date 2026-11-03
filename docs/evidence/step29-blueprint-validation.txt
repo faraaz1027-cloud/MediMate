@@ -1,0 +1,1 @@
+Official Render JSON Schema validation passed (structure only; no deploy/apply).
