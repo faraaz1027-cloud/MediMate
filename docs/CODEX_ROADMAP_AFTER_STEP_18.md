@@ -64,6 +64,8 @@ Technical slice prepared on feature/step27-dose-reminders, stacked on Step 26. [
 Persist due events and processing state. Test Asia/Dhaka date boundary, schedule edits, worker restart, delayed execution, duplicate retry and a notification outage. Define whether overdue reminders are delivered late or marked missed according to recorded time, without inventing a taken/skipped dose. **Gate:** a restart cannot silently lose an event or generate duplicate dose/stock effects. Record process availability limits.
 
 ### Step 29 — Deployment and Module 2 demonstration
+Step 28 technical audit prepared on `feature/step28-timezone-restarts`, stacked on Step 27. [Findings, crash/timezone tests and operating policy](STEP_28_TIMEZONE_RESTARTS.md) record 109 passing API/provider tests, actual killed worker processes, midnight/schedule/snooze/retry checks and disabled/expired reconciliation fixes. No real Telegram receipt, stock deduction, deployment, personal contribution or faculty acceptance is claimed. Step 29 is next; its online/faculty and zero-cash worker questions remain open.
+
 Confirm faculty's online requirement. The Lab 06 Vercel example deploys a web application, but this system also needs API, DB and scheduled worker. Choose an arrangement with verified current terms under the team's zero-cash rule; if no viable always-on free worker exists, document the limitation and obtain faculty acceptance of the demonstration mode. Set environment variables privately; test frontend, backend, database and reminder behavior at deployed URL, then regression-test Module 1. **Gate:** working online or faculty-approved alternative, actual URL and evidence; avoid claiming deployment from a static frontend alone.
 
 ## Module 3, including extra C5

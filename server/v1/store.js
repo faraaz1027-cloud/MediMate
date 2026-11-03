@@ -332,6 +332,7 @@ model("DoseReminderAttempt", {
   patientId: oid, jobId: oid, attemptNumber: Number, attemptedAt: Date,
   providerCallAt: Date, status: String, externalMessageId: String, errorCode: String,
 }, [[{ jobId: 1, attemptNumber: 1 }, { unique: true }]]);
+models.DoseReminderJob.schema.index({ status: 1, leaseUntil: 1, _id: 1 });
 for (const name of ["Prescription", "CabinetItem", "Task", "Schedule"])
   models[name].schema.index({ patientId: 1, createdAt: -1, _id: -1 });
 models.PrescriptionInstruction.schema.index(

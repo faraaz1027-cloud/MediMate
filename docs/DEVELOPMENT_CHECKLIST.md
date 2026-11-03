@@ -51,7 +51,7 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 - [ ] Faraaz personally reviews/contributes B2, demonstrates the real external request and performs frontend/backend live edits; assistant work is not individual contribution evidence.
 - [x] C2 technical slice prepared: A2 dose taken/skipped/snooze, reasoned correction, immutable history and consent-gated reminder worker; [Step 27 tests and limitations](STEP_27_DOSE_REMINDERS.md).
 - [ ] Sahir personally reviews/contributes C2, explains duplicate/worker behavior and performs frontend/backend live edits. Real Telegram receipt remains unverified; controlled fixtures do not close that gate.
-- [ ] Test timezone boundaries, duplicate actions and backend restarts.
+- [x] Step 28 technical audit: Dhaka midnight, actual worker crashes/restarts, delayed/disabled/expired reminders, schedule edit/pause/resume, duplicate retry and API/connection restart; [evidence and limits](STEP_28_TIMEZONE_RESTARTS.md). Real Telegram and owner/faculty acceptance remain open; stock deduction is later A3.
 - [ ] Complete the agreed deployment arrangement and regression checks.
 - [ ] Update Jira and demonstrate all three Module 2 functions.
 

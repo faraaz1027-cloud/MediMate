@@ -1,0 +1,14 @@
+{
+  "reviewDate": "2026-11-04",
+  "reviewTimezone": "Asia/Dhaka",
+  "baselineCommit": "401da09855e4924c73f3fe271eaf95dc0d13c795",
+  "syntheticOnly": true,
+  "source": "Local Step 28 HTTP/MongoDB test run against unchanged Step 27 product code",
+  "observedFailures": [
+    {"scenario": "Committed pending reminder, process restarted with configuration disabled", "expected": "disabled", "actual": "pending"},
+    {"scenario": "Committed pending reminder expired, process restarted with configuration disabled", "expected": "expired", "actual": "pending"}
+  ],
+  "fix": "Reconcile due pending jobs before returning for a disabled adapter; retain current job revision/status CAS, no new attempt and unchanged dose state.",
+  "additionalFinding": "Recovering an interrupted lease previously returned no progress when the adapter was disabled, stopping a one-pass drain after one recovery.",
+  "limits": "These are controlled disposable-database observations. One unrelated test initially expected HTTP 200 instead of the existing A2 create-version 201; its assertion was corrected without changing that API. No real Telegram send or receipt was attempted."
+}
