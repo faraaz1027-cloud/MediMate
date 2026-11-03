@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { db } from "./v1/store.js";
 import { createTelegram } from "./v1/telegram.js";
 import { createTaskWorker } from "./v1/taskNotifications.js";
+import { requireTransactions } from "./runtime-config.js";
 
 const telegram = createTelegram();
 if (!telegram.enabled) {
@@ -27,6 +28,7 @@ if (!telegram.enabled) {
     await mongoose.connect(process.env.MONGODB_URI, {
       serverSelectionTimeoutMS: 5000,
     });
+    if(process.env.NODE_ENV === 'production') await requireTransactions(mongoose.connection);
     await db.init();
     const worker = createTaskWorker({ db, telegram });
     console.log(

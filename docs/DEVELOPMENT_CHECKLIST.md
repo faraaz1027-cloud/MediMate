@@ -53,6 +53,8 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 - [ ] Sahir personally reviews/contributes C2, explains duplicate/worker behavior and performs frontend/backend live edits. Real Telegram receipt remains unverified; controlled fixtures do not close that gate.
 - [x] Step 28 technical audit: Dhaka midnight, actual worker crashes/restarts, delayed/disabled/expired reminders, schedule edit/pause/resume, duplicate retry and API/connection restart; [evidence and limits](STEP_28_TIMEZONE_RESTARTS.md). Real Telegram and owner/faculty acceptance remain open; stock deduction is later A3.
 - [ ] Complete the agreed deployment arrangement and regression checks.
+- [x] Step 29 technical preparation: same-origin compiled UI/API, production configuration/topology/health checks, free-web-only Render Blueprint and eight-stage Module 2 rehearsal; [evidence and owner guide](STEP_29_DEPLOYMENT_MODULE2.md). 114 API/provider tests, DOM and real RxNorm/openFDA checks pass.
+- [ ] Step 29 course gate: cloud MongoDB, actual live URL/full workflow and reliable worker arrangement or explicitly faculty-approved alternative. User confirmed no cloud DB and unconfirmed faculty requirement. No real Telegram or individual contribution/acceptance is claimed.
 - [ ] Update Jira and demonstrate all three Module 2 functions.
 
 ## 6. Module 3 — Lab 7

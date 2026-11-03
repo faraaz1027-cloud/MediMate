@@ -85,3 +85,6 @@ The six APIs are POST and GET for prescriptions, manual cabinet items and caregi
 
 ## Step 28 timezone and restart audit
 [Findings, actual worker-crash tests, local-day behavior and process availability limits](docs/STEP_28_TIMEZONE_RESTARTS.md). Queued jobs reconcile to disabled/expired after configuration removal, and interrupted leases remain unknown without blind resend. Local build, 109 API/provider tests and production-bundle DOM integration pass. Step 29 deployment/Module 2 demonstration is next; real Telegram, student contribution and faculty acceptance remain open.
+
+## Step 29 deployment preparation and Module 2 rehearsal
+[Deployment package, verified source references, local rehearsal and open course gates](docs/STEP_29_DEPLOYMENT_MODULE2.md). The production server can serve the compiled Vite client and API from one origin, validates environment/transaction support and starts without a required local .env. A free-web-only Render Blueprint is prepared. No cloud DB or public MediMate URL exists yet; faculty's online/local requirement and the worker arrangement remain unconfirmed. Run `npm run demo:module2` after the documented installs/build, or add `-- --live-sources --serve` for a local rehearsal with actual public RxNorm/openFDA data and Telegram explicitly disabled. Technical preparation does not mark the course deployment complete.
