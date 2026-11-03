@@ -82,3 +82,6 @@ The six APIs are POST and GET for prescriptions, manual cabinet items and caregi
 
 ## Step 27 dose records and reminder preparation
 [C2 implementation, tests, worker setup and Sahir's owner-review guide](docs/STEP_27_DOSE_REMINDERS.md). [Postman collection](postman/MediMate_Step27.postman_collection.json). Record taken/skipped/snoozed actions and reasoned corrections against real A2 occurrences. The separate dose worker requires a replica-set DB and owner opt-in; Telegram is currently unconfigured and live delivery remains unverified. Stock deduction is later A3 work. Step 28 is the broader timezone/restart audit.
+
+## Step 28 timezone and restart audit
+[Findings, actual worker-crash tests, local-day behavior and process availability limits](docs/STEP_28_TIMEZONE_RESTARTS.md). Queued jobs reconcile to disabled/expired after configuration removal, and interrupted leases remain unknown without blind resend. Local build, 109 API/provider tests and production-bundle DOM integration pass. Step 29 deployment/Module 2 demonstration is next; real Telegram, student contribution and faculty acceptance remain open.

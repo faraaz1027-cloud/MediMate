@@ -190,11 +190,14 @@ export function createDoseWorker({ db, telegram, now = () => new Date() }) {
   }
   async function deliverOne() {
     // A crash after provider acceptance is uncertain, never an invitation to resend.
+    let recovered = false;
     const interrupted = (
       await db.list(
         "DoseReminderJob",
         { status: "processing", leaseUntil: { $lte: now() } },
         1,
+        undefined,
+        { leaseUntil: 1, _id: 1 },
       )
     )[0];
     if (interrupted)
@@ -213,15 +216,16 @@ export function createDoseWorker({ db, telegram, now = () => new Date() }) {
           },
           s,
         );
-        if (job)
+        if (job) {
           await db.update(
             "DoseReminderAttempt",
             { jobId: job._id, attemptNumber: job.attemptCount },
             { status: "unknown", errorCode: "WORKER_INTERRUPTED" },
             s,
           );
+          recovered = true;
+        }
       });
-    if (!telegram.enabled) return false;
     const next = (
       await db.list(
         "DoseReminderJob",
@@ -231,7 +235,22 @@ export function createDoseWorker({ db, telegram, now = () => new Date() }) {
         { runAtUTC: 1, _id: 1 },
       )
     )[0];
-    if (!next) return false;
+    if (!next) return recovered;
+    // Reconcile persisted work even if configuration was removed during a
+    // restart. Neither expiry nor a disabled adapter is a provider attempt.
+    if (next.expiresAtUTC <= now() || !telegram.enabled) {
+      const expired = next.expiresAtUTC <= now();
+      const settled = await db.update(
+        "DoseReminderJob",
+        { _id: next._id, revision: next.revision, status: "pending" },
+        {
+          status: expired ? "expired" : "disabled",
+          errorCode: expired ? "WINDOW_EXPIRED" : "NOT_CONFIGURED",
+          leaseUntil: null,
+        },
+      );
+      return !!settled || recovered;
+    }
     let claimed, attempt;
     await db.transaction(async (s) => {
       claimed = await db.update(
@@ -257,7 +276,7 @@ export function createDoseWorker({ db, telegram, now = () => new Date() }) {
           s,
         );
     });
-    if (!claimed) return false;
+    if (!claimed) return recovered;
     const allowed = await eligibility(claimed);
     let status = allowed.error ? allowed.status || "suppressed" : "sent",
       errorCode = allowed.error || null,
