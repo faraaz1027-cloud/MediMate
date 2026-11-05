@@ -71,9 +71,11 @@ Confirm faculty's online requirement. The Lab 06 Vercel example deploys a web ap
 ## Module 3, including extra C5
 
 ### Step 30 — A3 inventory and refill (Ihfaz)
-Step 29 technical preparation is on `feature/step29-deployment-demo`, stacked on Step 28. [Deployment preparation and Module 2 rehearsal](STEP_29_DEPLOYMENT_MODULE2.md) records same-origin production startup, a free-web-only Render Blueprint, 114 API/provider tests and an eight-stage local rehearsal with real RxNorm/openFDA proof. The user confirmed faculty requirements are unconfirmed and no cloud MongoDB exists. No public deployment, paid worker, real Telegram receipt, approved local substitute or student/faculty acceptance is claimed. **Step 29's deployment gate remains open**; Step 30 has not been started by this preparation.
+Step 29 technical preparation is on `feature/step29-deployment-demo`, stacked on Step 28. **Step 29's deployment gate remains open** pending the database, worker arrangement and faculty requirement. [Deployment preparation and Module 2 rehearsal](STEP_29_DEPLOYMENT_MODULE2.md).
 
 Add opening stock, refill and correction ledger entries. Link a confirmed C2 taken action to exactly one stock deduction using a domain unique key and atomic update/transaction strategy; corrections must be auditable. Compute remaining coverage from current confirmed schedule only when units and dose quantities are known. Test duplicate action, concurrent requests, invalid quantity and schedule change. **Gate:** balance reconciles with ledger and refill threshold creates a checklist.
+
+The A3 review branch implements the ledger, transactional C2 integration, bounded coverage estimate, and low-stock checklists. Ihfaz owns the lab demonstration and individual contribution. [Step 30 review and demonstration guide](STEP_30_INVENTORY_REFILLS.md).
 
 ### Step 31 — A4 pharmacy search and coordination (Ihfaz)
 Use live Overpass lookup for nearby pharmacy listings and explicit location/manual-area fallback. Save preferred listing and link refill checklist to C1 collection task. Keep retrieved contact/location provenance and timestamp. Test denied location, no results, timeout and stale listing. **Gate:** no wording implying medicine stock or ambulance service is verified by a map listing.

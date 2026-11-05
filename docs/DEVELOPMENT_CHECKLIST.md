@@ -58,7 +58,8 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 - [ ] Update Jira and demonstrate all three Module 2 functions.
 
 ## 6. Module 3 — Lab 7
-- [ ] A3: stock history and exactly-once dose deduction.
+- [x] A3 technical slice prepared with stock history, transactional C2 deduction and reversal, coverage and low-stock checklists. [Step 30](STEP_30_INVENTORY_REFILLS.md).
+- [ ] Ihfaz personally reviews and contributes to A3, demonstrates ledger reconciliation and checklist creation, and performs frontend and backend edits.
 - [ ] A4: pharmacy search and refill coordination.
 - [ ] B3: ingredient comparison and evidence review.
 - [ ] B4: grounded educational assistant with insufficient-evidence handling.

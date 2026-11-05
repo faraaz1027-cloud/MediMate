@@ -33,6 +33,9 @@ const collections = {
   DoseReminderSettings: "doseReminderSettings",
   DoseReminderJob: "doseReminderJobs",
   DoseReminderAttempt: "doseReminderAttempts",
+  InventorySettings: "inventorySettings",
+  StockTransaction: "stockTransactions",
+  RefillList: "refillLists",
 };
 function model(name, fields, indexes = []) {
   const schema = new Schema(
@@ -304,12 +307,34 @@ model("DoseOccurrence", {
   dueAtUTC: Date, doseQuantitySnapshot: Schema.Types.Decimal128, doseUnitSnapshot: String, timezoneSnapshot: String,
   state: { type: String, enum: ["pending", "taken", "skipped", "cancelled"] },
   reminderDueAtUTC: Date, snoozeCount: Number, actionRevision: Number,
+  stockSyncStatus: String, stockIssue: String, stockActionId: oid, stockDeductionId: oid,
   reminderQueuedRevision: Number,
   cancelledAt: Date, cancellationReason: String,
 }, [[{ scheduleVersionId: 1, dueAtUTC: 1 }, { unique: true }],
   [{ patientId: 1, scheduleId: 1, dueAtUTC: 1, _id: 1 }, {}]]);
 models.DoseOccurrence.schema.index({ patientId: 1, dueAtUTC: 1, _id: 1 });
 models.DoseOccurrence.schema.index({ patientId: 1, state: 1, reminderDueAtUTC: 1 });
+models.DoseOccurrence.schema.index({ patientId: 1, cabinetItemId: 1, state: 1, dueAtUTC: 1, _id: 1 });
+models.DoseOccurrence.schema.index({ patientId: 1, cabinetItemId: 1, state: 1, stockSyncStatus: 1, _id: -1 });
+model("InventorySettings", {
+  patientId: oid, cabinetItemId: oid, stockUnit: String, opened: Boolean,
+  balanceMicros: Schema.Types.Decimal128, thresholdMicros: Schema.Types.Decimal128,
+}, [[{ patientId: 1, cabinetItemId: 1 }, { unique: true }]]);
+model("StockTransaction", {
+  patientId: oid, cabinetItemId: oid, deltaMicros: Schema.Types.Decimal128,
+  unit: String, reason: String, operationKey: String, actorUserId: oid,
+  sourceDoseActionId: oid, reversesTransactionId: oid, note: String, recordedAt: Date,
+}, [
+  [{ patientId: 1, operationKey: 1 }, { unique: true }],
+  [{ patientId: 1, cabinetItemId: 1, _id: -1 }, {}],
+]);
+model("RefillList", {
+  patientId: oid, status: String, createdByUserId: oid, completedAt: Date,
+  items: [{
+    cabinetItemId: oid, medicineText: String, requestedQuantity: String,
+    unit: String, state: String, collectedAt: Date,
+  }],
+}, [[{ patientId: 1, _id: -1 }, {}]]);
 model("DoseAction", {
   patientId: oid, occurrenceId: oid, revisionNumber: Number, action: String,
   previousState: String, newState: String, actorUserId: oid, recordedAt: Date,
@@ -344,6 +369,16 @@ models.Operation.schema.index(
   { expireAfterSeconds: 30 * 24 * 3600 },
 );
 export const db = {
+  async lowStock(patientId, limit, session) {
+    return models.InventorySettings.aggregate([
+      { $match: { patientId, opened: true, $expr: { $lte: ["$balanceMicros", "$thresholdMicros"] } } },
+      { $lookup: { from: collections.CabinetItem, localField: "cabinetItemId", foreignField: "_id", as: "cabinet" } },
+      { $unwind: "$cabinet" },
+      { $match: { "cabinet.patientId": patientId, "cabinet.status": "active" } },
+      { $sort: { _id: 1 } },
+      { $limit: limit },
+    ]).session(session || null);
+  },
   async count(name, filter) { return models[name].countDocuments(filter); },
   async fence(name, filter, session) {
     return models[name].updateOne(filter, { $inc: { scheduleFence: 1 } }, { session });

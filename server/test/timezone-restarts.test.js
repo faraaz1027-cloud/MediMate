@@ -246,7 +246,7 @@ test('Step 28 timezone, delayed execution and actual process restart integration
     const first=ok(await act(ctx,ctx.dose,'actions',body,key));
     await new Promise(r=>server.close(r));await start();
     const replay=ok(await act(ctx,ctx.dose,'actions',body,key));assert.equal(replay.actionId,first.actionId);
-    assert.equal((await detail(ctx)).actions.length,2);assert.equal(first.stockSyncStatus,'not_implemented');
+    assert.equal((await detail(ctx)).actions.length,2);assert.equal(first.stockSyncStatus,'needs_review');
     assert.equal(await mongoose.connection.db.collection('stockTransactions').countDocuments({}),0);
     assert.equal(await mongoose.connection.db.collection('stockSyncJobs').countDocuments({}),0);
   });

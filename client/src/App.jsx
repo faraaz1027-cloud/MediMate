@@ -3,6 +3,7 @@ import ScheduleBuilder from "./ScheduleBuilder.jsx";
 import MedicineInformation from "./MedicineInformation.jsx";
 import DoseBoard from "./DoseBoard.jsx";
 import MedicineCabinet from "./MedicineCabinet.jsx";
+import InventoryBoard from "./InventoryBoard.jsx";
 import PrescriptionReview from "./PrescriptionReview.jsx";
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
@@ -16,6 +17,7 @@ const tabs = [
   ["schedules", "Medication schedules"],
   ["information", "Medicine information"],
   ["doses", "Today’s doses"],
+  ["inventory", "Inventory and refills"],
 ];
 export default function App() {
   const [user, setUser] = useState(null),
@@ -32,7 +34,7 @@ export default function App() {
     [notice, setNotice] = useState("");
   const lock = useRef(false);
   const selectedPatient = user?.patients?.find((p) => p.id === patient);
-  const prefixes = { prescriptions: "prescription", "cabinet-items": "cabinet", tasks: "task", schedules: "schedule", information: "cabinet", doses: "dose" };
+  const prefixes = { prescriptions: "prescription", "cabinet-items": "cabinet", tasks: "task", schedules: "schedule", information: "cabinet", doses: "dose", inventory: "stock" };
   const visibleTabs = tabs.filter(([id]) => selectedPatient?.permissions?.some((p) => p === prefixes[id] + ".read" || p === prefixes[id] + ".write"));
   const activeTab = visibleTabs.some(([id]) => id === tab) ? tab : visibleTabs[0]?.[0] || tab;
   async function api(path, options = {}) {
@@ -279,7 +281,7 @@ export default function App() {
                     </button>
                   ))}
                 </nav>
-                {activeTab === "prescriptions" ? <PrescriptionReview key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "cabinet-items" ? <MedicineCabinet key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "schedules" ? <ScheduleBuilder key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "information" ? <MedicineInformation key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "doses" ? <DoseBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} owner={selectedPatient.role === "owner"} onBusy={setBusy} /> : <TaskBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} userId={user.id} owner={selectedPatient.role === "owner"} onBusy={setBusy} />}
+                {activeTab === "prescriptions" ? <PrescriptionReview key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "cabinet-items" ? <MedicineCabinet key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "schedules" ? <ScheduleBuilder key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "information" ? <MedicineInformation key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "doses" ? <DoseBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} owner={selectedPatient.role === "owner"} onBusy={setBusy} /> : activeTab === "inventory" ? <InventoryBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : <TaskBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} userId={user.id} owner={selectedPatient.role === "owner"} onBusy={setBusy} />}
               </>
             )}
           </>

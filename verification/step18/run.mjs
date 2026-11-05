@@ -4,6 +4,7 @@ import {
   getByRole,
   getByText,
   getByLabelText,
+  findByLabelText,
   findByText,
   findByRole,
   waitFor,
@@ -539,6 +540,32 @@ try {
   await setDoseDate(new Date(scheduleStart.getTime()+2*86400000).toISOString().slice(0,10));row=await rowFor(currentEvents[2]);await clickReady(getByRole(row,"button",{name:"View history",exact:true}));
   await findByText(body,"NOT_CONFIGURED",{exact:false});assert.equal((await mongoose.model("DoseOccurrence").findById(currentEvents[2]._id)).state,"pending");
   assert.equal(await mongoose.model("DoseAction").countDocuments(),4);assert.equal(await mongoose.model("DoseReminderAttempt").countDocuments(),0);
+  await clickReady(getByRole(body,"button",{name:"Inventory and refills",exact:true}));
+  const medicine = await findByLabelText(body, "Medicine for inventory", { exact: true });
+  await waitFor(() => assert.ok([...medicine.options].some(
+    (option) => option.value === String(currentEvents[1].cabinetItemId),
+  )), { container: body });
+  await u.selectOptions(medicine, String(currentEvents[1].cabinetItemId));
+  await u.selectOptions(await findByLabelText(body, "Stock unit", { exact: true }), "tablet");
+  const threshold = getByLabelText(body, "Low stock threshold", { exact: true });
+  await u.clear(threshold);
+  await u.type(threshold, "1");
+  await clickReady(getByRole(body, "button", { name: "Save inventory settings", exact: true }));
+  await u.type(await findByLabelText(body, "Quantity change (tablet)", { exact: true }), "3");
+  await clickReady(getByRole(body, "button", { name: "Save stock entry", exact: true }));
+  await findByText(body, "Stock balance: 3 tablet", { exact: true });
+  await clickReady(getByRole(body, "button", { name: "Review and post deduction", exact: true }));
+  await findByText(body, "Stock balance: 1 tablet", { exact: true });
+  await clickReady(getByRole(body, "button", { name: "Create checklist from low stock", exact: true }));
+  await u.selectOptions(await findByLabelText(body, "Collection state", { exact: true }), "collected");
+  await clickReady(getByRole(body, "button", { name: "Save checklist item", exact: true }));
+  await clickReady(await findByRole(body, "button", { name: "Complete checklist", exact: true }));
+  await findByRole(body, "heading", { name: /Completed checklist/ });
+  await findByText(body, "Stock balance: 1 tablet", { exact: true });
+  await clickReady(getByRole(body,"button",{name:"Today’s doses",exact:true}));
+  await setDoseDate(dayTwo);
+  row = await rowFor(currentEvents[1]);
+  await findByText(row, "Inventory: deducted", { exact: true });
   const counts = {
     prescriptions: await mongoose.model("Prescription").countDocuments(),
     cabinet: await mongoose.model("CabinetItem").countDocuments(),
@@ -546,10 +573,12 @@ try {
     schedules: await mongoose.model("Schedule").countDocuments(),
     medicineCards: await mongoose.model("MedicineCard").countDocuments(),
     doseActions: await mongoose.model("DoseAction").countDocuments(),
+    stockTransactions: await mongoose.model("StockTransaction").countDocuments(),
+    refillLists: await mongoose.model("RefillList").countDocuments(),
   };
-  assert.deepEqual(counts, { prescriptions: 1, cabinet: 3, tasks: 1, schedules: 1, medicineCards: 1, doseActions: 4 });
+  assert.deepEqual(counts, { prescriptions: 1, cabinet: 3, tasks: 1, schedules: 1, medicineCards: 1, doseActions: 4, stockTransactions: 2, refillLists: 1 });
   fs.writeFileSync(
-    root + "/docs/evidence/step18-dom.json",
+    process.env.MEDIMATE_DOM_REPORT || root + "/docs/evidence/step18-dom.json",
     JSON.stringify(
       {
         runAt: new Date().toISOString(),
@@ -582,6 +611,7 @@ try {
           "Step 25 expired-session write releases parent busy lock and permits sign-in without replaying the rejected mutation",
           "Step 26 current cabinet identity to explicit label review/selection, exact source text, separate note during outage, persistence/remount, escaped note text and source removal retaining note/immutable source",
           "Step 27 actual A2 events to snooze/taken/skipped correction and immutable history, separate owner consent/disabled reminders, date filtering and persistence after remount",
+          "Step 30 recorded dose review to opening count, explicit deduction, low-stock checklist, completion without stock mutation and deducted status in the dose view",
         ],
         counts,
         limitations:

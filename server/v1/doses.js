@@ -1,6 +1,8 @@
 import { Temporal } from "@js-temporal/polyfill";
 import { createHash } from "node:crypto";
 import { MAX_REMINDER_ATTEMPTS } from "./doseReminders.js";
+import mongoose from "mongoose";
+import { syncDoseStock } from "./stockLedger.js";
 
 export function installDoses(
   patient,
@@ -131,12 +133,14 @@ export function installDoses(
       );
     delete out.revision;
     delete out.reminderQueuedRevision;
+    delete out.stockActionId;
+    delete out.stockDeductionId;
     return {
       ...out,
       medicineText: v.sourceSnapshot.medicineText,
       strengthText: v.sourceSnapshot.strengthText,
       overdueUnconfirmed: d.state === "pending" && d.dueAtUTC < now(),
-      stockSyncStatus: "not_implemented",
+      stockSyncStatus: d.stockSyncStatus ?? (d.state === "taken" ? "legacy_untracked" : "not_applicable"),
     };
   }
   const suppress = (d, s) =>
@@ -256,6 +260,10 @@ export function installDoses(
             action = state;
           }
         }
+        const actionId = new mongoose.Types.ObjectId();
+        const stock = await syncDoseStock(db, d, state, {
+          actorUserId: req.actorId, sourceDoseActionId: actionId, recordedAt: at, note: reason,
+        }, s);
         const updated = await db.update(
           "DoseOccurrence",
           {
@@ -269,6 +277,7 @@ export function installDoses(
             actionRevision: nextRevision,
             reminderDueAtUTC,
             snoozeCount,
+            ...stock,
           },
           s,
         );
@@ -281,6 +290,7 @@ export function installDoses(
         const entry = await db.insert(
           "DoseAction",
           {
+            _id: actionId,
             patientId: d.patientId,
             occurrenceId: d._id,
             revisionNumber: nextRevision,
@@ -294,7 +304,7 @@ export function installDoses(
             isCorrection: mode === "correction",
             clientRequestId: b.clientRequestId,
             reminderDueAtUTC,
-            stockSyncStatus: "not_implemented",
+            stockSyncStatus: stock.stockSyncStatus,
           },
           s,
         );
@@ -302,7 +312,7 @@ export function installDoses(
         return {
           dose: await projection(updated, s),
           actionId: String(entry._id),
-          stockSyncStatus: "not_implemented",
+          stockSyncStatus: stock.stockSyncStatus,
         };
       },
       200,

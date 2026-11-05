@@ -274,6 +274,9 @@ test(
   async (t) => {
     const mongo = await MongoMemoryServer.create({
       binary: { version: "7.0.24" },
+      ...(process.env.MEDIMATE_TEST_STANDALONE_DB_PATH
+        ? { instance: { dbPath: process.env.MEDIMATE_TEST_STANDALONE_DB_PATH } }
+        : {}),
     });
     t.after(() => mongo.stop());
     const uri = mongo.getUri("standalone_synthetic");

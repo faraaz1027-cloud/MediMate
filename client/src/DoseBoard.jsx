@@ -404,6 +404,10 @@ export default function DoseBoard({
                       Dose status: {d.state}
                       {d.overdueUnconfirmed ? " · unconfirmed (past due)" : ""}
                     </p>
+                    {d.state === "taken" && (
+                      <p>Inventory: {d.stockSyncStatus === "applied" ? "deducted"
+                        : d.stockSyncStatus === "needs_review" ? "needs review" : "legacy dose without a stock entry"}</p>
+                    )}
                     <p>
                       {d.timezoneSnapshot} · {d.dueAtUTC}
                     </p>
@@ -631,8 +635,8 @@ export default function DoseBoard({
                     skipped.
                   </p>
                   <p>
-                    Stock totals are not updated by dose recording in this
-                    version.
+                    Taken doses deduct stock when the saved quantity and unit
+                    match an inventory balance. Unresolved deductions appear in inventory.
                   </p>
                 </section>
               )}
