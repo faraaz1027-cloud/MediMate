@@ -219,13 +219,14 @@ Jobs are pending/processing/sent/failed/unknown/disabled/suppressed/expired. Sen
 | GET /refill-lists | stock.read | status?,cursor?,limit? | 200 lists |
 | PATCH /refill-lists/{id}/items/{itemId} | stock.write | {expectedRevision,state:needed/collected,requestedQuantity?} | 200 updated list, null clears requested quantity |
 | POST /refill-lists/{id}/complete | stock.write | {expectedRevision} | 200 completed list |
-| GET /pharmacies | stock.read | latitude,longitude,radiusMeters (100–5000) | 200 {listings,sourceUrl,retrievedAt}; listing availability is not stock evidence |
-| POST /pharmacy-preferences | stock.write | {externalPlaceKey} | 201 saved verified listing snapshot |
-| POST /refill-lists/{id}/collection-task | stock.write AND task.write | {assigneeUserId,pharmacyPreferenceId?,dueAtUTC?} | 201 Task + refill link; same key returns same task |
+| GET /pharmacies | stock.read | latitude,longitude,radiusMeters (100–5000) | 200 {listings,sourceUrl,retrievedAt,dataTimestamp,limited}; each listing carries a short-lived selection token |
+| GET /pharmacy-preferences | stock.read | None | 200 current preference with stale flag, or null |
+| POST /pharmacy-preferences | stock.write | {externalPlaceKey,selectionToken,expectedRevision} | 201 current preferred listing snapshot; use null revision before first save |
+| POST /refill-lists/{id}/collection-task | stock.write AND task.write | {expectedRevision,assigneeUserId,pharmacyPreferenceId?,expectedPharmacyRevision?,dueAtUTC?} | 201 {task,refillListId,refillListRevision}; same key replays the task receipt |
 
 Use decimal strings with up to six fractional digits. An opening count can be zero. Refills must be positive and corrections need a nonzero delta and a note. Balance remains nonnegative under the inventory revision lock. Only internal dose processing writes `dose_deduction` and `dose_reversal`. A taken dose with incompatible or insufficient stock stays taken and shows `needs_review`. Collection and completion leave stock unchanged. [Step 30 statuses and verification](STEP_30_INVENTORY_REFILLS.md).
 
-The pharmacy and collection-task endpoints are planned for A4. Validate coordinate ranges and keep patient IDs and medical notes out of map requests.
+A4 validates the search bounds and sends rounded coordinates and radius to Overpass. A preference save requires the same patient, user and returned listing key as the ten-minute token. A saved listing becomes stale after 24 hours and requires a new search before linking it to a task. An open checklist allows one linked collection task. A task with a selected pharmacy requires the current preference revision. [Step 31 review and provider evidence](STEP_31_PHARMACY_COORDINATION.md).
 
 ## C4 Analytics and visit reports
 Add report.write as an explicit permission for health-note writes; report.read alone never authorizes mutation. This extends Step 15's permission vocabulary.

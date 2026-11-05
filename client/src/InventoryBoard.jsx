@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ValidatedForm from "./ValidatedForm.jsx";
+import PharmacyCoordination from "./PharmacyCoordination.jsx";
 
 const units = [
   "tablet",
@@ -445,6 +446,7 @@ export default function InventoryBoard({ api, patient, permissions, onBusy }) {
                 : "Completed checklist"}{" "}
               · {new Date(list.createdAt).toLocaleDateString()}
             </h4>
+            {list.collectionTaskId && <p>Collection task linked · {list.collectionTaskId}</p>}
             <ul className="records">
               {list.items.map((item) => (
                 <li key={item.id}>
@@ -529,6 +531,8 @@ export default function InventoryBoard({ api, patient, permissions, onBusy }) {
             More checklists
           </button>
         )}
+        <PharmacyCoordination api={api} base={base} lists={lists.data} permissions={permissions}
+          disabled={disabled} refresh={refresh} writeRequest={writeRequest} />
       </section>
     </div>
   );

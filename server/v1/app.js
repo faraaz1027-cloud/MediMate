@@ -9,6 +9,8 @@ import { createOpenFDA } from "./openfda.js";
 import { installInformationCards } from "./information-cards.js";
 import { installDoses } from "./doses.js";
 import { installInventory } from "./inventory.js";
+import { installPharmacies } from "./pharmacies.js";
+import { createOverpass } from "./overpass.js";
 import express from "express";
 import mongoose from "mongoose";
 import {
@@ -124,6 +126,7 @@ export function createV1({
   db,
   rxnorm = createRxNorm(),
   openfda = createOpenFDA(),
+  overpass = createOverpass(),
   telegram = createTelegram(),
   secure = process.env.NODE_ENV === "production",
   origins = ["http://localhost:5173", "http://127.0.0.1:5173"],
@@ -367,7 +370,7 @@ export function createV1({
       s,
     );
     if (!grant) fail(404, "NOT_FOUND", "Record not found.");
-    if (permission && !grant.permissions.includes(permission))
+    if (permission && ![permission].flat().every((p) => grant.permissions.includes(p)))
       fail(403, "FORBIDDEN", "This operation is not permitted.");
     return p;
   }
@@ -567,11 +570,12 @@ export function createV1({
   installPrescriptions(patient, { db, csrf, scope, access, mutate, fail, id, object, text, publicDoc, now });
   installCabinet(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, rxnorm });
   installChannels(app, { db, authenticated, csrf, mutate, object, fail, id, telegram, now, throttle });
-  installTasks(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now, telegram });
+  const { createTask, date: taskDate } = installTasks(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now, telegram });
   installSchedules(patient, { db, csrf, scope, access, mutate, fail, id, object, text, publicDoc, now, send });
   installInformationCards(patient, { db, csrf, scope, mutate, fail, id, object, publicDoc, now, send, openfda });
   installDoses(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now, send, telegram });
   installInventory(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now, send });
+  installPharmacies(patient, { db, csrf, scope, mutate, fail, id, object, publicDoc, now, send, overpass, createTask, taskDate });
   const resources = [
     ["prescriptions", "Prescription", "prescription"],
   ];

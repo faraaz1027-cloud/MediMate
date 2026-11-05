@@ -13,7 +13,7 @@ const replica = await MongoMemoryReplSet.create({
 });
 try {
   const selected = process.argv.slice(2);
-  const child = spawn(process.execPath, ["--test", ...(selected.length ? selected : ["server/test/api.test.js", "server/test/prescriptions.test.js", "server/test/cabinet.test.js", "server/test/rxnorm.test.js", "server/test/tasks.test.js", "server/test/telegram.test.js", "server/test/module1.test.js", "server/test/schedules.test.js", "server/test/openfda.test.js", "server/test/information-cards.test.js", "server/test/doses.test.js", "server/test/dose-worker-cli.test.js", "server/test/timezone-restarts.test.js", "server/test/deployment.test.js", "server/test/module2.test.js", "server/test/inventory.test.js"])], {
+  const child = spawn(process.execPath, ["--test", ...(selected.length ? selected : ["server/test/api.test.js", "server/test/prescriptions.test.js", "server/test/cabinet.test.js", "server/test/rxnorm.test.js", "server/test/tasks.test.js", "server/test/telegram.test.js", "server/test/module1.test.js", "server/test/schedules.test.js", "server/test/openfda.test.js", "server/test/information-cards.test.js", "server/test/doses.test.js", "server/test/dose-worker-cli.test.js", "server/test/timezone-restarts.test.js", "server/test/deployment.test.js", "server/test/module2.test.js", "server/test/inventory.test.js", "server/test/pharmacies.test.js"])], {
     cwd: fileURLToPath(new URL("../../", import.meta.url)),
     env: { ...process.env, MONGODB_TEST_URI: replica.getUri() },
     stdio: "inherit",

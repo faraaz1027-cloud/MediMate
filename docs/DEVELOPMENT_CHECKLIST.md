@@ -60,7 +60,8 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 ## 6. Module 3 — Lab 7
 - [x] A3 technical slice prepared with stock history, transactional C2 deduction and reversal, coverage and low-stock checklists. [Step 30](STEP_30_INVENTORY_REFILLS.md).
 - [ ] Ihfaz personally reviews and contributes to A3, demonstrates ledger reconciliation and checklist creation, and performs frontend and backend edits.
-- [ ] A4: pharmacy search and refill coordination.
+- [x] A4 technical slice prepared with area search, pharmacy preference and a linked C1 collection task. [Step 31](STEP_31_PHARMACY_COORDINATION.md).
+- [ ] Ihfaz records a successful live Overpass listing from the deployed or lab environment, contributes under his Git identity, and demonstrates the A3 → A4 → C1 workflow and frontend/backend edits.
 - [ ] B3: ingredient comparison and evidence review.
 - [ ] B4: grounded educational assistant with insufficient-evidence handling.
 - [ ] C3: overdue–unconfirmed follow-up and escalation cancellation.

@@ -67,13 +67,14 @@ Source parent/cabinet documents have a hidden scheduleFence coordination counter
 |---|---|
 | StockTransaction | patientId, cabinetItemId, deltaMicros, unit, reason: opening/refill/correction/dose_deduction/dose_reversal, operationKey, actorUserId, recordedAt, sourceDoseActionId?, reversesTransactionId?, note? |
 | InventorySettings | patientId, cabinetItemId, stockUnit, thresholdMicros, balanceMicros, opened, revision |
-| RefillList | patientId, status: open/completed, createdByUserId, revision, completedAt?, embedded items with id, cabinetItemId, medicineText, requestedQuantity?, unit, state: needed/collected, collectedAt? |
-| pharmacyPreferences | patientId, externalPlaceKey, listingSnapshot, retrievedAt, sourceUrl, preferred |
-| refillTaskLinks | patientId, refillListId, taskId, pharmacyPreferenceId? |
+| RefillList | patientId, status: open/completed, createdByUserId, revision, completedAt?, collectionTaskId?, embedded items with id, cabinetItemId, medicineText, requestedQuantity?, unit, state: needed/collected, collectedAt? |
+| PharmacyPreference | unique patientId, externalPlaceKey, listingSnapshot, retrievedAt, dataTimestamp?, sourceUrl, savedByUserId, revision |
 
 The sum of immutable ledger deltas is materialized in `balanceMicros` for transactional revision checks and low-stock queries. Only a ledger append changes this projection. Quantities are integer micro-units stored as Decimal128. Patient and cabinet item uniquely identify settings. The ledger uniquely indexes patient and operation key. The opening entry locks the unit. A low-stock checklist embeds up to 50 items so a revision check protects the entire list and its completion invariant.
 
 Step 30 adds current stock status, issue, source action reference and deduction reference to each affected DoseOccurrence. A new DoseAction keeps the outcome at recording time. A reviewed deduction updates the occurrence and ledger in the same transaction and preserves the immutable action. The debit is unique per source action, and the compensating credit is unique per debit. Existing taken occurrences without stock metadata project `legacy_untracked`. [Step 30 transaction boundaries and coverage](STEP_30_INVENTORY_REFILLS.md).
+
+A4 stores the current preferred public listing per patient. Search centers are kept out of MongoDB and the saved listing keeps its public address, coordinates, optional contact/hours and provenance. A linked Task stores `refillListId`, optional `pharmacyPreferenceId` and the selected public listing snapshot as it was at assignment. Storing the reverse pointer directly on the refill list gives the task and checklist one revision-checked transaction boundary. [Step 31 decisions and tests](STEP_31_PHARMACY_COORDINATION.md).
 
 ## Tasks, notifications and follow-up delivery: C1–C3
 | Collection | Core fields |
