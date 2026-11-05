@@ -203,24 +203,29 @@ The list defaults to today in the patient's IANA timezone; date is YYYY-MM-DD an
 
 Reminder consent belongs only to the patient owner and is separate from C1's task-channel consent. Enable requires consent:true even with no bot/link; configured/channelLinked are shown separately and no delivery is implied. Changing the enabled value suppresses pending jobs; saving an unchanged value is a no-op. Settings use their revision, null before first save. Retry needs the current pending dose/action revision, enabled consent, current active private link, configured adapter, an unexpired 60-minute window and fewer than 3 processing attempts; only failed/disabled/suppressed jobs qualify. Sent/unknown/processing/expired jobs cannot retry. The worker checks active patient/schedule/cabinet, dose revision/time, consent and link revision immediately before calling the provider. This is a point-in-time check, not cancellation of an already in-flight send. Reminder projections include actionRevision, status, errorCode, attemptCount, runAtUTC, expiresAtUTC and bounded attempts with attemptedAt/providerCallAt/status/errorCode. Attempts count processing claims, so a suppressed claim may have no provider call.
 
-Jobs are pending/processing/sent/failed/unknown/disabled/suppressed/expired. Sent means Telegram accepted a message, never receipt or reading. Unknown outcomes and interrupted leases are never blindly resent. Telegram disabled produces disabled/NOT_CONFIGURED with zero attempts for newly queued work. Expiry is 60 minutes after the current reminder time (including a snooze); expired reminders leave doses pending. Dedicated C2 collections/worker prevent the C1 task poller from claiming dose jobs. Stock writes/reconciliation are Step 30/A3 and currently return not_implemented. C3 follow-up routes in the table remain unimplemented: owner may resolve; caregivers will additionally need active assigned follow-up access. Silence is never automatically skipped.
+Jobs are pending/processing/sent/failed/unknown/disabled/suppressed/expired. Sent means Telegram accepted a message, never receipt or reading. Unknown outcomes and interrupted leases are never blindly resent. Telegram disabled produces disabled/NOT_CONFIGURED with zero attempts for newly queued work. Expiry is 60 minutes after the current reminder time (including a snooze); expired reminders leave doses pending. Dedicated C2 collections/worker prevent the C1 task poller from claiming dose jobs. Step 30 connects C2 recording and correction to the A3 stock ledger. C3 follow-up routes in the table remain unimplemented: owner may resolve; caregivers will additionally need active assigned follow-up access. Silence is never automatically skipped.
 
 ## A3 Inventory and A4 refill coordination
 | Route | Permission | Request | Success |
 |---|---|---|---|
-| GET /cabinet-items/{id}/stock | stock.read | None | 200 {balance,unit,coverageDays?,coverageStatus,lowStock,stockSyncStatus} |
+| GET /inventory-items | stock.read | cursor?,limit? | 200 paginated inventory summaries |
+| GET /cabinet-items/{id}/stock | stock.read | None | 200 stock summary, coverageDays, coverageStatus, firstUncoveredAtUTC, stockSyncStatus and first page of pending deductions |
 | GET /cabinet-items/{id}/stock-transactions | stock.read | cursor?,limit? | 200 ledger entries |
 | POST /cabinet-items/{id}/stock-transactions | stock.write | {expectedRevision,delta,unit,reason:opening/refill/correction,note?} | 201 ledger entry + resulting balance; expectedRevision compares inventory lock |
-| PUT /cabinet-items/{id}/inventory-settings | stock.write | {expectedRevision?,stockUnit,lowStockThreshold} | 200/201 settings; existing needs revision |
-| POST /refill-lists | stock.write | {items:[{cabinetItemId,requestedQuantity?,unit}]} | 201 list |
+| PUT /cabinet-items/{id}/inventory-settings | stock.write | {expectedRevision,stockUnit,lowStockThreshold} | 200 summary, use null revision before setup |
+| GET /cabinet-items/{id}/stock-reconciliation | stock.read | cursor?,limit? | 200 paginated unresolved deductions |
+| POST /cabinet-items/{id}/stock-reconciliation/{doseId} | stock.write | {expectedActionRevision} | 200 current stock status and issue |
+| POST /refill-lists | stock.write | {items:[{cabinetItemId,requestedQuantity?,unit}]} or {fromLowStock:true} | 201 list |
 | GET /refill-lists | stock.read | status?,cursor?,limit? | 200 lists |
-| PATCH /refill-lists/{id}/items/{itemId} | stock.write | {expectedRevision,state:needed/collected,requestedQuantity?} | 200 item; collection alone does not add stock |
+| PATCH /refill-lists/{id}/items/{itemId} | stock.write | {expectedRevision,state:needed/collected,requestedQuantity?} | 200 updated list, null clears requested quantity |
 | POST /refill-lists/{id}/complete | stock.write | {expectedRevision} | 200 completed list |
 | GET /pharmacies | stock.read | latitude,longitude,radiusMeters (100–5000) | 200 {listings,sourceUrl,retrievedAt}; listing availability is not stock evidence |
 | POST /pharmacy-preferences | stock.write | {externalPlaceKey} | 201 saved verified listing snapshot |
 | POST /refill-lists/{id}/collection-task | stock.write AND task.write | {assigneeUserId,pharmacyPreferenceId?,dueAtUTC?} | 201 Task + refill link; same key returns same task |
 
-Opening/refill deltas must be positive; correction delta nonzero with reason. Balance must remain >= 0 in a transaction serialized by the item inventory lock/revision. Only internal dose processing writes dose_deduction/dose_reversal; reject user-supplied reasons of those types. Record dose even if stock cannot reconcile and show needs_review. Coordinates must be valid ranges; location input may come from an entered area/geocoded selection after geocoding is separately implemented. Do not send patient IDs or medical notes to map services.
+Use decimal strings with up to six fractional digits. An opening count can be zero. Refills must be positive and corrections need a nonzero delta and a note. Balance remains nonnegative under the inventory revision lock. Only internal dose processing writes `dose_deduction` and `dose_reversal`. A taken dose with incompatible or insufficient stock stays taken and shows `needs_review`. Collection and completion leave stock unchanged. [Step 30 statuses and verification](STEP_30_INVENTORY_REFILLS.md).
+
+The pharmacy and collection-task endpoints are planned for A4. Validate coordinate ranges and keep patient IDs and medical notes out of map requests.
 
 ## C4 Analytics and visit reports
 Add report.write as an explicit permission for health-note writes; report.read alone never authorizes mutation. This extends Step 15's permission vocabulary.

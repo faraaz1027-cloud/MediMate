@@ -65,14 +65,15 @@ Source parent/cabinet documents have a hidden scheduleFence coordination counter
 ## Stock, refill and pharmacy: A3–A4
 | Collection | Core fields |
 |---|---|
-| stockTransactions | patientId, cabinetItemId, delta, unit, reason: opening/refill/correction/dose_deduction/dose_reversal, operationKey, actorUserId?, sourceDoseActionId?, reversesTransactionId?, note? |
-| inventorySettings | patientId, cabinetItemId, stockUnit, lowStockThreshold |
-| refillLists | patientId, status: open/completed/archived, createdByUserId |
-| refillListItems | patientId, refillListId, cabinetItemId, requestedQuantity?, unit, state: needed/collected, collectedAt? |
+| StockTransaction | patientId, cabinetItemId, deltaMicros, unit, reason: opening/refill/correction/dose_deduction/dose_reversal, operationKey, actorUserId, recordedAt, sourceDoseActionId?, reversesTransactionId?, note? |
+| InventorySettings | patientId, cabinetItemId, stockUnit, thresholdMicros, balanceMicros, opened, revision |
+| RefillList | patientId, status: open/completed, createdByUserId, revision, completedAt?, embedded items with id, cabinetItemId, medicineText, requestedQuantity?, unit, state: needed/collected, collectedAt? |
 | pharmacyPreferences | patientId, externalPlaceKey, listingSnapshot, retrievedAt, sourceUrl, preferred |
 | refillTaskLinks | patientId, refillListId, taskId, pharmacyPreferenceId? |
 
-Balance is sum of immutable ledger deltas; do not maintain an independent editable balance. One stock unit per cabinet item; changing unit requires a reviewed conversion/migration. Reject negative resulting balances atomically; record dose as taken even if stock deduction cannot proceed, with stock-sync pending/error visible for reconciliation. Unknown conversion means estimate unavailable. Refill list collection and stock addition are separate explicit operations, so task completion alone never invents a refill. Coverage uses future confirmed dose quantities with compatible units and states assumptions.
+The sum of immutable ledger deltas is materialized in `balanceMicros` for transactional revision checks and low-stock queries. Only a ledger append changes this projection. Quantities are integer micro-units stored as Decimal128. Patient and cabinet item uniquely identify settings. The ledger uniquely indexes patient and operation key. The opening entry locks the unit. A low-stock checklist embeds up to 50 items so a revision check protects the entire list and its completion invariant.
+
+Step 30 adds current stock status, issue, source action reference and deduction reference to each affected DoseOccurrence. A new DoseAction keeps the outcome at recording time. A reviewed deduction updates the occurrence and ledger in the same transaction and preserves the immutable action. The debit is unique per source action, and the compensating credit is unique per debit. Existing taken occurrences without stock metadata project `legacy_untracked`. [Step 30 transaction boundaries and coverage](STEP_30_INVENTORY_REFILLS.md).
 
 ## Tasks, notifications and follow-up delivery: C1–C3
 | Collection | Core fields |
