@@ -10,26 +10,26 @@ import {
 import userEvent from "@testing-library/user-event";
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import assert from "node:assert/strict";
 const root = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   "../..",
 );
 const { default: mongoose } = await import(
-  root + "/node_modules/mongoose/index.js"
+  pathToFileURL(path.join(root, "node_modules/mongoose/index.js")).href
 );
 const { default: express } = await import(
-  root + "/node_modules/express/index.js"
+  pathToFileURL(path.join(root, "node_modules/express/index.js")).href
 );
-const { createV1 } = await import(root + "/server/v1/app.js");
-const { db } = await import(root + "/server/v1/store.js");
+const { createV1 } = await import(pathToFileURL(path.join(root, "server/v1/app.js")).href);
+const { db } = await import(pathToFileURL(path.join(root, "server/v1/store.js")).href);
 const replica = await MongoMemoryReplSet.create({
   binary: { version: "7.0.24" },
   replSet: {
     count: 1,
     args: [
-      "--nounixsocket",
+      ...(process.platform === "win32" ? [] : ["--nounixsocket"]),
       "--setParameter",
       "diagnosticDataCollectionEnabled=false",
     ],
@@ -130,6 +130,7 @@ try {
   await findByText(body, "DOM prescription", { exact: true });
   await u.click(getByRole(body, "button", { name: "Sign out", exact: true }));
   await findByRole(body, "heading", { name: "Welcome back" });
+  await waitFor(() => assert.equal(getByRole(body, "button", { name: "Sign in", exact: true }).disabled, false), { container: body });
   await u.type(
     getByLabelText(body, "Email", { exact: true }),
     "dom@example.test",
@@ -138,6 +139,34 @@ try {
     getByLabelText(body, "Password", { exact: true }),
     "Synthetic-pass-123!",
   );
+  await u.click(getByRole(body, "button", { name: "Sign in", exact: true }));
+  await findByText(body, "DOM prescription", { exact: true });
+  // Expired authenticated sessions must return to a usable sign-in form.
+  await mongoose.model("Session").updateMany({}, {
+    $set: { expiresAt: new Date(0) },
+  });
+  await u.click(getByRole(body, "button", { name: "Refresh", exact: true }));
+  await findByRole(body, "heading", { name: "Welcome back" });
+  await waitFor(() => assert.equal(getByRole(body, "button", { name: "Sign in", exact: true }).disabled, false), { container: body });
+  await u.type(getByLabelText(body, "Email", { exact: true }), "dom@example.test");
+  await u.type(getByLabelText(body, "Password", { exact: true }), "Synthetic-pass-123!");
+  await u.click(getByRole(body, "button", { name: "Sign in", exact: true }));
+  await findByText(body, "DOM prescription", { exact: true });
+  await u.click(getByRole(body, "button", { name: "Sign out", exact: true }));
+  await findByRole(body, "heading", { name: "Welcome back" });
+  await waitFor(() => assert.equal(getByRole(body, "button", { name: "Sign in", exact: true }).disabled, false), { container: body });
+  await u.type(getByLabelText(body, "Email", { exact: true }), "dom@example.test");
+  await u.type(getByLabelText(body, "Password", { exact: true }), "Synthetic-pass-123!");
+  // A login page left open past expiry must refresh CSRF without a reload.
+  await mongoose.model("Session").updateMany({}, {
+    $set: { expiresAt: new Date(0) },
+  });
+  await u.click(getByRole(body, "button", { name: "Sign in", exact: true }));
+  await findByRole(body, "alert");
+  await waitFor(() => assert.equal(
+    getByRole(body, "button", { name: "Sign in", exact: true }).disabled, false,
+  ), { container: body });
+  assert.equal(getByLabelText(body, "Email", { exact: true }).value, "dom@example.test");
   await u.click(getByRole(body, "button", { name: "Sign in", exact: true }));
   await findByText(body, "DOM prescription", { exact: true });
   const counts = {
@@ -161,6 +190,8 @@ try {
           "remount persistence",
           "logout/login",
           "patient rediscovery",
+          "authenticated session expiry and sign-in recovery",
+          "anonymous session expiry and explicit CSRF retry",
         ],
         counts,
         limitations:

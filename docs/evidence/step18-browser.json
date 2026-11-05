@@ -1,0 +1,27 @@
+{
+  "date": "2026-11-01",
+  "step": "18 — Frontend integration browser validation",
+  "sourceCommit": "a02bfc980c0d0fccbf4157dc374941e3be42efc1",
+  "runner": "In-app Chromium browser, production Vite bundle, Express API, disposable MongoDB 7.0.24 replica set",
+  "data": "Synthetic local test records only",
+  "viewports": ["1440x900", "390x844", "320x740"],
+  "passed": [
+    "registration and owned patient discovery",
+    "prescription draft create/list",
+    "manual cabinet create/list",
+    "task create/list",
+    "reload persistence",
+    "logout/login and patient rediscovery",
+    "unauthorized assignee rejection preserves title and assignee inputs",
+    "corrected assignee submission succeeds",
+    "no horizontal overflow at inspected desktop/mobile widths",
+    "Tab from task title reaches assignee with visible 3px focus outline"
+  ],
+  "consoleWarningsAndErrors": [],
+  "limitations": [
+    "Browser smoke review only; not a full accessibility audit",
+    "Screen-reader announcements, complete keyboard journeys and contrast not tested",
+    "Other browser engines, physical mobile devices and all failure states not tested",
+    "Screenshots saved as local review deliverables, not embedded in this repository"
+  ]
+}

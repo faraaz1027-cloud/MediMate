@@ -29,7 +29,7 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 - [x] Add environment placeholders and setup instructions.
 - [x] Connect a React form through Express to MongoDB and verify refresh and restart persistence (reported by the owner).
 - [x] Add session authentication, CSRF checks and patient/caregiver authorization for the Step 17 APIs. Full account and grant management remain later work.
-- [x] Add shared navigation, validation, loading and error states for the six Step 17 APIs ([Step 18](STEP_18_FRONTEND_INTEGRATION.md)); full workflows and browser layout review remain pending.
+- [x] Add shared navigation, validation, loading and error states for the six Step 17 APIs ([Step 18](STEP_18_FRONTEND_INTEGRATION.md)); desktop/mobile browser smoke review recorded. Full workflows and comprehensive accessibility review remain pending.
 - [ ] Test each planned external integration and its failure state independently.
 
 ## 4. Module 1 — Lab 5
@@ -67,7 +67,7 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 - [ ] Measure actual network/performance behaviour using DevTools.
 - [ ] Prepare system request, user manual, feasibility and performance/network analysis.
 - [ ] Add architecture, database/API documentation, test evidence and limitations.
-- [ ] Configure appropriate GitHub Actions checks once application code exists.
+- [x] Configure GitHub Actions build, database API and DOM integration checks; first run passed in draft PR #1.
 - [ ] Verify clean-clone setup on another member's machine.
 - [ ] Practise individual viva and live code modifications.
 - [ ] Verify all 13 functions, required integrations and individual commits.

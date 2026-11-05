@@ -34,8 +34,31 @@ export default function App() {
     const b = r.status === 204 ? null : await r.json();
     if (!r.ok) {
       if (r.status === 401) {
+        generation.current++;
         setUser(null);
+        setPatient("");
         setRows([]);
+        setCursor(null);
+        setLoading(false);
+        setNotice("");
+        pending.current = null;
+      }
+      if (r.status === 401 || b?.error?.code === "CSRF_REJECTED") {
+        // A rejected write has not run. Recover credentials for an explicit
+        // retry, without silently resubmitting the user's mutation.
+        setCsrf("");
+        try {
+          const tokenResponse = await fetch("/api/v1/auth/csrf", {
+            credentials: "same-origin",
+          });
+          const tokenBody = await tokenResponse.json();
+          if (!tokenResponse.ok) throw new Error("Cannot refresh the session. Retry sign-in.");
+          setCsrf(tokenBody.data.csrfToken);
+        } catch (e) {
+          // Keep retry available if the token endpoint is temporarily offline.
+          setCsrf(csrf);
+          throw e;
+        }
       }
       throw new Error(b?.error?.message || "Request failed.");
     }
