@@ -32,6 +32,15 @@ const { createTelegram } = await import(pathToFileURL(path.join(root, "server/v1
 let c2Clock = null;
 const disabledTelegram = createTelegram({token:"",username:""});
 const { createRxNorm } = await import(pathToFileURL(path.join(root, "server/v1/rxnorm.js")).href);
+const { createOverpass } = await import(pathToFileURL(path.join(root, "server/v1/overpass.js")).href);
+let pharmacyLookups = 0;
+const overpass = createOverpass({ clock: () => c2Clock?.getTime() ?? Date.now(), spacingMs: 0, fetchImpl: async () => {
+  pharmacyLookups++;
+  return Response.json({ elements: [{
+    type: "node", id: 91, lat: 23.747, lon: 90.376,
+    tags: { amenity: "pharmacy", name: "Synthetic DOM pharmacy", phone: "Synthetic contact" },
+  }] });
+} });
 let rxnormDown=false;
 const rxnorm=createRxNorm({spacingMs:0,fetchImpl:async url=>{
   if(rxnormDown)throw Error("controlled RxNorm outage");
@@ -58,7 +67,7 @@ try {
   await db.init();
   const app = express(),
     origins = [];
-  app.use("/api/v1", createV1({ db, origins, rxnorm, openfda:labelFixture.adapter,telegram:disabledTelegram,now:()=>c2Clock?new Date(c2Clock):new Date() }));
+  app.use("/api/v1", createV1({ db, origins, rxnorm, overpass, openfda:labelFixture.adapter,telegram:disabledTelegram,now:()=>c2Clock?new Date(c2Clock):new Date() }));
   server = app.listen(0, "127.0.0.1");
   await new Promise((r) => server.once("listening", r));
   const base = `http://127.0.0.1:${server.address().port}`;
@@ -77,6 +86,9 @@ try {
       cookieJar: jar,
     });
     dom.window.AbortController = globalThis.AbortController;
+    Object.defineProperty(dom.window.navigator, "geolocation", {
+      value: { getCurrentPosition: (_, denied) => denied({ code: 1 }) },
+    });
     dom.window.fetch = async (path, opts = {}) => {
       const url = new URL(path, base).href;
       if (offline) throw new TypeError("injected offline transport");
@@ -557,11 +569,38 @@ try {
   await clickReady(getByRole(body, "button", { name: "Review and post deduction", exact: true }));
   await findByText(body, "Stock balance: 1 tablet", { exact: true });
   await clickReady(getByRole(body, "button", { name: "Create checklist from low stock", exact: true }));
+  await findByRole(body, "heading", { name: /Open checklist/ });
+  await clickReady(getByRole(body, "button", { name: "Use device location", exact: true }));
+  await findByText(body, "Device location unavailable. Enter a public area center below.", { exact: true });
+  assert.equal(pharmacyLookups, 0);
+  await u.type(getByLabelText(body, "Area latitude", { exact: true }), "23.7465");
+  await u.type(getByLabelText(body, "Area longitude", { exact: true }), "90.376");
+  await clickReady(getByRole(body, "button", { name: "Search pharmacies", exact: true }));
+  await clickReady(await findByRole(body, "button", { name: "Save Synthetic DOM pharmacy as preferred pharmacy", exact: true }));
+  await findByText(body, "Preferred pharmacy saved.", { exact: true });
+  assert.equal(pharmacyLookups, 1);
+  const refillChecklist = await mongoose.model("RefillList").findOne({ status: "open" });
+  await clickReady(await findByRole(body, "checkbox", { name: "Include saved pharmacy", exact: true }));
+  const checklistInput = getByLabelText(body, "Refill checklist", { exact: true });
+  const assigneeInput = getByLabelText(body, "Collection assignee", { exact: true });
+  await u.selectOptions(checklistInput, String(refillChecklist._id));
+  await u.selectOptions(assigneeInput, String(currentUser._id));
+  assert.equal(checklistInput.value, String(refillChecklist._id));
+  assert.equal(assigneeInput.value, String(currentUser._id));
+  await clickReady(getByRole(body, "button", { name: "Create collection task", exact: true }));
+  await findByText(body, "Collection task created. See Caregiver tasks.", { exact: true });
+  const collectionTask = await mongoose.model("Task").findOne({ refillListId: refillChecklist._id });
+  await findByText(body, "Collection task linked · " + collectionTask._id, { exact: true });
+  assert.equal(collectionTask.pharmacySnapshot.name, "Synthetic DOM pharmacy");
   await u.selectOptions(await findByLabelText(body, "Collection state", { exact: true }), "collected");
   await clickReady(getByRole(body, "button", { name: "Save checklist item", exact: true }));
   await clickReady(await findByRole(body, "button", { name: "Complete checklist", exact: true }));
   await findByRole(body, "heading", { name: /Completed checklist/ });
   await findByText(body, "Stock balance: 1 tablet", { exact: true });
+  await clickReady(getByRole(body, "button", { name: "Caregiver tasks", exact: true }));
+  await clickReady(await findByRole(body, "button", { name: /Collect a refill/ }));
+  await findByRole(body, "heading", { name: "Saved collection location", exact: true });
+  await findByRole(body, "link", { name: "Synthetic DOM pharmacy on OpenStreetMap", exact: true });
   await clickReady(getByRole(body,"button",{name:"Today’s doses",exact:true}));
   await setDoseDate(dayTwo);
   row = await rowFor(currentEvents[1]);
@@ -575,8 +614,9 @@ try {
     doseActions: await mongoose.model("DoseAction").countDocuments(),
     stockTransactions: await mongoose.model("StockTransaction").countDocuments(),
     refillLists: await mongoose.model("RefillList").countDocuments(),
+    pharmacyPreferences: await mongoose.model("PharmacyPreference").countDocuments(),
   };
-  assert.deepEqual(counts, { prescriptions: 1, cabinet: 3, tasks: 1, schedules: 1, medicineCards: 1, doseActions: 4, stockTransactions: 2, refillLists: 1 });
+  assert.deepEqual(counts, { prescriptions: 1, cabinet: 3, tasks: 2, schedules: 1, medicineCards: 1, doseActions: 4, stockTransactions: 2, refillLists: 1, pharmacyPreferences: 1 });
   fs.writeFileSync(
     process.env.MEDIMATE_DOM_REPORT || root + "/docs/evidence/step18-dom.json",
     JSON.stringify(
@@ -612,6 +652,7 @@ try {
           "Step 26 current cabinet identity to explicit label review/selection, exact source text, separate note during outage, persistence/remount, escaped note text and source removal retaining note/immutable source",
           "Step 27 actual A2 events to snooze/taken/skipped correction and immutable history, separate owner consent/disabled reminders, date filtering and persistence after remount",
           "Step 30 recorded dose review to opening count, explicit deduction, low-stock checklist, completion without stock mutation and deducted status in the dose view",
+          "Step 31 denied device location, entered area center, controlled Overpass search, saved preference and linked C1 task with the saved listing",
         ],
         counts,
         limitations:

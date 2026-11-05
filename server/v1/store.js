@@ -36,6 +36,7 @@ const collections = {
   InventorySettings: "inventorySettings",
   StockTransaction: "stockTransactions",
   RefillList: "refillLists",
+  PharmacyPreference: "pharmacyPreferences",
 };
 function model(name, fields, indexes = []) {
   const schema = new Schema(
@@ -168,6 +169,9 @@ model("Task", {
   assignmentGeneration: Number,
   acknowledgedAt: Date,
   acknowledgedByUserId: oid,
+  refillListId: oid,
+  pharmacyPreferenceId: oid,
+  pharmacySnapshot: Schema.Types.Mixed,
 });
 model("TaskEvent", {
   patientId: oid,
@@ -329,12 +333,16 @@ model("StockTransaction", {
   [{ patientId: 1, cabinetItemId: 1, _id: -1 }, {}],
 ]);
 model("RefillList", {
-  patientId: oid, status: String, createdByUserId: oid, completedAt: Date,
+  patientId: oid, status: String, createdByUserId: oid, completedAt: Date, collectionTaskId: oid,
   items: [{
     cabinetItemId: oid, medicineText: String, requestedQuantity: String,
     unit: String, state: String, collectedAt: Date,
   }],
 }, [[{ patientId: 1, _id: -1 }, {}]]);
+model("PharmacyPreference", {
+  patientId: oid, externalPlaceKey: String, listingSnapshot: Schema.Types.Mixed,
+  sourceUrl: String, retrievedAt: Date, dataTimestamp: Date, savedByUserId: oid,
+}, [[{ patientId: 1 }, { unique: true }]]);
 model("DoseAction", {
   patientId: oid, occurrenceId: oid, revisionNumber: Number, action: String,
   previousState: String, newState: String, actorUserId: oid, recordedAt: Date,

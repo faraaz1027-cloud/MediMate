@@ -80,6 +80,8 @@ The A3 review branch implements the ledger, transactional C2 integration, bounde
 ### Step 31 — A4 pharmacy search and coordination (Ihfaz)
 Use live Overpass lookup for nearby pharmacy listings and explicit location/manual-area fallback. Save preferred listing and link refill checklist to C1 collection task. Keep retrieved contact/location provenance and timestamp. Test denied location, no results, timeout and stale listing. **Gate:** no wording implying medicine stock or ambulance service is verified by a map listing.
 
+The A4 review branch connects Overpass, an explicit area-center fallback, the saved pharmacy, the A3 checklist and C1 task history. Live provider evidence and Ihfaz's individual demonstration are tracked in the [Step 31 guide](STEP_31_PHARMACY_COORDINATION.md).
+
 ### Step 32 — B3 duplicate ingredient and label review (Faraaz)
 Compare confirmed ingredient identities, including combination products, across cabinet items. Distinguish overlap, relevant label evidence and insufficient information, with source passages and acknowledgement notes. Test aliases, duplicates, missing ingredient, wrong strength/form and source outage. **Gate:** insufficient evidence cannot be interpreted as a safe result.
 

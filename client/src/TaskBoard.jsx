@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ValidatedForm from "./ValidatedForm.jsx";
+import { PharmacyListing } from "./PharmacyCoordination.jsx";
 const deliveryLabels = {
   pending: "Queued",
   processing: "Sending",
@@ -315,6 +316,17 @@ export default function TaskBoard({
               {detail && (
                 <>
                   <p className="badge">Task status: {detail.status}</p>
+                  {detail.refillListId && (
+                    <p>Linked refill checklist · {detail.refillListId}. Ask the patient owner for pickup details.</p>
+                  )}
+                  {detail.pharmacySnapshot && (
+                    <section>
+                      <h3>Saved collection location</h3>
+                      <PharmacyListing listing={detail.pharmacySnapshot} retrievedAt={detail.pharmacySnapshot.retrievedAt} />
+                      <p>Confirm current hours and availability directly.</p>
+                      <p><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">© OpenStreetMap contributors</a></p>
+                    </section>
+                  )}
                   <p>
                     Assignee:{" "}
                     {assignees.find((a) => a.id === detail.assigneeUserId)

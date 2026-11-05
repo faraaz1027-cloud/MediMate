@@ -1,0 +1,14 @@
+{
+  "runner": "Node v26.13.0 on Windows, Express and disposable MongoDB 7.0.24",
+  "command": "node verification/step18/api.mjs",
+  "totals": { "tests": 128, "passed": 128, "failed": 0 },
+  "providerMode": "Controlled Overpass response and errors",
+  "scenarios": [
+    "Bounded Overpass request, result projection, duplicate handling and cache",
+    "Timeout abort, provider cooldown, empty results and incomplete response",
+    "Patient-scoped selection, expiration and idempotent replay during provider outage",
+    "Stale saved preference, both required task creation scopes and authorized assignee",
+    "Task, C1 event, job and checklist link roll back together",
+    "Competing submissions create one task and leave stock unchanged"
+  ]
+}

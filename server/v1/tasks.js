@@ -115,6 +115,20 @@ export function installTasks(
       s,
     );
   }
+  async function createTask(req, fields, note, s) {
+    await assignee(req, fields.assigneeUserId, s);
+    const task = await db.insert(
+      "Task",
+      {
+        ...fields, patientId: req.patient._id, createdByUserId: req.actorId,
+        status: "open", assignmentGeneration: 0,
+      },
+      s,
+    );
+    const created = await event(req, task, "created", note, s);
+    await queueTaskNotice(db, task, created, telegram, s, now);
+    return publicDoc(task);
+  }
   function page(req, keys, filter) {
     if (
       Object.keys(req.query).some((k) => !keys.includes(k)) ||
@@ -210,9 +224,6 @@ export function installTasks(
       title: text(b.title, "title"),
       assigneeUserId: id(b.assigneeUserId),
       type: b.type,
-      status: "open",
-      assignmentGeneration: 0,
-      createdByUserId: req.actorId,
     };
     if (b.description !== undefined)
       fields.description = text(b.description, "description", 2000);
@@ -221,17 +232,7 @@ export function installTasks(
       b.handoverNote === undefined
         ? undefined
         : text(b.handoverNote, "handoverNote", 2000);
-    await mutate(req, res, "task.write", async (s) => {
-      await assignee(req, fields.assigneeUserId, s);
-      const t = await db.insert(
-          "Task",
-          { ...fields, patientId: req.patient._id },
-          s,
-        ),
-        e = await event(req, t, "created", note, s);
-      await queueTaskNotice(db, t, e, telegram, s, now);
-      return publicDoc(t);
-    });
+    await mutate(req, res, "task.write", (s) => createTask(req, fields, note, s));
   });
   patient.patch(
     "/tasks/:taskId",
@@ -593,4 +594,5 @@ export function installTasks(
       );
     },
   );
+  return { createTask, date };
 }
