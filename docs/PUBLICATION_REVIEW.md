@@ -34,7 +34,14 @@ The install emitted informational warnings for unapproved optional postinstall s
 
 ## Publication and hosted checks
 
-Publication is in progress. The PR URL, exact published candidate and Windows/Linux workflow results will be recorded after the first push and actual completed runs. Do not mark the publication task complete from the local results alone.
+[PR #15](https://github.com/faraaz1027-cloud/MediMate/pull/15) targets main from
+`feature/complete-project-review`. The first published candidate was
+`5674c07f510ac026fe5a88160b5c3a300ac561a1`, verified against the remote branch.
+The first run started at [Actions 45020338998](https://github.com/faraaz1027-cloud/MediMate/actions/runs/45020338998).
+The workflow now explicitly checks out the PR head SHA and asserts `git rev-parse HEAD`
+equals that SHA on both operating systems, with checkout credentials not persisted.
+Final hosted results remain pending until the updated head completes both jobs.
+Do not mark the task complete from local results or a cancelled earlier run.
 
 ## Remaining acceptance boundaries
 
