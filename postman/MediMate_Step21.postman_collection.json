@@ -138,6 +138,38 @@
       }
     },
     {
+      "name": "List and verify the saved prescription",
+      "protocolProfileBehavior": {
+        "disableCookies": true
+      },
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/patients/{{patientId}}/prescriptions?status=active&limit=20",
+        "header": []
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.request.headers.upsert({key:'Cookie',value:pm.collectionVariables.get('cookie')||''});"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Saved prescription is present', () => pm.expect(pm.response.json().data.some(p => p.id === pm.collectionVariables.get('prescriptionId'))).to.equal(true));"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Incomplete draft cannot confirm",
       "protocolProfileBehavior": {
         "disableCookies": true

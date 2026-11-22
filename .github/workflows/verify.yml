@@ -3,12 +3,24 @@ on:
   pull_request:
   push:
     branches: [main]
+  workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   integration:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-2022]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 15
+    env:
+      TELEGRAM_BOT_TOKEN: ''
+      TELEGRAM_BOT_USERNAME: ''
+      MONGOMS_VERSION: '7.0.24'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -18,8 +30,20 @@ jobs:
           cache-dependency-path: |
             package-lock.json
             verification/step18/package-lock.json
-      - run: npm ci
-      - run: npm ci --prefix verification/step18
-      - run: npm run build
-      - run: node verification/step18/api.mjs
-      - run: npm test --prefix verification/step18
+      - name: Install locked workspaces
+        run: npm ci --include=dev
+      - name: Install isolated test tools
+        run: npm ci --prefix verification/step18
+      - name: Check indexed source for private files and credentials
+        run: npm run check:publication
+      - name: Build and verify API database workers and UI
+        run: npm run verify
+      - name: Retain diagnostics even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-${{ matrix.os }}
+          path: .local-data/verification/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7

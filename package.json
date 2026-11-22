@@ -10,11 +10,16 @@
     "node": ">=22"
   },
   "scripts": {
+    "check:publication": "node scripts/check-publication.mjs",
     "start": "npm run start --workspace server",
     "demo:module2": "node verification/step29/run.mjs",
     "dev:client": "npm run dev -w client",
     "dev:server": "npm run dev -w server",
     "build": "npm run build -w client",
-    "test:api": "node --test server/test/*.test.js"
+    "test:api": "node verification/step18/api.mjs",
+    "test:ui": "node --experimental-vm-modules verification/step18/run.mjs",
+    "verify": "node scripts/verify.mjs",
+    "verify:module1": "node verification/module1/run.mjs",
+    "seed:demo": "node scripts/seed-demo.mjs"
   }
 }
