@@ -103,6 +103,25 @@ export function createRxNorm({
       : null;
   }
   return {
+    async ingredients(externalId) {
+      if (!/^\d{1,12}$/.test(externalId)) throw unavailable();
+      const sourceUrl = `https://rxnav.nlm.nih.gov/REST/rxcui/${externalId}/related.json?tty=IN`;
+      const r = await json(`rxcui/${externalId}/related.json?tty=IN`);
+      const g = r.value.relatedGroup;
+      // NLM currently returns a null relatedGroup.rxcui for product-to-IN queries.
+      // The fixed request URL binds the product; reject a conflicting echoed ID.
+      if (!g || (g.rxcui != null && g.rxcui !== externalId) || !Array.isArray(g.conceptGroup)) throw unavailable();
+      const ingredients = new Map();
+      for (const group of g.conceptGroup) {
+        if (!group || group.tty !== "IN" || (group.conceptProperties != null && !Array.isArray(group.conceptProperties))) throw unavailable();
+        for (const p of group.conceptProperties || []) {
+          if (!p || typeof p.rxcui !== "string" || !/^\d{1,12}$/.test(p.rxcui) || p.tty !== "IN" || p.suppress !== "N" || typeof p.name !== "string" || !p.name.trim() || p.name.length > 500) throw unavailable();
+          ingredients.set(p.rxcui, { externalId: p.rxcui, displayName: p.name });
+        }
+      }
+      if (ingredients.size > 20) throw unavailable();
+      return { externalId, ingredients: [...ingredients.values()].sort((a,b) => a.externalId.localeCompare(b.externalId)), sourceUrl, retrievedAt: r.retrievedAt, provider: "rxnorm_ingredients" };
+    },
     async search(q) {
       const r = await json(
         "drugs.json?name=" + encodeURIComponent(q),

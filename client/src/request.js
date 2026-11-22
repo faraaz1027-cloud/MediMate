@@ -7,13 +7,18 @@ export class RequestError extends Error {
 
 // Never show proxy HTML, parser exceptions or network internals to the user.
 export async function request(path, options = {}) {
+  const { responseType, ...fetchOptions } = options;
   let response;
-  try { response = await fetch("/api/v1" + path, { credentials: "same-origin", ...options }); }
+  try { response = await fetch("/api/v1" + path, { credentials: "same-origin", ...fetchOptions }); }
   catch (e) {
     if (e.name === "AbortError") throw e;
     throw new RequestError("Cannot reach the server. Check your connection and retry.");
   }
   if (response.status === 204) return null;
+  if (response.ok && responseType === "blob") {
+    if (!response.headers.get("Content-Type")?.includes("application/pdf")) throw new RequestError("The server returned an unexpected download. Please retry.", { status: response.status });
+    return { data: await response.blob() };
+  }
   let body;
   try { body = await response.json(); }
   catch { throw new RequestError("The server returned an unexpected response. Please retry.", { status: response.status }); }

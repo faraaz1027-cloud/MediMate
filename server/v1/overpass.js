@@ -28,14 +28,14 @@ function tag(value) {
   return typeof value === "string" ? value.trim().slice(0, 200) : "";
 }
 
-function listing(row, center) {
+function listing(row, center, amenity) {
   const latitude = row?.type === "node" ? row.lat : row?.center?.lat;
   const longitude = row?.type === "node" ? row.lon : row?.center?.lon;
   if (
     !["node", "way", "relation"].includes(row?.type) ||
     !Number.isSafeInteger(row.id) ||
     row.id <= 0 ||
-    row.tags?.amenity !== "pharmacy" ||
+    row.tags?.amenity !== amenity ||
     !coordinate(latitude, 90) ||
     !coordinate(longitude, 180)
   )
@@ -53,7 +53,7 @@ function listing(row, center) {
     .join(" ");
   return {
     externalPlaceKey: row.type + "/" + row.id,
-    name: tag(tags.name) || tag(tags.brand) || "Unnamed pharmacy listing",
+    name: tag(tags.name) || tag(tags.brand) || `Unnamed ${amenity} listing`,
     latitude,
     longitude,
     distanceMeters: distance,
@@ -73,7 +73,9 @@ export function createOverpass({
   timeoutMs = 10000,
   spacingMs = 1000,
   dailyLimit = 75,
+  amenity = "pharmacy",
 } = {}) {
+  if (!["pharmacy", "hospital"].includes(amenity)) throw Error("Unsupported public listing type.");
   const cache = new Map();
   let pending,
     lastStart = -Infinity,
@@ -108,7 +110,7 @@ export function createOverpass({
         const response = await fetchImpl(overpassUrl, {
           method: "POST",
           body: new URLSearchParams({
-            data: `[out:json][timeout:7][maxsize:16777216];nwr(around:${key})["amenity"="pharmacy"];out body center 301;`,
+            data: `[out:json][timeout:7][maxsize:16777216];nwr(around:${key})["amenity"="${amenity}"];out body center 301;`,
           }),
           headers: {
             Accept: "application/json",
@@ -144,7 +146,7 @@ export function createOverpass({
         };
         const distinct = new Map();
         for (const row of raw.elements) {
-          const item = listing(row, center);
+          const item = listing(row, center, amenity);
           if (item) distinct.set(item.externalPlaceKey, item);
         }
         const ordered = [...distinct.values()].sort(

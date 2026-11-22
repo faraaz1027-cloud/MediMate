@@ -1,3 +1,18 @@
+.confirmation-dialog {
+  width: min(760px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  border: 1px solid #e0dbe9;
+  border-radius: 16px;
+  padding: 28px;
+  color: #111827;
+  background: #f8fafc;
+}
+.confirmation-dialog::backdrop { background: #11182799; }
+.confirmation-content { background: white; border-radius: 16px; padding: 20px; margin: 20px 0; }
+.confirmation-summary { background: linear-gradient(90deg, #111827, #244d7d); color: white; border-radius: 12px; padding: 18px; }
+.confirmation-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.confirmation-actions button { background: #bdedfd; color: #111827; min-height: 48px; }
 header {
   display: flex;
   align-items: center;

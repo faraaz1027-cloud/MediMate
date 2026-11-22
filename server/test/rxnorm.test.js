@@ -7,6 +7,19 @@ const props = {
   tty: "SCD",
   suppress: "N",
 };
+test("ingredient relation validates completeness, canonical IDs and malformed responses", async () => {
+  const ingredient = { rxcui: "161", name: "acetaminophen", tty: "IN", suppress: "N" };
+  const relation = entries => ({ relatedGroup: { rxcui: "198440", conceptGroup: [{ tty: "IN", conceptProperties: entries }] } });
+  const provider = value => createRxNorm({ spacingMs: 0, fetchImpl: async () => Response.json(value) });
+  const valid = await provider(relation([ingredient,ingredient])).ingredients("198440");
+  assert.equal(valid.ingredients.length,1);
+  assert.equal(valid.ingredients[0].externalId,"161");
+  assert.equal((await provider({relatedGroup:{rxcui:null,conceptGroup:[{tty:"IN",conceptProperties:[ingredient]}]}}).ingredients("198440")).ingredients[0].externalId,"161");
+  for (const value of [ {}, {relatedGroup:{rxcui:"other",conceptGroup:[]}}, relation([{...ingredient,tty:"PIN"}]), relation([{...ingredient,suppress:"Y"}]), relation([{...ingredient,name:""}]), relation(Array.from({length:21},(_,i)=>({...ingredient,rxcui:String(i+1)}))) ]) {
+    await assert.rejects(provider(value).ingredients("198440"),e=>e.code === "RXNORM_UNAVAILABLE");
+  }
+  assert.deepEqual((await provider(relation([])).ingredients("198440")).ingredients,[]);
+});
 test("RxNorm adapter coalesces, caches for 12 hours and constructs only fixed upstream URLs", async () => {
   let count = 0,
     time = 1000;

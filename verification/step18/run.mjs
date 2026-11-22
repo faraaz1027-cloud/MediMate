@@ -2,6 +2,7 @@ import { MongoMemoryReplSet } from "mongodb-memory-server";
 import { JSDOM, CookieJar } from "jsdom";
 import {
   getByRole,
+  getAllByRole,
   getByText,
   getByLabelText,
   findByLabelText,
@@ -34,6 +35,10 @@ const disabledTelegram = createTelegram({token:"",username:""});
 const { createRxNorm } = await import(pathToFileURL(path.join(root, "server/v1/rxnorm.js")).href);
 const { createOverpass } = await import(pathToFileURL(path.join(root, "server/v1/overpass.js")).href);
 let pharmacyLookups = 0;
+let hospitalLookups = 0;
+const hospitalAdapter = createOverpass({amenity:"hospital",spacingMs:0,fetchImpl:async()=>{
+  hospitalLookups++;return Response.json({elements:[{type:"node",id:92,lat:23.747,lon:90.376,tags:{amenity:"hospital",name:"Synthetic DOM hospital",phone:"+8801700000000"}}]});
+}});
 const overpass = createOverpass({ clock: () => c2Clock?.getTime() ?? Date.now(), spacingMs: 0, fetchImpl: async () => {
   pharmacyLookups++;
   return Response.json({ elements: [{
@@ -46,6 +51,7 @@ const rxnorm=createRxNorm({spacingMs:0,fetchImpl:async url=>{
   if(rxnormDown)throw Error("controlled RxNorm outage");
   const p={rxcui:"198440",name:"acetaminophen 500 MG Oral Tablet",tty:"SCD",suppress:"N"};
   if(url.includes("drugs.json"))return Response.json({drugGroup:{conceptGroup:[{conceptProperties:url.includes("no-match")?[]:[p,{...p,rxcui:"100000",name:"Synthetic second candidate"}]}]}});
+  if(url.includes("related.json"))return Response.json({relatedGroup:{rxcui:"198440",conceptGroup:[{tty:"IN",conceptProperties:[{rxcui:"161",name:"acetaminophen",tty:"IN",suppress:"N"}]}]}});
   return Response.json({properties:p});
 }});
 const replica = await MongoMemoryReplSet.create({
@@ -67,12 +73,12 @@ try {
   await db.init();
   const app = express(),
     origins = [];
-  app.use("/api/v1", createV1({ db, origins, rxnorm, overpass, openfda:labelFixture.adapter,telegram:disabledTelegram,now:()=>c2Clock?new Date(c2Clock):new Date() }));
+  app.use("/api/v1", createV1({ db, origins, rxnorm, overpass, hospitals:hospitalAdapter,openfda:labelFixture.adapter,telegram:disabledTelegram,now:()=>c2Clock?new Date(c2Clock):new Date() }));
   server = app.listen(0, "127.0.0.1");
   await new Promise((r) => server.once("listening", r));
   const base = `http://127.0.0.1:${server.address().port}`;
   origins.push(base);
-  const jar = new CookieJar();
+  let jar = new CookieJar();
   const bundle = fs.readFileSync(
     root + "/client/dist" + fs.readFileSync(root + "/client/dist/index.html", "utf8").match(/<script[^>]+src="([^"]+)"/)[1],
     "utf8",
@@ -86,6 +92,10 @@ try {
       cookieJar: jar,
     });
     dom.window.AbortController = globalThis.AbortController;
+    // JSDOM lacks native modal methods. Model open/close state only; this does
+    // not claim browser focus trapping, layout or native-dialog accessibility.
+    dom.window.HTMLDialogElement.prototype.showModal = function () { this.setAttribute("open", ""); };
+    dom.window.HTMLDialogElement.prototype.close = function () { this.removeAttribute("open"); };
     Object.defineProperty(dom.window.navigator, "geolocation", {
       value: { getCurrentPosition: (_, denied) => denied({ code: 1 }) },
     });
@@ -132,6 +142,11 @@ try {
   await clickReady(getByRole(body, "button", { name: "Reconnect to server", exact: true }));
   await waitFor(() => assert.equal(getByRole(body, "button", { name: "Sign in", exact: true }).disabled, false), { container: body });
   await findByRole(body, "button", { name: "Create a new account" });
+  await clickReady(getByRole(body, "button", { name: "Dark mode", exact: true }));
+  await waitFor(() => assert.equal(dom.window.document.documentElement.dataset.theme, "dark"), { container: body });
+  assert.equal(dom.window.localStorage.getItem("medimate-theme"), "dark");
+  await clickReady(getByRole(body, "button", { name: "Light mode", exact: true }));
+  await waitFor(() => assert.equal(dom.window.document.documentElement.dataset.theme, "light"), { container: body });
   await clickReady(getByRole(body, "button", { name: "Create a new account" }));
   await u.type(
     getByLabelText(body, "Email", { exact: true }),
@@ -286,7 +301,7 @@ try {
   await findByText(body, "You do not have permission to create records in this area.");
   assert.equal(getByRole(body, "button", { name: "Save task", exact: true }).disabled, false);
   assert.equal(getByRole(body, "button", { name: "Save task", exact: true }).closest("fieldset").disabled, true);
-  assert.equal(body.querySelector('button[aria-current="page"]').textContent, "Caregiver tasks");
+  assert.equal(body.querySelector('button[aria-current="page"]').getAttribute('aria-label'), "Caregiver tasks");
   assert.equal([...body.querySelectorAll("nav button")].length, 1);
   // Step 21: exercise the actual editor rather than marking the create/list demo complete.
   await u.selectOptions(getByRole(body, "combobox", { name: "Patient", exact: true }), (await mongoose.model("Patient").findOne({displayName:"DOM owner"}))._id.toString());
@@ -383,7 +398,7 @@ try {
   assert.equal(getByRole(body,"button",{name:"Generate Telegram linking code",exact:true}).disabled,true);
   await u.type(getByLabelText(body,"New handover note",{exact:true}),"Synthetic DOM handover");
   await clickReady(getByRole(body,"button",{name:"Add handover note",exact:true}));
-  await findByText(body,"Synthetic DOM handover",{exact:true,selector:"p"});
+  await waitFor(() => getByText(getByRole(body,"region",{name:"Handover notes",exact:true}),"Synthetic DOM handover",{exact:true,selector:"p"}),{container:body});
   await clickReady(getByRole(body,"button",{name:"Acknowledge task notice",exact:true}));
   await waitFor(()=>assert.equal(body.textContent.includes("Acknowledged in the app at"),true),{container:body});
   await clickReady(getByRole(body,"button",{name:"Accept task",exact:true}));
@@ -402,7 +417,7 @@ try {
   await clickReady(getByRole(body,"button",{name:"Caregiver tasks",exact:true}));
   await clickReady(await findByRole(body,"button",{name:"View task DOM task reviewed",exact:true}));
   await findByText(body,"Task status: open",{exact:true});
-  await findByText(body,"Synthetic DOM handover",{exact:true,selector:"p"});
+  await waitFor(() => getByText(getByRole(body,"region",{name:"Handover notes",exact:true}),"Synthetic DOM handover",{exact:true,selector:"p"}),{container:body});
   assert.ok(body.textContent.includes("reopened"));
   // Step 25: actual production schedule editor backed by confirmed A1 + saved B1 IDs.
   const scheduleStart = new Date(); scheduleStart.setUTCDate(scheduleStart.getUTCDate()+1); scheduleStart.setUTCHours(0,0,0,0);
@@ -446,6 +461,8 @@ try {
   await fillSchedule("09:00"); await confirmSchedule();
   await findByText(body,"Schedule version 1",{exact:true}); await findByText(body,"Schedule version 2",{exact:true});
   await clickReady(getByRole(body,"button",{name:"Pause schedule",exact:true}));
+  await findByRole(body,"dialog",{name:"Pause this schedule?",exact:true});
+  await clickReady(getByRole(body,"button",{name:"Confirm pause",exact:true}));
   await findByText(body,"Schedule status: paused",{exact:true});
   await waitFor(()=>assert.equal(getByLabelText(body,"Resume from UTC",{exact:true}).matches(":disabled"),false),{container:body});
   await u.type(getByLabelText(body,"Resume from UTC",{exact:true}),scheduleStart.toISOString());
@@ -605,6 +622,170 @@ try {
   await setDoseDate(dayTwo);
   row = await rowFor(currentEvents[1]);
   await findByText(row, "Inventory: deducted", { exact: true });
+  await clickReady(getByRole(body,"button",{name:"Ingredient review",exact:true}));
+  await clickReady(await findByRole(body,"button",{name:"Review ingredients for acetaminophen 500 MG Oral Tablet",exact:true}));
+  await findByRole(body,"heading",{name:"Confirm product ingredients",exact:true});
+  assert.equal(getByRole(body,"button",{name:"Save ingredient confirmation",exact:true}).disabled,true);
+  await u.click(getByRole(body,"checkbox",{name:/I checked that the selected product/}));
+  await clickReady(getByRole(body,"button",{name:"Save ingredient confirmation",exact:true}));
+  await waitFor(async () => assert.equal(await mongoose.model("IngredientConfirmation").countDocuments(),1),{container:body});
+  await clickReady(getByRole(body,"checkbox",{name:/^acetaminophen 500 MG Oral Tablet —/}));
+  await clickReady(getByRole(body,"checkbox",{name:/^DOM cabinet —/}));
+  await clickReady(getByRole(body,"button",{name:"Compare selected medicines",exact:true}));
+  await findByRole(body,"heading",{name:"Insufficient ingredient information",exact:true});
+  await u.type(getByRole(body,"textbox",{name:"Acknowledgement note",exact:true}),"Synthetic B3 follow-up note");
+  await clickReady(getByRole(body,"button",{name:"Acknowledge this review",exact:true}));
+  await findByText(body,/Acknowledged .*Synthetic B3 follow-up note/);
+  body=await mount(); u=userEvent.setup({document:dom.window.document});
+  await findByRole(body,"heading",{name:"Hello, Reviewed profile"});
+  await u.selectOptions(getByRole(body,"combobox",{name:"Patient",exact:true}),(await mongoose.model("Patient").findOne({displayName:"DOM owner"}))._id.toString());
+  await clickReady(await findByRole(body,"button",{name:"Ingredient review",exact:true}));
+  await clickReady(await findByRole(body,"button",{name:/^Insufficient ingredient information ·/}));
+  await findByText(body,/Acknowledged .*Synthetic B3 follow-up note/);
+  // Step 33 uses a controlled saved label, preserving exact text in the UI.
+  const eduCard=await mongoose.model("MedicineCard").findOne();
+  const eduItem=await db.one("CabinetItem",{_id:eduCard.cabinetItemId});
+  const eduIdentity=await db.one("SourceRecord",{_id:eduItem.sourceRecordId});
+  const eduSource=await db.insert("SourceRecord",{provider:"openfda",sourceUrl:"https://api.fda.gov/drug/label.json",retrievedAt:new Date(),sourceVersion:"synthetic-1",snapshot:{rxcui:eduIdentity.externalId}});
+  await db.update("MedicineCard",{_id:eduCard._id},{availability:"available",sourceRecordId:eduSource._id,itemSnapshot:{revision:eduItem.revision,rxcui:eduIdentity.externalId},selectedPassages:[{key:"warnings",index:0,text:"Synthetic educational excerpt <script>untrusted()</script>"}]});
+  await clickReady(getByRole(body,"button",{name:"Educational assistant",exact:true}));
+  const eduMedicine=await findByLabelText(body,"Medicine for educational question",{exact:true});
+  await findByRole(body,"option",{name:eduItem.displayName,exact:true});
+  await u.selectOptions(eduMedicine,String(eduItem._id));
+  await clickReady(getByRole(body,"button",{name:"Find cited passages",exact:true}));
+  await findByRole(body,"heading",{name:"Cited label excerpts",exact:true});
+  await findByText(body,"Synthetic educational excerpt <script>untrusted()</script>",{exact:true});
+  assert.equal(body.querySelectorAll("blockquote script").length,0);
+  await clickReady(getByRole(body,"button",{name:"Mark helpful",exact:true}));
+  await findByText(body,"Feedback: helpful",{exact:true});
+  body=await mount();u=userEvent.setup({document:dom.window.document});
+  await findByRole(body,"heading",{name:"Hello, Reviewed profile"});
+  await u.selectOptions(getByRole(body,"combobox",{name:"Patient",exact:true}),(await mongoose.model("Patient").findOne({displayName:"DOM owner"}))._id.toString());
+  await clickReady(getByRole(body,"button",{name:"Educational assistant",exact:true}));
+  await clickReady(await findByRole(body,"button",{name:"What warnings are in the label?",exact:true}));
+  await findByText(body,"Feedback: helpful",{exact:true});
+  await clickReady(getByRole(body,"button",{name:"Delete saved question and excerpts",exact:true}));
+  await waitFor(()=>assert.equal(!!body.querySelector('[aria-label="Educational answer"]'),false),{container:body});
+  assert.equal((await mongoose.model("EducationalAnswer").findOne()).question,"");
+  // Step 34 owner configuration -> persisted worker escalation -> ack/resolve.
+  const followupPatient=await mongoose.model("Patient").findOne({displayName:"DOM owner"});
+  await db.insert("AccessGrant",{patientId:followupPatient._id,userId:organizer._id,permissions:["dose.read","dose.record","task.read","task.write"],revokedAt:null});
+  await clickReady(getByRole(body,"button",{name:"Dose follow-up",exact:true}));
+  await findByRole(body,"heading",{name:"Owner follow-up preferences",exact:true});
+  await u.click(getByRole(body,"checkbox",{name:"Enable caregiver follow-up",exact:true}));
+  await u.clear(getByLabelText(body,"Follow-up delay in minutes",{exact:true}));await u.type(getByLabelText(body,"Follow-up delay in minutes",{exact:true}),"10");
+  await u.selectOptions(getByLabelText(body,"Follow-up caregiver",{exact:true}),String(organizer._id));
+  await u.click(getByRole(body,"checkbox",{name:/I consent to sending generic follow-up task notices/}));
+  await clickReady(getByRole(body,"button",{name:"Save follow-up preferences",exact:true}));
+  await waitFor(async()=>assert.equal((await mongoose.model("FollowupSettings").findOne()).enabled,true),{container:body});
+  c2Clock=new Date(new Date(currentEvents.at(-1).dueAtUTC).getTime()+20*60000);
+  const {createFollowupWorker}=await import(pathToFileURL(path.join(root,"server/v1/followup-worker.js")).href);
+  await createFollowupWorker({db,telegram:disabledTelegram,now:()=>new Date(c2Clock)}).queueDue();
+  await clickReady(getByRole(body,"button",{name:"Refresh follow-ups",exact:true}));
+  await waitFor(()=>assert.ok(getAllByRole(body,"button",{name:/^overdue-unconfirmed ·/}).length),{container:body});
+  await clickReady(getAllByRole(body,"button",{name:/^overdue-unconfirmed ·/})[0]);
+  await findByRole(body,"heading",{name:"Follow-up: overdue-unconfirmed",exact:true});
+  await clickReady(getByRole(body,"button",{name:"Acknowledge follow-up",exact:true}));
+  await findByRole(body,"heading",{name:"Follow-up: acknowledged",exact:true});
+  await waitFor(()=>assert.equal(getByLabelText(body,"Follow-up outcome",{exact:true}).matches(":disabled"),false),{container:body});
+  await u.selectOptions(getByLabelText(body,"Follow-up outcome",{exact:true}),"unable_to_contact");
+  await u.type(getByLabelText(body,"Follow-up note",{exact:true}),"Synthetic C3 follow-up note");
+  await clickReady(getByRole(body,"button",{name:"Resolve follow-up",exact:true}));
+  await findByText(body,"Resolved: unable_to_contact · Synthetic C3 follow-up note",{exact:true});
+  body=await mount();u=userEvent.setup({document:dom.window.document});
+  await findByRole(body,"heading",{name:"Hello, Reviewed profile"});
+  await u.selectOptions(getByRole(body,"combobox",{name:"Patient",exact:true}),String(followupPatient._id));
+  await clickReady(getByRole(body,"button",{name:"Dose follow-up",exact:true}));
+  await clickReady(await findByRole(body,"button",{name:/^resolved ·/}));
+  await findByText(body,"Resolved: unable_to_contact · Synthetic C3 follow-up note",{exact:true});
+  // Step 35 analytics and health notes share the frozen PDF projection.
+  await clickReady(getByRole(body,"button",{name:"Visit reports",exact:true}));
+  const reportFrom=new Date(new Date(currentEvents[0].dueAtUTC).getTime()-86400000).toISOString();
+  const reportTo=new Date(c2Clock.getTime()+86400000).toISOString();
+  await u.clear(getByLabelText(body,"Report from UTC",{exact:true}));await u.type(getByLabelText(body,"Report from UTC",{exact:true}),reportFrom);
+  await u.clear(getByLabelText(body,"Report to UTC",{exact:true}));await u.type(getByLabelText(body,"Report to UTC",{exact:true}),reportTo);
+  await clickReady(getByRole(body,"button",{name:"Load analytics",exact:true}));
+  await findByRole(body,"heading",{name:"Recorded occurrence counts",exact:true});
+  await waitFor(()=>assert.equal(getByLabelText(body,"Visit note",{exact:true}).matches(":disabled"),false),{container:body});
+  await u.type(getByLabelText(body,"Visit note",{exact:true}),"Synthetic C4 visit discussion");
+  await u.clear(getByLabelText(body,"Note recorded at UTC",{exact:true}));await u.type(getByLabelText(body,"Note recorded at UTC",{exact:true}),c2Clock.toISOString());
+  await clickReady(getByRole(body,"button",{name:"Save health note",exact:true}));
+  await findByText(body,"Synthetic C4 visit discussion",{exact:true});
+  await clickReady(getByRole(body,"button",{name:"Generate private PDF",exact:true}));
+  await findByRole(body,"heading",{name:"Saved visit report",exact:true});
+  const reportSnapshot=(await mongoose.model("ReportExport").findOne()).snapshot;
+  const expectedReportCounts=[reportSnapshot.taken,reportSnapshot.skipped,reportSnapshot.pending,reportSnapshot.overdueUnconfirmed,reportSnapshot.cancelled];
+  assert.deepEqual([...getByRole(body,"region",{name:"Live analytics",exact:true}).querySelectorAll("dd")].map(x=>Number(x.textContent)),expectedReportCounts);
+  assert.deepEqual([...getByRole(body,"region",{name:"Saved visit report",exact:true}).querySelectorAll("dd")].map(x=>Number(x.textContent)),expectedReportCounts);
+  await findByRole(body,"button",{name:"Download private PDF",exact:true});
+  body=await mount();u=userEvent.setup({document:dom.window.document});
+  await findByRole(body,"heading",{name:"Hello, Reviewed profile"});
+  await u.selectOptions(getByRole(body,"combobox",{name:"Patient",exact:true}),String(followupPatient._id));
+  await clickReady(getByRole(body,"button",{name:"Visit reports",exact:true}));
+  await clickReady(await findByRole(body,"button",{name:/^Open saved export ·/}));
+  await findByRole(body,"heading",{name:"Saved visit report",exact:true});
+  assert.deepEqual([...getByRole(body,"region",{name:"Saved visit report",exact:true}).querySelectorAll("dd")].map(x=>Number(x.textContent)),expectedReportCounts);
+  // C5: independent authenticated recipient, consent, disabled-channel incident,
+  // acknowledgement, simulation-only request and cancellation/closure notice.
+  const ownerJar=jar,recipientJar=new CookieJar();
+  const csrfResponse=await fetch(base+"/api/v1/auth/csrf");for(const cookie of csrfResponse.headers.getSetCookie())await recipientJar.setCookie(cookie,base);
+  const recipientCsrf=(await csrfResponse.json()).data.csrfToken;
+  const registration=await fetch(base+"/api/v1/auth/register",{method:"POST",headers:{"Content-Type":"application/json","X-CSRF-Token":recipientCsrf,"Idempotency-Key":crypto.randomUUID(),Cookie:await recipientJar.getCookieString(base+"/api/v1")},body:JSON.stringify({email:"sos-recipient@example.test",password:"Synthetic-pass-123!",displayName:"Synthetic SOS DOM recipient"})});
+  assert.equal(registration.status,201);for(const cookie of registration.headers.getSetCookie())await recipientJar.setCookie(cookie,base);
+  const recipientUser=(await registration.json()).data.user;
+  await clickReady(getByRole(body,"button",{name:"SOS coordination",exact:true}));
+  await findByRole(body,"heading",{name:"Emergency contacts",exact:true});
+  await u.type(getByLabelText(body,"Contact display name",{exact:true}),"Synthetic SOS recipient");
+  await u.type(getByLabelText(body,"Recipient account ID",{exact:true}),recipientUser.id);
+  await u.type(getByLabelText(body,"Contact phone (optional)",{exact:true}),"+8801700000000");
+  await clickReady(getByRole(body,"button",{name:"Invite emergency contact",exact:true}));
+  await findByText(body,"Synthetic SOS recipient · pending · consent required",{exact:true});
+  jar=recipientJar;body=await mount();u=userEvent.setup({document:dom.window.document});
+  await findByRole(body,"heading",{name:"Hello, Synthetic SOS DOM recipient"});
+  await clickReady(getByRole(body,"button",{name:"Emergency inbox",exact:true}));
+  await clickReady(await findByRole(body,"button",{name:"Accept SOS contact invitation",exact:true}));
+  await findByRole(body,"button",{name:"Revoke my SOS contact consent",exact:true});
+  assert.equal(getByRole(body,"button",{name:"Generate my Telegram linking code",exact:true}).disabled,true);
+  jar=ownerJar;body=await mount();u=userEvent.setup({document:dom.window.document});
+  await findByRole(body,"heading",{name:"Hello, Reviewed profile"});
+  await u.selectOptions(getByRole(body,"combobox",{name:"Patient",exact:true}),String(followupPatient._id));
+  await clickReady(getByRole(body,"button",{name:"SOS coordination",exact:true}));
+  await findByText(body,"Synthetic SOS recipient · active",{exact:true});
+  await clickReady(getByRole(body,"button",{name:"Use optional device location",exact:true}));
+  await findByText(body,"Incident location: denied",{exact:true});
+  await clickReady(getByRole(body,"button",{name:"Review SOS activation",exact:true}));
+  await findByRole(body,"dialog",{name:"Activate this SOS incident?",exact:true});
+  await clickReady(getByRole(body,"button",{name:"Cancel",exact:true}));
+  assert.equal(await mongoose.model("SosIncident").countDocuments(),0);
+  await clickReady(getByRole(body,"button",{name:"Review SOS activation",exact:true}));
+  await clickReady(getByRole(body,"button",{name:"Confirm SOS activation",exact:true}));
+  await findByRole(body,"heading",{name:"SOS incident: active",exact:true});
+  assert.equal(await mongoose.model("SosIncident").countDocuments(),1);
+  const sosJob=await mongoose.model("SosJob").findOne();assert.equal(sosJob.status,"disabled");assert.equal(sosJob.attemptCount,0);
+  await clickReady(getByRole(body,"button",{name:"Create simulated provider request",exact:true}));
+  await findByText(body,/simulated: simulated_request_only/);
+  await waitFor(()=>assert.equal(getByLabelText(body,"Hospital area latitude",{exact:true}).matches(":disabled"),false),{container:body});
+  await u.type(getByLabelText(body,"Hospital area latitude",{exact:true}),"23.7465");await u.type(getByLabelText(body,"Hospital area longitude",{exact:true}),"90.376");
+  await clickReady(getByRole(body,"button",{name:"Search hospital map listings",exact:true}));
+  await findByRole(body,"link",{name:"Synthetic DOM hospital",exact:true});assert.equal(hospitalLookups,1);
+  jar=recipientJar;body=await mount();u=userEvent.setup({document:dom.window.document});
+  await findByRole(body,"heading",{name:"Hello, Synthetic SOS DOM recipient"});
+  await clickReady(getByRole(body,"button",{name:"Emergency inbox",exact:true}));
+  await clickReady(await findByRole(body,"button",{name:"Acknowledge SOS incident",exact:true}));
+  await findByText(body,"You acknowledged this incident.",{exact:true});
+  jar=ownerJar;body=await mount();u=userEvent.setup({document:dom.window.document});
+  await findByRole(body,"heading",{name:"Hello, Reviewed profile"});
+  await u.selectOptions(getByRole(body,"combobox",{name:"Patient",exact:true}),String(followupPatient._id));
+  await clickReady(getByRole(body,"button",{name:"SOS coordination",exact:true}));
+  await clickReady(await findByRole(body,"button",{name:/^active SOS ·/}));
+  await findByText(body,/Contact .* acknowledged at/);
+  await clickReady(getByRole(body,"button",{name:"Review incident cancellation",exact:true}));
+  await u.type(getByLabelText(body,"Cancellation reason",{exact:true}),"Synthetic classroom incident completed");
+  await clickReady(getByRole(body,"button",{name:"Confirm incident cancellation",exact:true}));
+  await findByRole(body,"heading",{name:"SOS incident: cancelled",exact:true});
+  assert.equal(await mongoose.model("SosJob").countDocuments({kind:"cancelled"}),1);
+  assert.equal(await mongoose.model("SosAcknowledgement").countDocuments(),1);
+  const followupCount=await mongoose.model("DoseFollowup").countDocuments();
   const counts = {
     prescriptions: await mongoose.model("Prescription").countDocuments(),
     cabinet: await mongoose.model("CabinetItem").countDocuments(),
@@ -616,7 +797,7 @@ try {
     refillLists: await mongoose.model("RefillList").countDocuments(),
     pharmacyPreferences: await mongoose.model("PharmacyPreference").countDocuments(),
   };
-  assert.deepEqual(counts, { prescriptions: 1, cabinet: 3, tasks: 2, schedules: 1, medicineCards: 1, doseActions: 4, stockTransactions: 2, refillLists: 1, pharmacyPreferences: 1 });
+  assert.deepEqual(counts, { prescriptions: 1, cabinet: 3, tasks: 2+followupCount, schedules: 1, medicineCards: 1, doseActions: 4, stockTransactions: 2, refillLists: 1, pharmacyPreferences: 1 });
   fs.writeFileSync(
     process.env.MEDIMATE_DOM_REPORT || root + "/docs/evidence/step18-dom.json",
     JSON.stringify(
@@ -653,6 +834,11 @@ try {
           "Step 27 actual A2 events to snooze/taken/skipped correction and immutable history, separate owner consent/disabled reminders, date filtering and persistence after remount",
           "Step 30 recorded dose review to opening count, explicit deduction, low-stock checklist, completion without stock mutation and deducted status in the dose view",
           "Step 31 denied device location, entered area center, controlled Overpass search, saved preference and linked C1 task with the saved listing",
+          "Step 32 product/ingredient confirmation, mixed confirmed/manual comparison remains insufficient, acknowledgement note and persistence after remount",
+          "Step 33 exact cited label excerpt, escaped source text, saved feedback, reload persistence and question/excerpt deletion",
+          "Step 34 owner consent and caregiver selection, disabled-provider worker escalation, acknowledgement/resolution and reload persistence; dose actions unchanged",
+          "Step 35 range analytics, saved visit note, generated PDF snapshot counts equal the screen, export rediscovery after reload",
+          "Step 36 C5 separate recipient consent, linking-disabled status, cancelled review without activation, denied location, one disabled alert, explicit provider simulation, hospital fixture search, recipient acknowledgement and closure notice after remount",
         ],
         counts,
         limitations:

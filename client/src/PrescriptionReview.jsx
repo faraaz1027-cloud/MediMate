@@ -447,6 +447,7 @@ export default function PrescriptionReview({
       )}
       <div className="columns">
         <section className="card">
+          <div className="prescription-icon"><img src="/design/prescription.svg" alt="" /></div>
           <div className="section-title">
             <h2>
               {selected ? "Review prescription" : "New prescription draft"}
@@ -862,6 +863,12 @@ export default function PrescriptionReview({
             >
               Reload version
             </button>
+          )}
+          {draft && write && active && (
+            <button disabled={saving || scanning} onClick={() => {
+              if (window.confirm("Delete this unconfirmed draft? Confirmed versions and schedules are retained."))
+                mutation(base + `/${selected}/versions/${draft.id}`, "DELETE", { expectedRevision: draft.revision });
+            }}>Delete draft</button>
           )}
           {detail && write && active && (
             <button

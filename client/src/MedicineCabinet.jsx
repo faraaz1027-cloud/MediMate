@@ -217,6 +217,7 @@ export default function MedicineCabinet({ api, patient, permissions, onBusy }) {
         strengthText: strength,
         form,
         reason,
+        usageStatus: event.currentTarget.elements.usageStatus.value,
       });
     return mutation(base + "/cabinet-items", "POST", {
       ...(candidate
@@ -444,6 +445,15 @@ export default function MedicineCabinet({ api, patient, permissions, onBusy }) {
                     medicine information cards are later steps.
                   </p>
                   {selected && (
+                    <>
+                    <label>
+                      Cabinet use status
+                      <select name="usageStatus" defaultValue={detail.usageStatus || "active"} key={detail.id + ":" + detail.revision}>
+                        <option value="active">Active</option>
+                        <option value="paused">Paused</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                    </label>
                     <label>
                       Reason for change
                       <input
@@ -454,6 +464,7 @@ export default function MedicineCabinet({ api, patient, permissions, onBusy }) {
                         onChange={(e) => setReason(e.target.value)}
                       />
                     </label>
+                    </>
                   )}
                   {candidate && (
                     <label className="check">
@@ -496,6 +507,12 @@ export default function MedicineCabinet({ api, patient, permissions, onBusy }) {
                     >
                       Archive medicine
                     </button>
+                  )}
+                  {write && detail.status !== "removed" && (
+                    <button disabled={saving} onClick={() => {
+                      if (window.confirm("Remove this medicine from the cabinet? Linked records and history are retained."))
+                        mutation(base + `/cabinet-items/${selected}`, "DELETE", { expectedRevision: detail.revision });
+                    }}>Remove medicine</button>
                   )}
                   <h3>Edit history</h3>
                   {!history.length && (
@@ -578,6 +595,8 @@ export default function MedicineCabinet({ api, patient, permissions, onBusy }) {
                 >
                   <option value="active">Active</option>
                   <option value="archived">Archived</option>
+                  <option value="paused">Paused</option>
+                  <option value="completed">Completed</option>
                   <option value="all">All statuses</option>
                 </select>
               </label>
@@ -616,7 +635,7 @@ export default function MedicineCabinet({ api, patient, permissions, onBusy }) {
                       {row.entryType === "external"
                         ? "RxNorm · selected identity"
                         : "Manual · user-entered, unverified"}{" "}
-                      · {row.status}
+                      · {row.status === "active" ? row.usageStatus || "active" : row.status}
                     </p>
                     <p>
                       {row.strengthText || ""} {row.form || ""}

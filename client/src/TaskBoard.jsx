@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ValidatedForm from "./ValidatedForm.jsx";
+import ConfirmAction from "./ConfirmAction.jsx";
 import { PharmacyListing } from "./PharmacyCoordination.jsx";
 const deliveryLabels = {
   pending: "Queued",
@@ -53,6 +54,10 @@ export default function TaskBoard({
   const [selected, setSelected] = useState(null),
     [detail, setDetail] = useState(null),
     [history, setHistory] = useState([]),
+    [notes, setNotes] = useState([]),
+    [notesCursor, setNotesCursor] = useState(null),
+    [editingNote, setEditingNote] = useState(null),
+    [deletingNote, setDeletingNote] = useState(null),
     [historyCursor, setHistoryCursor] = useState(null),
     [notices, setNotices] = useState([]),
     [noticeCursor, setNoticeCursor] = useState(null),
@@ -131,18 +136,24 @@ export default function TaskBoard({
         isCurrent: () => alive.current && epoch === detailEpoch.current,
       };
     setSelected(taskId);
+    setEditingNote(null);
+    setDeletingNote(null);
+    setNotes([]);
     setDetail(null);
     setHistory([]);
     setNotices([]);
     setError("");
     try {
-      const [d, h, n] = await Promise.all([
+      const [d, h, n, savedNotes] = await Promise.all([
         api(base + `/tasks/${taskId}`, opts),
         api(base + `/tasks/${taskId}/history?limit=20`, opts),
         api(base + `/tasks/${taskId}/notifications?limit=20`, opts),
+        api(base + `/tasks/${taskId}/notes?limit=20`, opts),
       ]);
       if (!opts.isCurrent()) return;
       setDetail(d.data);
+      setNotes(savedNotes.data);
+      setNotesCursor(savedNotes.meta.nextCursor);
       setHistory(h.data);
       setHistoryCursor(h.meta.nextCursor);
       setNotices(n.data);
@@ -158,6 +169,9 @@ export default function TaskBoard({
     }
   }
   function fresh() {
+    setNotes([]);
+    setEditingNote(null);
+    setDeletingNote(null);
     detailEpoch.current++;
     setSelected(null);
     setDetail(null);
@@ -529,6 +543,42 @@ export default function TaskBoard({
                     </ValidatedForm>
                   )}
                   <h3>Status and handover history</h3>
+                  <section aria-label="Handover notes">
+                    <h3>Handover notes</h3>
+                    {!notes.length && <p>No current handover notes.</p>}
+                    <ul>{notes.map(n => <li key={n.id}>
+                      <p>{n.text}</p><small>Author: {n.authorUserId} · revision {n.revision}</small>
+                      {write && n.authorUserId === userId && <div>
+                        <button disabled={saving} onClick={() => setEditingNote({ ...n })}>Edit note</button>
+                        <button disabled={saving} onClick={() => setDeletingNote(n)}>Delete note</button>
+                      </div>}
+                    </li>)}</ul>
+                    {notesCursor && <button disabled={saving} onClick={async () => {
+                      const r = await api(base + `/tasks/${selected}/notes?limit=20&cursor=${encodeURIComponent(notesCursor)}`);
+                      setNotes(old => [...old, ...r.data]); setNotesCursor(r.meta.nextCursor);
+                    }}>More handover notes</button>}
+                    {editingNote && <ValidatedForm onSubmit={e => {
+                      e.preventDefault();
+                      return perform(base + `/tasks/${selected}/notes/${editingNote.id}`, "PATCH",
+                        { expectedRevision: editingNote.revision, text: editingNote.text }, () => open(selected));
+                    }}>
+                      <h3>Edit handover note</h3>
+                      <p>Update your own note. The previous version stays in the task history.</p>
+                      <label>Note · editing<textarea required maxLength={2000} value={editingNote.text}
+                        disabled={saving} onChange={e => setEditingNote({ ...editingNote, text: e.target.value })} /></label>
+                      <button disabled={saving}>Save note</button>
+                      <button type="button" disabled={saving} onClick={() => setEditingNote(null)}>Cancel</button>
+                    </ValidatedForm>}
+                    {deletingNote && <ConfirmAction title="Delete this handover note?" confirmLabel="Confirm delete"
+                      busy={saving} onCancel={() => setDeletingNote(null)} onConfirm={() =>
+                        perform(base + `/tasks/${selected}/notes/${deletingNote.id}`, "DELETE",
+                          { expectedRevision: deletingNote.revision }, () => open(selected))}>
+                      <p className="confirmation-summary">This removes your note from the task. The task and its other history stay.</p>
+                      <h3>Confirm the note</h3><p>Task: {detail.title}</p>
+                      <p>Author: {deletingNote.authorUserId}</p><blockquote>{deletingNote.text}</blockquote>
+                      <p>No change is made until you confirm. The deletion is recorded in the task history.</p>
+                    </ConfirmAction>}
+                  </section>
                   <ol>
                     {history.map((h) => (
                       <li key={h.id}>
@@ -539,7 +589,8 @@ export default function TaskBoard({
                           </p>
                         )}
                         {h.text && <p>{h.text}</p>}
-                        {h.snapshot && (
+                        {h.previousText && <p>Previous note: {h.previousText}</p>}
+                        {h.snapshot && !h.noteId && (
                           <p>
                             Snapshot: {h.snapshot.title} · {h.snapshot.status} ·
                             assignee {h.snapshot.assigneeUserId}

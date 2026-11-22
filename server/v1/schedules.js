@@ -431,6 +431,7 @@ export function installSchedules(
           {
             status: "active",
             currentVersionId: version._id,
+            pauseEffectiveFromUTC: null,
             prescriptionInstructionId: id(p.prescriptionInstructionId),
           },
           s,
@@ -447,7 +448,7 @@ export function installSchedules(
     async (req, res) => {
       const b = object(
         req.body,
-        ["expectedRevision", "reason"],
+        ["expectedRevision", "reason", "effectiveFromUTC"],
         ["expectedRevision"],
       );
       revision(b.expectedRevision);
@@ -461,11 +462,22 @@ export function installSchedules(
           const row = await schedule(req, s);
           if (row.status !== "active")
             fail(409, "INVALID_STATE", "Only active schedules can be paused.");
-          const boundary = now();
+          const requestedAt = now();
+          const boundary = b.effectiveFromUTC === undefined ? requestedAt : new Date(b.effectiveFromUTC);
+          if (b.effectiveFromUTC !== undefined &&
+              (typeof b.effectiveFromUTC !== "string" ||
+               !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/.test(b.effectiveFromUTC) ||
+               !Number.isFinite(boundary.getTime()) ||
+               boundary.toISOString() !== b.effectiveFromUTC || boundary < requestedAt))
+            invalid("effectiveFromUTC", "Choose a future UTC pause time in ISO format.");
+          const course = await current(row, s);
+          if (b.effectiveFromUTC !== undefined && boundary >= course.endAtUTC)
+            invalid("effectiveFromUTC", "Choose a pause time before this course ends.");
           const updated = await change(
             row,
             b.expectedRevision,
-            { status: "paused", pausedAt: boundary, pauseReason: reason },
+            { status: "paused", pausedAt: boundary, pauseReason: reason,
+              pauseEffectiveFromUTC: boundary > requestedAt ? boundary : null },
             s,
           );
           await cancel(row, boundary, "paused", s);
@@ -528,7 +540,7 @@ export function installSchedules(
           const updated = await change(
             row,
             b.expectedRevision,
-            { status: "active" },
+            { status: "active", pauseEffectiveFromUTC: null },
             s,
           );
           for (const due of events) {

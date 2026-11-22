@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ValidatedForm from "./ValidatedForm.jsx";
+import ConfirmAction from "./ConfirmAction.jsx";
 
 const blank = {
   prescriptionInstructionId: "",
@@ -57,7 +58,9 @@ export default function ScheduleBuilder({ api, patient, permissions, onBusy }) {
     [saving, setSaving] = useState(false),
     [error, setError] = useState(""),
     [notice, setNotice] = useState(""),
-    [resumeAt, setResumeAt] = useState("");
+    [resumeAt, setResumeAt] = useState(""),
+    [pauseAt, setPauseAt] = useState(""),
+    [pauseReview, setPauseReview] = useState(null);
   const alive = useRef(true),
     listEpoch = useRef(0),
     detailEpoch = useRef(0),
@@ -102,6 +105,7 @@ export default function ScheduleBuilder({ api, patient, permissions, onBusy }) {
     }
   }
   async function open(id, nextView = view) {
+    setPauseReview(null);
     const epoch = ++detailEpoch.current;
     setOpening(true);
     setDetail(null);
@@ -370,16 +374,39 @@ export default function ScheduleBuilder({ api, patient, permissions, onBusy }) {
       setNotice("Schedule confirmed and dose events saved.");
     });
   }
+  async function reviewPause() {
+    return run(async () => {
+      const boundary = pauseAt || new Date().toISOString();
+      if (!Number.isFinite(Date.parse(boundary)) || new Date(boundary).toISOString() !== boundary ||
+          Date.parse(boundary) < Date.now() - 1000 || Date.parse(boundary) >= Date.parse(detail.version.endAtUTC))
+        throw new Error("Choose a future UTC pause time before this course ends (YYYY-MM-DDTHH:mm:ss.sssZ).");
+      const all = [];
+      let cursor = null;
+      do {
+        const r = await api(`${base}/schedules/${detail.schedule.id}/occurrences?view=history&limit=100${cursor ? `&cursor=${encodeURIComponent(cursor)}` : ""}`);
+        all.push(...r.data);
+        cursor = r.meta.nextCursor;
+      } while (cursor);
+      if (alive.current) setPauseReview({
+        id: detail.schedule.id, revision: detail.schedule.revision, boundary,
+        affected: all.filter(e => e.state === "pending" && e.dueAtUTC >= boundary),
+        retained: all.filter(e => e.dueAtUTC < boundary),
+      });
+    });
+  }
   async function pause() {
     return run(async () => {
-      const r = await requestWrite(`/schedules/${detail.schedule.id}/pause`, {
-        expectedRevision: detail.schedule.revision,
+      const r = await requestWrite(`/schedules/${pauseReview.id}/pause`, {
+        expectedRevision: pauseReview.revision,
+        // An immediate pause is evaluated by the server when confirmed.
+        ...(pauseAt ? { effectiveFromUTC: pauseReview.boundary } : {}),
       });
       if (alive.current) {
         operation.current = null;
         await open(r.data.id);
         await reload();
-        setNotice("Paused. Past and acted events are retained.");
+        setPauseAt("");
+        setNotice(`Pause effective from ${r.data.pausedAt}. Earlier and acted events are retained.`);
       }
     });
   }
@@ -507,9 +534,22 @@ export default function ScheduleBuilder({ api, patient, permissions, onBusy }) {
               Edit future schedule
             </button>
             {detail.schedule.status === "active" ? (
-              <button disabled={!write || saving} onClick={pause}>
-                Pause schedule
-              </button>
+              <>
+                <label>Pause effective from UTC (optional)
+                  <input value={pauseAt} onChange={(event) => setPauseAt(event.target.value)}
+                    placeholder="YYYY-MM-DDTHH:mm:ss.sssZ" disabled={!write || saving} />
+                </label>
+                <button disabled={!write || saving} onClick={reviewPause}>Pause schedule</button>
+                {pauseReview && <ConfirmAction title="Pause this schedule?" confirmLabel="Confirm pause"
+                  busy={saving} onConfirm={pause} onCancel={() => setPauseReview(null)}>
+                  <p className="confirmation-summary">Pausing suspends future planned events from the effective date. Earlier records are retained.</p>
+                  <h3>Pause from {display(pauseReview.boundary, detail.version.timezone)}</h3>
+                  <p>Effective UTC: {pauseReview.boundary}{!pauseAt && " (immediate on confirmation)"}</p>
+                  <p>{pauseReview.affected.length} pending events will pause; {pauseReview.retained.length} earlier records will be retained.</p>
+                  <ul>{pauseReview.affected.map(e => <li key={e.id}>{e.dueAtUTC} · {display(e.dueAtUTC, detail.version.timezone)}</li>)}</ul>
+                  <p>Taken, skipped and previously cancelled events stay unchanged. No change is made until you confirm.</p>
+                </ConfirmAction>}
+              </>
             ) : (
               <ValidatedForm onSubmit={resume}>
                 <fieldset disabled={!sourcesAllowed || saving}>

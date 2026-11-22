@@ -124,7 +124,10 @@ export function installInventory(
     const at = now();
     const schedules = await db.list(
       "Schedule",
-      { ...stockKey(account), status: "active" },
+      { ...stockKey(account), $or: [
+        { status: "active" },
+        { status: "paused", pauseEffectiveFromUTC: { $gt: at } },
+      ] },
       101,
       session,
     );
@@ -193,6 +196,7 @@ export function installInventory(
   patient.get("/inventory-items", scope("stock.read"), async (req, res) => {
     const { rows, meta } = await page(req, "CabinetItem", {
       patientId: req.patient._id,
+      status: { $ne: "removed" },
     });
     send(
       req,

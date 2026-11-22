@@ -13,8 +13,24 @@ const collections = {
   CabinetItem: "cabinetItems",
   CabinetRevision: "cabinetRevisions",
   SourceRecord: "sourceRecords",
+  IngredientConfirmation: "ingredientConfirmations",
+  IngredientReview: "ingredientReviews",
+  EducationalAnswer: "educationalAnswers",
+  FollowupSettings: "followupSettings",
+  DoseFollowup: "doseFollowups",
+  HealthNote: "healthNotes",
+  HealthNoteRevision: "healthNoteRevisions",
+  ReportExport: "reportExports",
+  EmergencyContact: "emergencyContacts",
+  SosIncident: "sosIncidents",
+  SosJob: "sosJobs",
+  SosAttempt: "sosAttempts",
+  SosAcknowledgement: "sosAcknowledgements",
+  SosEvent: "sosEvents",
+  SosProviderRequest: "sosProviderRequests",
   Task: "careTasks",
   TaskEvent: "taskEvents",
+    TaskNote: "taskNotes",
   ChannelLink: "channelLinks",
   ChannelChallenge: "channelChallenges",
   TelegramReceipt: "telegramReceipts",
@@ -50,6 +66,23 @@ function model(name, fields, indexes = []) {
   for (const [key, options] of indexes) schema.index(key, options);
   models[name] = mongoose.models[name] || mongoose.model(name, schema);
 }
+model("EducationalAnswer", {
+  patientId: oid, cabinetItemId: oid, cabinetRevision: Number, medicineName: String,
+  question: String, outcome: String, reason: String, citations: [Schema.Types.Mixed],
+  createdBy: oid, rating: String, comment: String, deletedAt: Date,
+});
+model("FollowupSettings", {scheduleFence:{type:Number,select:false},patientId:oid,ownerUserId:oid,caregiverUserId:oid,enabled:Boolean,delayMinutes:Number}, [[{patientId:1},{unique:true}]]);
+model("HealthNote", {patientId:oid,text:String,recordedAt:Date,authorUserId:oid,editedAt:Date}, [[{patientId:1,recordedAt:-1,_id:-1},{}]]);
+model("HealthNoteRevision", {patientId:oid,noteId:oid,revisionNumber:Number,text:String,reason:String,actorUserId:oid,recordedAt:Date}, [[{noteId:1,revisionNumber:1},{unique:true}]]);
+model("ReportExport", {patientId:oid,createdBy:oid,status:String,snapshot:Schema.Types.Mixed,pdfBytes:Buffer,generatedAt:Date,expiresAt:Date}, [[{patientId:1,_id:-1},{}]]);
+model("EmergencyContact", {scheduleFence:{type:Number,select:false},patientId:oid,recipientUserId:oid,displayName:String,contactPhone:String,status:String,consentVersion:Number,invitedAt:Date,expiresAt:Date,consentedAt:Date,revokedAt:Date}, [[{patientId:1,recipientUserId:1},{unique:true}]]);
+model("SosIncident", {scheduleFence:{type:Number,select:false},patientId:oid,activatedBy:oid,status:String,activatedAt:Date,closedAt:Date,closedBy:oid,locationStatus:String,location:Schema.Types.Mixed,callbackPhone:String,reason:String,outcome:String}, [[{patientId:1},{unique:true,partialFilterExpression:{status:"active"}}]]);
+model("SosJob", {patientId:oid,incidentId:oid,contactId:oid,recipientId:oid,contactConsentVersion:Number,kind:String,channelLinkId:oid,channelRevision:Number,status:String,errorCode:String,attemptCount:Number,runAtUTC:Date,leaseUntil:Date,expiresAt:Date}, [[{incidentId:1,contactId:1,kind:1},{unique:true}]]);
+model("SosAttempt", {patientId:oid,jobId:oid,attemptNumber:Number,attemptedAt:Date,status:String,errorCode:String,externalMessageId:String}, [[{jobId:1,attemptNumber:1},{unique:true}]]);
+model("SosAcknowledgement", {incidentId:oid,contactId:oid,recipientId:oid,acknowledgedAt:Date}, [[{incidentId:1,contactId:1},{unique:true}]]);
+model("SosEvent", {patientId:oid,incidentId:oid,actorUserId:oid,type:String,occurredAt:Date,detail:String});
+model("SosProviderRequest", {patientId:oid,incidentId:oid,providerKey:String,providerMode:String,status:String,requestedAt:Date,requestedBy:oid}, [[{incidentId:1,providerKey:1},{unique:true}]]);
+model("DoseFollowup", {patientId:oid,occurrenceId:oid,caregiverUserId:oid,taskId:oid,status:String,dueAtUTC:Date,overdueAt:Date,acknowledgedAt:Date,acknowledgedBy:oid,resolvedAt:Date,resolvedBy:oid,outcome:String,note:String}, [[{occurrenceId:1},{unique:true}], [{patientId:1,status:1,_id:-1},{}]]);
 model(
   "User",
   {
@@ -60,6 +93,7 @@ model(
   [[{ emailNormalized: 1 }, { unique: true }]],
 );
 model("Patient", {
+  scheduleFence: {type:Number,select:false},
   ownerUserId: oid,
   displayName: String,
   timezone: String,
@@ -119,6 +153,7 @@ model("CabinetItem", {
   scheduleFence: { type: Number, select: false },
   patientId: oid,
   displayName: String,
+  usageStatus: String,
   entryType: String,
   status: String,
   strengthText: String,
@@ -141,6 +176,17 @@ model("MedicineCard", {
   personalNote: String, itemSnapshot: Schema.Types.Mixed,
   applicabilityConfirmedBy: oid, applicabilityConfirmedAt: Date, revisedAt: Date,
 }, [[{ patientId: 1, cabinetItemId: 1 }, { unique: true }]]);
+model("IngredientConfirmation", {
+  scheduleFence: { type: Number, select: false },
+  patientId: oid, cabinetItemId: oid, sourceRecordId: oid,
+  cabinetRevision: Number, productId: String, ingredients: [Schema.Types.Mixed],
+  confirmedBy: oid, confirmedAt: Date,
+}, [[{ patientId: 1, cabinetItemId: 1 }, { unique: true }]]);
+model("IngredientReview", {
+  patientId: oid, cabinetItemIds: [oid], ingredientSnapshots: [Schema.Types.Mixed],
+  evidenceRefs: [Schema.Types.Mixed], overlaps: [Schema.Types.Mixed], result: String,
+  acknowledgedAt: Date, acknowledgedBy: oid, note: String,
+});
 model(
   "CabinetRevision",
   {
@@ -172,6 +218,7 @@ model("Task", {
   refillListId: oid,
   pharmacyPreferenceId: oid,
   pharmacySnapshot: Schema.Types.Mixed,
+  followupId: oid,
 });
 model("TaskEvent", {
   patientId: oid,
@@ -183,7 +230,16 @@ model("TaskEvent", {
   fromStatus: String,
   toStatus: String,
   snapshot: Schema.Types.Mixed,
+  noteId: oid,
+  previousText: String,
 });
+model("TaskNote", {
+  patientId: oid,
+  taskId: oid,
+  authorUserId: oid,
+  text: String,
+  deletedAt: Date,
+}, [[{ patientId: 1, taskId: 1, createdAt: -1, _id: -1 }, {}]]);
 model(
   "ChannelLink",
   {
@@ -292,7 +348,7 @@ model("AuditEvent", {
 });
 model("Schedule", {
   patientId: oid, cabinetItemId: oid, prescriptionInstructionId: oid, currentVersionId: oid,
-  status: String, pausedAt: Date, pauseReason: String,
+  status: String, pausedAt: Date, pauseReason: String, pauseEffectiveFromUTC: Date,
 }, [[{ patientId: 1, prescriptionInstructionId: 1 }, { unique: true }]]);
 model("ScheduleVersion", {
   patientId: oid, scheduleId: oid, versionNumber: Number,
@@ -307,6 +363,7 @@ model("SchedulePreview", {
   consumedAt: Date, payload: Schema.Types.Mixed,
 }, [[{ tokenHash: 1 }, { unique: true }], [{ expiresAt: 1 }, { expireAfterSeconds: 0 }]]);
 model("DoseOccurrence", {
+  followupId: oid,
   patientId: oid, scheduleId: oid, scheduleVersionId: oid, cabinetItemId: oid,
   dueAtUTC: Date, doseQuantitySnapshot: Schema.Types.Decimal128, doseUnitSnapshot: String, timezoneSnapshot: String,
   state: { type: String, enum: ["pending", "taken", "skipped", "cancelled"] },

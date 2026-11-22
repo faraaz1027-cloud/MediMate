@@ -126,6 +126,10 @@ export function installTasks(
       s,
     );
     const created = await event(req, task, "created", note, s);
+    if (note) await db.insert("TaskNote", {
+      patientId: req.patient._id, taskId: task._id,
+      authorUserId: req.actorId, text: note, deletedAt: null,
+    }, s);
     await queueTaskNotice(db, task, created, telegram, s, now);
     return publicDoc(task);
   }
@@ -400,10 +404,53 @@ export function installTasks(
             "FORBIDDEN",
             "Only task participants may add handover notes.",
           );
-        return publicDoc(await event(req, t, "note", note, s));
+        const saved = await db.insert("TaskNote", {
+          patientId: req.patient._id, taskId: t._id,
+          authorUserId: req.actorId, text: note, deletedAt: null,
+        }, s);
+        await event(req, t, "note", note, s);
+        return publicDoc(saved);
       });
     },
   );
+  patient.get("/tasks/:taskId/notes", scope("task.read"), async (req, res) => {
+    const t = await task(req);
+    const filter = { patientId: req.patient._id, taskId: t._id, deletedAt: null };
+    const limit = page(req, ["limit", "cursor"], filter);
+    sendPage(req, res, await db.list("TaskNote", filter, limit + 1), limit);
+  });
+  for (const method of ["patch", "delete"]) {
+    patient[method]("/tasks/:taskId/notes/:noteId", csrf, scope("task.write"), async (req, res) => {
+      const b = object(req.body,
+        method === "patch" ? ["expectedRevision", "text"] : ["expectedRevision"],
+        method === "patch" ? ["expectedRevision", "text"] : ["expectedRevision"]);
+      revision(b.expectedRevision);
+      const nextText = method === "patch" ? text(b.text, "text", 2000) : null;
+      await mutate(req, res, "task.write", async (s) => {
+        const t = await task(req, s);
+        const old = await db.one("TaskNote", {
+          _id: id(req.params.noteId), patientId: req.patient._id, taskId: t._id,
+        }, s);
+        if (!old) fail(404, "NOT_FOUND", "Note not found.");
+        if (String(old.authorUserId) !== String(req.actorId))
+          fail(403, "FORBIDDEN", "Only the note author may edit or delete it.");
+        if (old.deletedAt || old.revision !== b.expectedRevision)
+          fail(409, "REVISION_CONFLICT", "Reload the task notes before changing this note.");
+        const saved = await db.update("TaskNote", {
+          _id: old._id, revision: b.expectedRevision, deletedAt: null,
+        }, method === "patch" ? { text: nextText } : { deletedAt: now() }, s);
+        if (!saved) fail(409, "REVISION_CONFLICT", "Reload the task notes and retry.");
+        await db.insert("TaskEvent", {
+          patientId: req.patient._id, taskId: t._id, actorUserId: req.actorId,
+          eventType: method === "patch" ? "note_edited" : "note_deleted",
+          noteId: old._id, previousText: old.text,
+          text: method === "patch" ? nextText : undefined,
+          occurredAt: now(), snapshot: publicDoc(old),
+        }, s);
+        return publicDoc(saved);
+      }, 200);
+    });
+  }
   patient.post(
     "/tasks/:taskId/acknowledgements",
     csrf,

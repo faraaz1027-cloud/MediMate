@@ -1,4 +1,5 @@
 import { handleTelegramUpdate } from "./channels.js";
+import { followupNoticeAllowed } from "./followup-policy.js";
 
 export async function recipientAllowed(db, patientId, userId, s) {
   const p = await db.one("Patient", { _id: patientId, status: "active" }, s);
@@ -52,6 +53,7 @@ export function createTaskWorker({ db, telegram, now = () => new Date() }) {
     )
       return { error: "TASK_CHANGED" };
     if (task.acknowledgedAt) return { error: "ALREADY_ACKNOWLEDGED" };
+    if (!(await followupNoticeAllowed(db,task))) return { error: "FOLLOWUP_INACTIVE" };
     if (!(await recipientAllowed(db, job.patientId, job.recipientId)))
       return { error: "ACCESS_REVOKED" };
     const link = await db.one("ChannelLink", {

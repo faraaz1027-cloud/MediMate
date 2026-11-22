@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ValidatedForm from "./ValidatedForm.jsx";
+import ConfirmAction from "./ConfirmAction.jsx";
 const localTime = (d) =>
   new Intl.DateTimeFormat("en-GB", {
     timeZone: d.timezoneSnapshot,
@@ -37,7 +38,8 @@ export default function DoseBoard({
     [notice, setNotice] = useState(""),
     [saving, setSaving] = useState(false),
     [correction, setCorrection] = useState("pending"),
-    [reason, setReason] = useState("");
+    [reason, setReason] = useState(""),
+    [skipDose, setSkipDose] = useState(null);
   const [settings, setSettings] = useState(null),
     [settingsError, setSettingsError] = useState(""),
     [enabled, setEnabled] = useState(false);
@@ -290,6 +292,16 @@ export default function DoseBoard({
   return (
     <div className="dose-workspace">
       <h2>Today’s doses</h2>
+      {skipDose && <ConfirmAction title="Record this dose as skipped?" confirmLabel="Confirm skipped"
+        busy={saving} onCancel={() => setSkipDose(null)} onConfirm={async () => {
+          await record(skipDose, "skipped"); setSkipDose(null);
+        }}>
+        <p className="confirmation-summary">This changes the occurrence record, not prescription instructions.</p>
+        <h3>Confirm the occurrence</h3>
+        <p>Medicine: {skipDose.medicineText} · {skipDose.strengthText}</p>
+        <p>Scheduled time: {localTime(skipDose)} · {skipDose.dueAtUTC}</p>
+        <p>New status: Skipped</p><p>No action is recorded until you confirm.</p>
+      </ConfirmAction>}
       <p>
         Record what happened for each saved A2 occurrence. Reminders and dose
         records are separate.
@@ -426,7 +438,7 @@ export default function DoseBoard({
                           </button>
                           <button
                             disabled={!write || saving || !due}
-                            onClick={() => record(d, "skipped")}
+                            onClick={() => setSkipDose(d)}
                           >
                             Record skipped
                           </button>

@@ -10,6 +10,11 @@ import { installInformationCards } from "./information-cards.js";
 import { installDoses } from "./doses.js";
 import { installInventory } from "./inventory.js";
 import { installPharmacies } from "./pharmacies.js";
+import { installIngredientReviews } from "./ingredient-reviews.js";
+import { installEducationalAnswers } from "./educational-answers.js";
+import { installFollowups } from "./followups.js";
+import { installReports } from "./reports.js";
+import { installSos } from "./sos.js";
 import { createOverpass } from "./overpass.js";
 import express from "express";
 import mongoose from "mongoose";
@@ -127,6 +132,7 @@ export function createV1({
   rxnorm = createRxNorm(),
   openfda = createOpenFDA(),
   overpass = createOverpass(),
+  hospitals = createOverpass({amenity:"hospital"}),
   telegram = createTelegram(),
   secure = process.env.NODE_ENV === "production",
   origins = ["http://localhost:5173", "http://127.0.0.1:5173"],
@@ -576,6 +582,11 @@ export function createV1({
   installDoses(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now, send, telegram });
   installInventory(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now, send });
   installPharmacies(patient, { db, csrf, scope, mutate, fail, id, object, publicDoc, now, send, overpass, createTask, taskDate });
+  installIngredientReviews(patient, { db, csrf, scope, mutate, fail, id, object, publicDoc, now, send, rxnorm });
+  installEducationalAnswers(patient, { db, csrf, scope, mutate, fail, id, object, publicDoc, now, send });
+  installFollowups(patient, { db, csrf, scope, mutate, fail, id, object, publicDoc, now, send, telegram });
+  installReports(patient, { db, csrf, scope, mutate, access, fail, id, object, text, publicDoc, now, send });
+  installSos(app, patient, { db, authenticated, csrf, scope, access, mutate, fail, id, object, text, publicDoc, now, send, telegram, hospitals, production:process.env.NODE_ENV==="production" });
   const resources = [
     ["prescriptions", "Prescription", "prescription"],
   ];

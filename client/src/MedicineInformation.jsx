@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import ValidatedForm from "./ValidatedForm.jsx";
+import ConfirmAction from "./ConfirmAction.jsx";
 
 function Passages({ passages }) {
   return (
@@ -55,7 +56,8 @@ export default function MedicineInformation({
     [detail, setDetail] = useState(null),
     [opening, setOpening] = useState(false),
     [error, setError] = useState(""),
-    [notice, setNotice] = useState("");
+    [notice, setNotice] = useState(""),
+    [deleteNote, setDeleteNote] = useState(null);
   const [results, setResults] = useState(null),
     [cursor, setCursor] = useState(null),
     [searching, setSearching] = useState(false),
@@ -504,6 +506,20 @@ export default function MedicineInformation({
                       <button>Save personal note</button>
                     </fieldset>
                   </ValidatedForm>
+                  <button disabled={!editable || saving || !detail.card.personalNote}
+                    onClick={() => setDeleteNote({ text: detail.card.personalNote, revision: detail.card.revision })}>
+                    Delete personal note
+                  </button>
+                  {deleteNote && <ConfirmAction title="Delete this personal note" confirmLabel="Confirm note deletion"
+                    busy={saving} onCancel={() => setDeleteNote(null)} onConfirm={async () => {
+                      await mutation("/note", "PATCH", { expectedRevision: deleteNote.revision, personalNote: "" },
+                        "Personal note deleted. Information card and selected source retained.");
+                      setDeleteNote(null);
+                    }}>
+                    <p className="confirmation-summary">Confirm before removing the note from this card.</p>
+                    <h3>Note to delete</h3><blockquote>{deleteNote.text}</blockquote>
+                    <p>Delete only this personal note; retain the educational card and source.</p>
+                  </ConfirmAction>}
                 </section>
               </div>
               <aside className="card">

@@ -68,6 +68,14 @@ export function createTelegram({
   return {
     enabled,
     username: enabled ? username : null,
+    async sendSosNotice(chatId, kind) {
+      const text = kind === "alert"
+        ? "MediMate SOS: a consenting contact activated an assistance alert. Sign in to Emergency inbox to review and acknowledge. This message does not confirm emergency-service dispatch."
+        : "MediMate SOS: an assistance incident was closed. Sign in to Emergency inbox for its current status.";
+      const r = await call("sendMessage", {chat_id:chatId,text});
+      if (!Number.isSafeInteger(r?.message_id)) throw new TelegramError("RESPONSE_INVALID", true);
+      return {messageId:String(r.message_id)};
+    },
     async sendTaskNotice(chatId) {
       const r = await call("sendMessage", {
         chat_id: chatId,

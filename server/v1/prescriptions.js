@@ -370,6 +370,29 @@ export function installPrescriptions(
       });
     },
   );
+  patient.delete(
+    "/prescriptions/:prescriptionId/versions/:versionId",
+    csrf,
+    scope("prescription.write"),
+    async (req, res) => {
+      const { expectedRevision } = object(req.body, ["expectedRevision"], ["expectedRevision"]);
+      revision(expectedRevision);
+      await mutate(req, res, "prescription.write", async (session) => {
+        const parent = await prescription(req, session, true);
+        const draft = await version(req, id(req.params.versionId), session);
+        if (draft.status !== "draft" || String(parent.draftVersionId) !== String(draft._id))
+          fail(409, "INVALID_TRANSITION", "Choose the current unconfirmed draft.");
+        if (draft.revision !== expectedRevision)
+          fail(409, "REVISION_CONFLICT", "Reload the draft and retry.");
+        const updated = await parentUpdate(parent, {
+          draftVersionId: null, ...(parent.currentVersionId ? {} : { status: "archived" }),
+        }, session);
+        await db.remove("PrescriptionInstruction", { prescriptionVersionId: draft._id }, session);
+        await db.remove("PrescriptionVersion", { _id: draft._id }, session);
+        return { prescription: publicDoc(updated), removedDraftId: String(draft._id) };
+      }, 200);
+    },
+  );
   patient.patch(
     "/prescriptions/:prescriptionId/versions/:versionId",
     csrf,

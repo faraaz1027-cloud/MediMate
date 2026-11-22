@@ -164,7 +164,10 @@ export function createDoseWorker({ db, telegram, now = () => new Date() }) {
       schedule = await db.one("Schedule", {
         _id: d.scheduleId,
         patientId: job.patientId,
-        status: "active",
+        $or: [
+          { status: "active" },
+          { status: "paused", pauseEffectiveFromUTC: { $gt: new Date(Math.max(now(), d.dueAtUTC)) } },
+        ],
       }),
       cabinet = await db.one("CabinetItem", {
         _id: d.cabinetItemId,

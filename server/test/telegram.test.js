@@ -5,6 +5,13 @@ const config = {
   token: "123456:TEST_TOKEN_FOR_UNIT_TESTING_ONLY",
   username: "MediMateTestBot",
 };
+test("C5 notices are generic alert/closure messages and disabled configuration sends nothing",async()=>{
+  const bodies=[];const provider=createTelegram({...config,fetchImpl:async(_,options)=>{bodies.push(JSON.parse(options.body));return Response.json({ok:true,result:{message_id:44}});}});
+  await provider.sendSosNotice("synthetic","alert");await provider.sendSosNotice("synthetic","cancelled");
+  assert.match(bodies[0].text,/SOS/);assert.match(bodies[1].text,/closed/);
+  assert.ok(bodies.every(b=>!b.text.includes("latitude")&&!b.text.includes("patient name")));
+  let called=false;await assert.rejects(createTelegram({token:"",username:"",fetchImpl:async()=>{called=true;}}).sendSosNotice("synthetic","alert"),e=>e.code==="NOT_CONFIGURED");assert.equal(called,false);
+});
 test("C2 Telegram adapter sends a generic notice only and stays disabled without configuration", async () => {
   let sent;
   const p = createTelegram({ ...config, fetchImpl: async (url, options) => { sent = { url, body: JSON.parse(options.body) }; return Response.json({ok:true,result:{message_id:43}}); } });

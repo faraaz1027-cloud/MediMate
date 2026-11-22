@@ -170,10 +170,15 @@ export function installCabinet(
     if (req.query.status !== "all") {
       if (
         req.query.status &&
-        !["active", "archived"].includes(req.query.status)
+        !["active", "paused", "completed", "archived"].includes(req.query.status)
       )
         fail(400, "INVALID_QUERY", "Unknown status.");
-      filter.status = req.query.status || "active";
+      const status = req.query.status || "active";
+      filter.status = status === "archived" ? "archived" : "active";
+      if (status === "active") filter.usageStatus = { $in: ["active", null] };
+      if (["paused", "completed"].includes(status)) filter.usageStatus = status;
+    } else {
+      filter.status = { $ne: "removed" };
     }
     if (req.query.entryType) {
       if (!["manual", "external"].includes(req.query.entryType))
@@ -293,14 +298,14 @@ export function installCabinet(
     async (req, res) => {
       const b = object(
         req.body,
-        ["expectedRevision", "displayName", "strengthText", "form", "reason"],
+        ["expectedRevision", "displayName", "strengthText", "form", "reason", "usageStatus"],
         ["expectedRevision", "reason"],
       );
       revision(b.expectedRevision);
       const reason = text(b.reason, "reason", 500),
         set = {};
       if (
-        !["displayName", "strengthText", "form"].some((k) => b[k] !== undefined)
+        !["displayName", "strengthText", "form", "usageStatus"].some((k) => b[k] !== undefined)
       )
         invalid("displayName", "Change at least one field.");
       for (const k of ["displayName", "strengthText", "form"])
@@ -309,6 +314,11 @@ export function installCabinet(
             k !== "displayName" && b[k] === ""
               ? ""
               : text(b[k], k, k === "displayName" ? 500 : 200);
+      if (b.usageStatus !== undefined) {
+        if (!["active", "paused", "completed"].includes(b.usageStatus))
+          invalid("usageStatus", "Choose active, paused or completed.");
+        set.usageStatus = b.usageStatus;
+      }
       await mutate(
         req,
         res,
@@ -405,6 +415,26 @@ export function installCabinet(
         },
         200,
       );
+    },
+  );
+  patient.delete(
+    "/cabinet-items/:itemId",
+    csrf,
+    scope("cabinet.write"),
+    async (req, res) => {
+      const { expectedRevision } = object(req.body, ["expectedRevision"], ["expectedRevision"]);
+      revision(expectedRevision);
+      await mutate(req, res, "cabinet.write", async (session) => {
+        const old = await item(req, session);
+        if (old.status === "removed" || old.revision !== expectedRevision)
+          fail(409, "REVISION_CONFLICT", "Reload the cabinet item and retry.");
+        const saved = await db.update("CabinetItem", {
+          _id: old._id, patientId: old.patientId, revision: expectedRevision,
+        }, { status: "removed" }, session);
+        if (!saved) fail(409, "REVISION_CONFLICT", "Reload the cabinet item and retry.");
+        await snapshot(req, saved, "Removed from cabinet", session);
+        return publicDoc(saved);
+      }, 200);
     },
   );
   patient.get(

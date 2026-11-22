@@ -293,6 +293,35 @@ test(
       },
     );
     await t.test(
+      "note changes are author-only, revision checked and preserve history",
+      async () => {
+        const p = route + `/${task.id}/notes`;
+        const created = await caregiver.call("POST", p, { text: "Original author note" });
+        assert.equal(created.status, 201);
+        const note = created.body.data;
+        for (const method of ["PATCH", "DELETE"]) {
+          const rejected = await owner.call(method, p + "/" + note.id, {
+            expectedRevision: 0, ...(method === "PATCH" ? { text: "Unauthorized" } : {}),
+          });
+          assert.equal(rejected.status, 403);
+          const current = (await owner.call("GET", p)).body.data.find(n => n.id === note.id);
+          assert.equal(current.text, "Original author note");
+          assert.equal(current.revision, 0);
+        }
+        const key = randomUUID(), body = { expectedRevision: 0, text: "Edited author note" };
+        assert.equal((await caregiver.call("PATCH", p + "/" + note.id, body, key)).status, 200);
+        assert.equal((await caregiver.call("PATCH", p + "/" + note.id, body, key)).status, 200);
+        assert.equal((await caregiver.call("PATCH", p + "/" + note.id, body)).status, 409);
+        assert.equal((await owner.call("GET", p)).body.data.find(n => n.id === note.id).text, body.text);
+        assert.equal((await caregiver.call("DELETE", p + "/" + note.id, { expectedRevision: 1 })).status, 200);
+        assert.equal((await owner.call("GET", p)).body.data.some(n => n.id === note.id), false);
+        const history = (await owner.call("GET", route + `/${task.id}/history?limit=100`)).body.data;
+        assert.ok(history.some(e => e.eventType === "note" && e.text === "Original author note"));
+        assert.ok(history.some(e => e.eventType === "note_edited" && e.noteId === note.id && e.previousText === "Original author note"));
+        assert.ok(history.some(e => e.eventType === "note_deleted" && e.noteId === note.id && e.previousText === "Edited author note"));
+      },
+    );
+    await t.test(
       "Telegram linking needs private /start proof AND app consent; codes are hashed and shown once",
       async () => {
         const key = randomUUID(),

@@ -4,9 +4,18 @@ import MedicineInformation from "./MedicineInformation.jsx";
 import DoseBoard from "./DoseBoard.jsx";
 import MedicineCabinet from "./MedicineCabinet.jsx";
 import InventoryBoard from "./InventoryBoard.jsx";
+import IngredientReview from "./IngredientReview.jsx";
+import EducationalAssistant from "./EducationalAssistant.jsx";
+import FollowupBoard from "./FollowupBoard.jsx";
+import VisitReports from "./VisitReports.jsx";
+import SosBoard from "./SosBoard.jsx";
+import EmergencyInbox from "./EmergencyInbox.jsx";
 import PrescriptionReview from "./PrescriptionReview.jsx";
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/manrope";
+import "./figma.css";
 import AccountAccess from "./AccountAccess.jsx";
 import ValidatedForm from "./ValidatedForm.jsx";
 import { request } from "./request.js";
@@ -18,14 +27,25 @@ const tabs = [
   ["information", "Medicine information"],
   ["doses", "Today’s doses"],
   ["inventory", "Inventory and refills"],
+  ["ingredient-reviews", "Ingredient review"],
+  ["education", "Educational assistant"],
+  ["followups", "Dose follow-up"],
+  ["reports", "Visit reports"],
+  ["sos", "SOS coordination"],
 ];
 export default function App() {
+  const [dark, setDark] = useState(() => { try { return window.localStorage.getItem("medimate-theme") === "dark"; } catch { return false; } });
+  useEffect(() => {
+    document.documentElement.dataset.theme = dark ? "dark" : "light";
+    try { window.localStorage.setItem("medimate-theme", dark ? "dark" : "light"); } catch { /* Theme still works when storage is unavailable. */ }
+  }, [dark]);
   const [user, setUser] = useState(null),
     [csrf, setCsrf] = useState(""),
     [ready, setReady] = useState(false),
     [connectionAttempt, setConnectionAttempt] = useState(0),
     [connectionFailed, setConnectionFailed] = useState(false),
     [showAccount, setShowAccount] = useState(false),
+    [showEmergencyInbox, setShowEmergencyInbox] = useState(false),
     [register, setRegister] = useState(false),
     [patient, setPatient] = useState(""),
     [tab, setTab] = useState("prescriptions"),
@@ -34,8 +54,8 @@ export default function App() {
     [notice, setNotice] = useState("");
   const lock = useRef(false);
   const selectedPatient = user?.patients?.find((p) => p.id === patient);
-  const prefixes = { prescriptions: "prescription", "cabinet-items": "cabinet", tasks: "task", schedules: "schedule", information: "cabinet", doses: "dose", inventory: "stock" };
-  const visibleTabs = tabs.filter(([id]) => selectedPatient?.permissions?.some((p) => p === prefixes[id] + ".read" || p === prefixes[id] + ".write"));
+  const prefixes = { prescriptions: "prescription", "cabinet-items": "cabinet", tasks: "task", schedules: "schedule", information: "cabinet", doses: "dose", inventory: "stock", "ingredient-reviews": "cabinet", education: "cabinet", followups: "dose", reports: "report", sos: "sos" };
+  const visibleTabs = tabs.filter(([id]) => selectedPatient?.permissions?.some((p) => p === prefixes[id] + ".read" || p === prefixes[id] + ".write" || id === "sos" && ["sos.activate", "sos.manage"].includes(p)));
   const activeTab = visibleTabs.some(([id]) => id === tab) ? tab : visibleTabs[0]?.[0] || tab;
   async function api(path, options = {}) {
     const { isCurrent = () => true, ...fetchOptions } = options;
@@ -146,16 +166,34 @@ export default function App() {
     }
   }
   return (
-    <>
+    <div className="care-workspace" data-workspace={activeTab}>
       <a className="skip-link" href="#main-content">Skip to main content</a>
       <header>
+        <div className="brand-icon"><img src="/design/capsule.svg" alt="" /></div>
         <div className="brand">MediMate</div>
-        <span>Medication and caregiver coordination</span>
-        {user && (
-          <button className="quiet" disabled={busy} onClick={logout}>
-            Sign out
-          </button>
-        )}
+        <span className="workspace-caption">Care workspace</span>
+        {user && <label className="sidebar-patient">Patient
+          <select value={patient} disabled={busy} onChange={e => setPatient(e.target.value)}>
+            <option value="">Choose patient</option>
+            {user.patients?.map(p => <option key={p.id} value={p.id}>{p.displayName}</option>)}
+          </select>
+        </label>}
+        {user && <nav className="workspace-navigation" aria-label="Work areas">
+          {visibleTabs.slice().sort((a,b) => ["prescriptions","schedules","cabinet-items","information","tasks","doses","inventory","ingredient-reviews","education","followups","reports","sos"].indexOf(a[0]) - ["prescriptions","schedules","cabinet-items","information","tasks","doses","inventory","ingredient-reviews","education","followups","reports","sos"].indexOf(b[0])).map(([id,label]) => <button key={id} disabled={busy} aria-label={label} className={activeTab === id ? "selected" : ""} aria-current={activeTab === id ? "page" : undefined} onClick={() => { setTab(id); setShowAccount(false); setShowEmergencyInbox(false); }}>
+            {({"cabinet-items":"Cabinet",schedules:"Schedule",information:"Information",tasks:"Care tasks",doses:"Today"})[id] || label}
+          </button>)}
+        </nav>}
+        <button className="theme-toggle" onClick={() => setDark(value => !value)} aria-pressed={dark}>{dark ? "Light mode" : "Dark mode"}</button>
+        {/* Reserve the same header geometry while the session is loading. */}
+        <button
+          className="quiet"
+          style={{ visibility: user ? "visible" : "hidden" }}
+          aria-hidden={!user || undefined}
+          disabled={!user || busy}
+          onClick={logout}
+        >
+          Sign out
+        </button>
       </header>
       <main id="main-content" tabIndex={-1}>
         <p className="eyebrow">Synthetic demonstration · Project review</p>
@@ -237,6 +275,7 @@ export default function App() {
         ) : (
           <>
             <button className="link" disabled={busy} aria-expanded={showAccount} aria-controls="account-settings" onClick={() => setShowAccount(!showAccount)}>{showAccount ? "Close account settings" : "Account and access"}</button>
+            <button className="link" disabled={busy} onClick={() => setShowEmergencyInbox(!showEmergencyInbox)}>{showEmergencyInbox ? "Close emergency inbox" : "Emergency inbox"}</button>
             <div className="intro">
               <div>
                 <h1>Hello, {user.displayName}</h1>
@@ -244,44 +283,21 @@ export default function App() {
                   Review prescriptions, plan schedules, organize your cabinet and hand over tasks.
                 </p>
               </div>
-              <label>
-                Patient
-                <select
-                  value={patient}
-                  disabled={busy}
-                  onChange={(e) => setPatient(e.target.value)}
-                >
-                  <option value="">Choose patient</option>
-                  {user.patients?.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.displayName}
-                    </option>
-                  ))}
-                </select>
-              </label>
             </div>
-            {showAccount && <AccountAccess key={user.id + patient} user={user} patient={patient} api={api} refreshUser={refreshUser} onBusy={setBusy} />}
-            {!patient ? (
+            {!showAccount && !showEmergencyInbox && <section className="workspace-heading" aria-label="Current work area">
+              <p className="workspace-owner">{({prescriptions:"A1 / IHFAZ RASHID SADAT", "cabinet-items":"B1 / FARAAZ JAMIL CHOWDHURY",tasks:"C1 / SAHIR JAWAD CHOWDHURY"})[activeTab] || "YOUR CARE WORKSPACE"}</p>
+              <h1>{({prescriptions:"Your prescriptions", "cabinet-items":"Medicine cabinet", tasks:"Caregiver tasks"})[activeTab] || tabs.find(([id]) => id === activeTab)?.[1]}</h1>
+              <div className="workspace-summary">{({prescriptions:"Import a prescription, review the details, then build a verified schedule.","cabinet-items":"Find an identity. Keep your cabinet organised.",tasks:"Assign clearly. Keep a useful handover history."})[activeTab] || "Review your saved records and coordinate care."}</div>
+            </section>}
+            {showAccount && !showEmergencyInbox && <AccountAccess key={user.id + patient} user={user} patient={patient} api={api} refreshUser={refreshUser} onBusy={setBusy} />}
+            {showEmergencyInbox ? <EmergencyInbox key={user.id} api={api} userId={user.id} onBusy={setBusy} /> : !patient ? (
               <p>
                 No accessible patient is available. Ask the owner to grant
                 access, then sign in again.
               </p>
             ) : !visibleTabs.length ? <p>No work areas are permitted for this patient. Use Account and access to refresh your permissions.</p> : (
               <>
-                <nav aria-label="Work areas">
-                  {visibleTabs.map(([id, label]) => (
-                    <button
-                      key={id}
-                      disabled={busy}
-                      className={activeTab === id ? "selected" : ""}
-                      aria-current={activeTab === id ? "page" : undefined}
-                      onClick={() => setTab(id)}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </nav>
-                {activeTab === "prescriptions" ? <PrescriptionReview key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "cabinet-items" ? <MedicineCabinet key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "schedules" ? <ScheduleBuilder key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "information" ? <MedicineInformation key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "doses" ? <DoseBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} owner={selectedPatient.role === "owner"} onBusy={setBusy} /> : activeTab === "inventory" ? <InventoryBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : <TaskBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} userId={user.id} owner={selectedPatient.role === "owner"} onBusy={setBusy} />}
+                {activeTab === "prescriptions" ? <PrescriptionReview key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "cabinet-items" ? <MedicineCabinet key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "schedules" ? <ScheduleBuilder key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "information" ? <MedicineInformation key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "doses" ? <DoseBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} owner={selectedPatient.role === "owner"} onBusy={setBusy} /> : activeTab === "inventory" ? <InventoryBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "ingredient-reviews" ? <IngredientReview key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "education" ? <EducationalAssistant key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "followups" ? <FollowupBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} owner={selectedPatient.role === "owner"} onBusy={setBusy} /> : activeTab === "reports" ? <VisitReports key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "sos" ? <SosBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} owner={selectedPatient.role === "owner"} userId={user.id} onBusy={setBusy} /> : <TaskBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} userId={user.id} owner={selectedPatient.role === "owner"} onBusy={setBusy} />}
               </>
             )}
           </>
@@ -291,6 +307,6 @@ export default function App() {
           still in development.
         </footer>
       </main>
-    </>
+    </div>
   );
 }
