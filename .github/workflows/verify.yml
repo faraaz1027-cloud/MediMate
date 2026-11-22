@@ -36,7 +36,8 @@ jobs:
       - name: Verify the exact published revision
         env:
           EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
-        run: node -e "const actual=require('node:child_process').execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(); if(actual!==process.env.EXPECTED_SHA)process.exit(1); console.log('Verified source revision: '+actual);"
+        run: |
+          node -e "const actual=require('node:child_process').execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(); if(actual!==process.env.EXPECTED_SHA)process.exit(1); console.log('Verified source revision: '+actual);"
       - name: Install locked workspaces
         run: npm ci --include=dev
       - name: Install isolated test tools
