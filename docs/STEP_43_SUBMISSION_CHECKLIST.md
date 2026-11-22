@@ -5,6 +5,15 @@ supersede the historical publication status below. C1 actual Telegram receipt is
 verified separately; this does not complete student assessment or C2/C3/C5 delivery.
 No deployment, team merge or coursework submission is implied.
 
+- [x] Publish the reviewed completed source to `feature/complete-project-review`
+  and [PR #15](https://github.com/faraaz1027-cloud/MediMate/pull/15), preserving the old stack.
+- [x] Verify the published source checkpoint on Windows/Linux: both passed 189
+  backend tests, locked installs, build, publication scan and compiled UI.
+  [Current-head Checks](https://github.com/faraaz1027-cloud/MediMate/pull/15/checks)
+  also verify the results-documentation follow-up before this task is reported complete.
+- [ ] Team review/merge, genuine individual assessments/contributions and the
+  remaining live/deployment/other-device/faculty gates below.
+
 21 November 2026 (Asia/Dhaka). **NOT READY / NOT SUBMITTED.** This is the working
 checklist accompanying the Step 43 backup; it is not faculty acceptance.
 Deadline: **UNKNOWN**. Submission portal: **UNKNOWN**. Final rubric/format:

@@ -37,11 +37,33 @@ The install emitted informational warnings for unapproved optional postinstall s
 [PR #15](https://github.com/faraaz1027-cloud/MediMate/pull/15) targets main from
 `feature/complete-project-review`. The first published candidate was
 `5674c07f510ac026fe5a88160b5c3a300ac561a1`, verified against the remote branch.
-The first run started at [Actions 45020338998](https://github.com/faraaz1027-cloud/MediMate/actions/runs/45020338998).
-The workflow now explicitly checks out the PR head SHA and asserts `git rev-parse HEAD`
-equals that SHA on both operating systems, with checkout credentials not persisted.
-Final hosted results remain pending until the updated head completes both jobs.
-Do not mark the task complete from local results or a cancelled earlier run.
+The initial run was superseded, and the intermediate revision assertion needed a
+YAML block-scalar correction. Neither is used as final verification evidence.
+
+The source checkpoint `08111d996f46c4f1d69ecc1107bb3086c9cc41ef` passed
+[Actions 45020434764](https://github.com/faraaz1027-cloud/MediMate/actions/runs/45020434764):
+
+| Exact-head job | Actual result |
+| --- | --- |
+| [Ubuntu 22.04](https://github.com/faraaz1027-cloud/MediMate/actions/runs/45020434764/job/137201917110) | Passed both locked installs, publication scan, production build, 189 backend tests and production-bundle UI integration. |
+| [Windows 2022](https://github.com/faraaz1027-cloud/MediMate/actions/runs/45020434764/job/137201917239) | Passed the same checks; 189 backend tests, zero failed/skipped. |
+
+Both logs explicitly assert the checked-out SHA. Checkout credentials are not
+persisted. Safe structured results are in `evidence/publication/hosted-source-checkpoint.json`.
+This is the immutable source-validation checkpoint; this results-documentation
+follow-up is a later commit and must also pass the identical workflow.
+The authoritative current-head statuses and immutable job links are available in
+[PR #15 Checks](https://github.com/faraaz1027-cloud/MediMate/pull/15/checks).
+The final task report must identify that final head SHA and its own completed run,
+not substitute the earlier checkpoint for the final commit.
+
+The completed implementation is published for review. The tracked checkout is
+clean after commits. Files deliberately outside Git are private `.env`/runtime/DB
+contents, dependency/build output, Python caches, full-window native captures,
+duplicate/interim Lighthouse output, the unusable historical export and the sibling
+local review/backup folder. No user work was discarded. The former PR stack is
+preserved. The remaining merge gate is team review and any repository review policy;
+no merge, deployment or course submission has been performed.
 
 ## Remaining acceptance boundaries
 

@@ -1,8 +1,11 @@
 # Step 43 — Final readiness and submission audit
 
-**22 November publication addendum:** the completed local source is being reviewed
-on `feature/complete-project-review`; see [the current publication record](PUBLICATION_REVIEW.md)
-for the PR and exact-revision local/hosted results. This dated audit below retains
+**22 November publication addendum:** the completed source is published for team
+review in [PR #15](https://github.com/faraaz1027-cloud/MediMate/pull/15) on
+`feature/complete-project-review`; see [the current publication record](PUBLICATION_REVIEW.md)
+for exact-revision local/hosted results and the current-head Checks link. The
+recorded source checkpoint passed Windows/Linux with 189 backend tests and UI/build.
+The documentation follow-up is checked again before task completion. This dated audit below retains
 its original results. C1 real Telegram receipt was subsequently verified in
 [the delivery addendum](MODULE_1_TELEGRAM_DELIVERY.md); C2/C3/C5 live receipt and
 individual assessment are separate gates. The refined Module 1 UI is documented

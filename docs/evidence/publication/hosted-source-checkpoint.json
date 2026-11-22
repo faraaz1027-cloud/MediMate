@@ -1,0 +1,27 @@
+{
+  "observedDate": "2026-11-22",
+  "sourceSha": "08111d996f46c4f1d69ecc1107bb3086c9cc41ef",
+  "pr": "https://github.com/faraaz1027-cloud/MediMate/pull/15",
+  "run": "https://github.com/faraaz1027-cloud/MediMate/actions/runs/45020434764",
+  "exactHeadCheckoutAsserted": true,
+  "jobs": [
+    {
+      "id": 137201917110,
+      "name": "integration (ubuntu-22.04)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/faraaz1027-cloud/MediMate/actions/runs/45020434764/job/137201917110"
+    },
+    {
+      "id": 137201917239,
+      "name": "integration (windows-2022)",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/faraaz1027-cloud/MediMate/actions/runs/45020434764/job/137201917239"
+    }
+  ],
+  "backendPassed": 189,
+  "backendFailed": 0,
+  "providerMode": "controlled/disabled; no private live credentials",
+  "scope": "Verified source checkpoint before publication-result documentation follow-up; latest head checks are linked from PR Checks."
+}

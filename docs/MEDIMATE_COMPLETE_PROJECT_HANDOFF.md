@@ -5,6 +5,10 @@
 for current PR/check status and file exclusions. The snapshot descriptions and
 historical SHAs below retain their original context; current Git HEAD and the
 published PR checks identify the latest revision. Individual assessment remains open.
+The completed source is available in [PR #15](https://github.com/faraaz1027-cloud/MediMate/pull/15).
+Its recorded source checkpoint passed fresh Windows/Linux verification with 189
+backend tests, build and UI integration. The publication record separates that
+checkpoint from the current documentation-follow-up head and its own checks.
 
 **Snapshot date:** 22 November 2026, Asia/Dhaka.  
 **Course:** CSE471, Section 01, Fall 2026.  
