@@ -83,3 +83,6 @@ __pycache__/
 /docs/evidence/step39/*.report.json
 !/docs/evidence/step39/*-reviewed.report.json
 /docs/evidence/step39/desktop-repeat.json
+
+# Historical failed export contains literal "undefined", not usable JSON evidence.
+/docs/evidence/step43/github-review.json
