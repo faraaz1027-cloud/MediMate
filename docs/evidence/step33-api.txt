@@ -1,0 +1,16 @@
+▶ Step 33 extractive education, abstention, feedback and payload deletion
+  ✔ missing applicability-confirmed label abstains (19.485ms)
+  ✔ known question returns exact citation, never a personal note (18.7867ms)
+  ✔ invented, personal-treatment, injection and absent-section requests abstain (79.3987ms)
+  ✔ differing passages retain both citations and abstain on a conclusion (21.1019ms)
+  ✔ feedback revision, scope, replay and deletion erase payloads (61.1866ms)
+  ✔ missing stored source yields error; changed medicine abstains and flags history (49.6613ms)
+✔ Step 33 extractive education, abstention, feedback and payload deletion (1445.4873ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1764.2212

@@ -1,45 +1,93 @@
+import TaskBoard from "./TaskBoard.jsx";
+import ScheduleBuilder from "./ScheduleBuilder.jsx";
+import MedicineInformation from "./MedicineInformation.jsx";
+import DoseBoard from "./DoseBoard.jsx";
+import MedicineCabinet from "./MedicineCabinet.jsx";
+import InventoryBoard from "./InventoryBoard.jsx";
+import IngredientReview from "./IngredientReview.jsx";
+import EducationalAssistant from "./EducationalAssistant.jsx";
+import FollowupBoard from "./FollowupBoard.jsx";
+import VisitReports from "./VisitReports.jsx";
+import SosBoard from "./SosBoard.jsx";
+import EmergencyInbox from "./EmergencyInbox.jsx";
+import PrescriptionReview from "./PrescriptionReview.jsx";
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/manrope";
+import "./figma.css";
+import AccountAccess from "./AccountAccess.jsx";
+import ValidatedForm from "./ValidatedForm.jsx";
+import { request } from "./request.js";
 const tabs = [
   ["prescriptions", "Prescriptions"],
   ["cabinet-items", "Medicine cabinet"],
   ["tasks", "Caregiver tasks"],
+  ["schedules", "Medication schedules"],
+  ["information", "Medicine information"],
+  ["doses", "Today’s doses"],
+  ["inventory", "Inventory and refills"],
+  ["ingredient-reviews", "Ingredient review"],
+  ["education", "Educational assistant"],
+  ["followups", "Dose follow-up"],
+  ["reports", "Visit reports"],
+  ["sos", "SOS coordination"],
 ];
 export default function App() {
+  const [dark, setDark] = useState(() => { try { return window.localStorage.getItem("medimate-theme") === "dark"; } catch { return false; } });
+  useEffect(() => {
+    document.documentElement.dataset.theme = dark ? "dark" : "light";
+    try { window.localStorage.setItem("medimate-theme", dark ? "dark" : "light"); } catch { /* Theme still works when storage is unavailable. */ }
+  }, [dark]);
   const [user, setUser] = useState(null),
     [csrf, setCsrf] = useState(""),
     [ready, setReady] = useState(false),
+    [connectionAttempt, setConnectionAttempt] = useState(0),
+    [connectionFailed, setConnectionFailed] = useState(false),
+    [showAccount, setShowAccount] = useState(false),
+    [showEmergencyInbox, setShowEmergencyInbox] = useState(false),
     [register, setRegister] = useState(false),
     [patient, setPatient] = useState(""),
     [tab, setTab] = useState("prescriptions"),
-    [rows, setRows] = useState([]),
-    [cursor, setCursor] = useState(null),
-    [loading, setLoading] = useState(false),
     [busy, setBusy] = useState(false),
     [error, setError] = useState(""),
     [notice, setNotice] = useState("");
-  const generation = useRef(0),
-    pending = useRef(null),
-    lock = useRef(false);
+  const lock = useRef(false);
+  const selectedPatient = user?.patients?.find((p) => p.id === patient);
+  const prefixes = { prescriptions: "prescription", "cabinet-items": "cabinet", tasks: "task", schedules: "schedule", information: "cabinet", doses: "dose", inventory: "stock", "ingredient-reviews": "cabinet", education: "cabinet", followups: "dose", reports: "report", sos: "sos" };
+  const visibleTabs = tabs.filter(([id]) => selectedPatient?.permissions?.some((p) => p === prefixes[id] + ".read" || p === prefixes[id] + ".write" || id === "sos" && ["sos.activate", "sos.manage"].includes(p)));
+  const activeTab = visibleTabs.some(([id]) => id === tab) ? tab : visibleTabs[0]?.[0] || tab;
   async function api(path, options = {}) {
-    const r = await fetch("/api/v1" + path, {
-      credentials: "same-origin",
-      ...options,
+    const { isCurrent = () => true, ...fetchOptions } = options;
+    try { return await request(path, {
+      ...fetchOptions,
       headers: {
         "Content-Type": "application/json",
         ...(options.method ? { "X-CSRF-Token": csrf } : {}),
         ...options.headers,
       },
-    });
-    const b = r.status === 204 ? null : await r.json();
-    if (!r.ok) {
-      if (r.status === 401) {
+    }); } catch (e) {
+      if (!isCurrent()) throw e;
+      if (e.status === 401) {
         setUser(null);
-        setRows([]);
+        setPatient("");
+        setNotice("");
       }
-      throw new Error(b?.error?.message || "Request failed.");
+      if (e.status === 401 || e.code === "CSRF_REJECTED") {
+        // A rejected write has not run. Recover credentials for an explicit
+        // retry, without silently resubmitting the user's mutation.
+        setCsrf("");
+        try {
+          const tokenBody = await request("/auth/csrf");
+          setCsrf(tokenBody.data.csrfToken);
+        } catch (e) {
+          // Keep retry available if the token endpoint is temporarily offline.
+          setCsrf(csrf);
+          throw e;
+        }
+      }
+      throw e;
     }
-    return b;
   }
   async function refreshUser() {
     const r = await api("/auth/me");
@@ -53,29 +101,21 @@ export default function App() {
   useEffect(() => {
     let active = true;
     const controller = new AbortController();
+    setReady(false); setError(""); setConnectionFailed(false);
     (async () => {
       try {
-        const r = await fetch("/api/v1/auth/csrf", {
-          credentials: "same-origin",
-          signal: controller.signal,
-        });
-        const b = await r.json();
-        if (!r.ok) throw Error(b.error?.message || "Cannot connect to server.");
+        const b = await request("/auth/csrf", { signal: controller.signal });
         if (!active) return;
         setCsrf(b.data.csrfToken);
-        const me = await fetch("/api/v1/auth/me", {
-          credentials: "same-origin",
-          signal: controller.signal,
-        });
-        if (me.ok) {
-          const d = await me.json();
+        try {
+          const d = await request("/auth/me", { signal: controller.signal });
           if (active) {
             setUser(d.data);
             setPatient(d.data.patients?.[0]?.id || "");
           }
-        }
+        } catch (e) { if (e.status !== 401) throw e; }
       } catch (e) {
-        if (active) setError(e.message);
+        if (active) { setError(e.message); setConnectionFailed(true); }
       } finally {
         if (active) setReady(true);
       }
@@ -84,40 +124,7 @@ export default function App() {
       active = false;
       controller.abort();
     };
-  }, []);
-  async function list(append = false) {
-    const token = ++generation.current;
-    if (!patient || !user) return;
-    setLoading(true);
-    setError("");
-    try {
-      const r = await api(
-        `/patients/${patient}/${tab}?limit=20` +
-          (append && cursor ? "&cursor=" + encodeURIComponent(cursor) : ""),
-      );
-      if (token !== generation.current) return;
-      setRows((old) => (append ? [...old, ...r.data] : r.data));
-      setCursor(r.meta.nextCursor);
-    } catch (e) {
-      if (token === generation.current) {
-        setError(e.message);
-        setRows([]);
-        setCursor(null);
-      }
-    } finally {
-      if (token === generation.current) setLoading(false);
-    }
-  }
-  useEffect(() => {
-    setRows([]);
-    setCursor(null);
-    setNotice("");
-    pending.current = null;
-    if (user && patient) list();
-    return () => {
-      generation.current++;
-    };
-  }, [patient, tab, user?.id]);
+  }, [connectionAttempt]);
   async function authenticate(e) {
     e.preventDefault();
     if (lock.current) return;
@@ -132,22 +139,24 @@ export default function App() {
       });
       setCsrf(r.data.csrfToken);
       await refreshUser();
+      setRegister(false);
     } catch (e) {
       setError(e.message);
+      return { error: e };
     } finally {
       lock.current = false;
       setBusy(false);
     }
   }
   async function logout() {
-    generation.current++;
-    setRows([]);
     setBusy(true);
     setError("");
     try {
       await api("/auth/logout", { method: "POST" });
       setUser(null);
       setPatient("");
+      setRegister(false);
+      setShowAccount(false);
       const r = await api("/auth/csrf");
       setCsrf(r.data.csrfToken);
     } catch (e) {
@@ -156,80 +165,38 @@ export default function App() {
       setBusy(false);
     }
   }
-  async function save(e) {
-    e.preventDefault();
-    if (lock.current) return;
-    lock.current = true;
-    setBusy(true);
-    setError("");
-    setNotice("");
-    const form = e.currentTarget,
-      f = Object.fromEntries(new FormData(form));
-    let body;
-    if (tab === "prescriptions")
-      body = {
-        title: f.title,
-        instructions: [
-          {
-            lineNumber: 1,
-            medicineText: f.medicineText,
-            instructionsText: f.instructionsText,
-            clarificationRequired: f.review === "on",
-          },
-        ],
-      };
-    else if (tab === "cabinet-items")
-      body = {
-        displayName: f.displayName,
-        entryType: "manual",
-        ...(f.strengthText ? { strengthText: f.strengthText } : {}),
-        ...(f.form ? { form: f.form } : {}),
-      };
-    else
-      body = {
-        title: f.title,
-        assigneeUserId: f.assigneeUserId || user.id,
-        type: f.type,
-        ...(f.handoverNote ? { handoverNote: f.handoverNote } : {}),
-        ...(f.dueAtUTC ? { dueAtUTC: new Date(f.dueAtUTC).toISOString() } : {}),
-      };
-    const payload = JSON.stringify(body),
-      path = `/patients/${patient}/${tab}`;
-    if (pending.current?.payload !== payload || pending.current?.path !== path)
-      pending.current = { path, payload, key: crypto.randomUUID() };
-    try {
-      await api(path, {
-        method: "POST",
-        headers: { "Idempotency-Key": pending.current.key },
-        body: payload,
-      });
-      pending.current = null;
-      form.reset();
-      setNotice("Saved to the database.");
-      await list();
-    } catch (e) {
-      setError(
-        e.message +
-          " Your entries are retained; retry to check the same submission.",
-      );
-    } finally {
-      lock.current = false;
-      setBusy(false);
-    }
-  }
   return (
-    <>
+    <div className="care-workspace" data-workspace={activeTab}>
+      <a className="skip-link" href="#main-content">Skip to main content</a>
       <header>
+        <div className="brand-icon"><img src="/design/capsule.svg" alt="" /></div>
         <div className="brand">MediMate</div>
-        <span>Medication and caregiver coordination</span>
-        {user && (
-          <button className="quiet" disabled={busy} onClick={logout}>
-            Sign out
-          </button>
-        )}
+        <span className="workspace-caption">Care workspace</span>
+        {user && <label className="sidebar-patient">Patient
+          <select value={patient} disabled={busy} onChange={e => setPatient(e.target.value)}>
+            <option value="">Choose patient</option>
+            {user.patients?.map(p => <option key={p.id} value={p.id}>{p.displayName}</option>)}
+          </select>
+        </label>}
+        {user && <nav className="workspace-navigation" aria-label="Work areas">
+          {visibleTabs.slice().sort((a,b) => ["prescriptions","schedules","cabinet-items","information","tasks","doses","inventory","ingredient-reviews","education","followups","reports","sos"].indexOf(a[0]) - ["prescriptions","schedules","cabinet-items","information","tasks","doses","inventory","ingredient-reviews","education","followups","reports","sos"].indexOf(b[0])).map(([id,label]) => <button key={id} disabled={busy} aria-label={label} className={activeTab === id ? "selected" : ""} aria-current={activeTab === id ? "page" : undefined} onClick={() => { setTab(id); setShowAccount(false); setShowEmergencyInbox(false); }}>
+            {({"cabinet-items":"Cabinet",schedules:"Schedule",information:"Information",tasks:"Care tasks",doses:"Today"})[id] || label}
+          </button>)}
+        </nav>}
+        <button className="theme-toggle" onClick={() => setDark(value => !value)} aria-pressed={dark}>{dark ? "Light mode" : "Dark mode"}</button>
+        {/* Reserve the same header geometry while the session is loading. */}
+        <button
+          className="quiet"
+          style={{ visibility: user ? "visible" : "hidden" }}
+          aria-hidden={!user || undefined}
+          disabled={!user || busy}
+          onClick={logout}
+        >
+          Sign out
+        </button>
       </header>
-      <main>
-        <p className="eyebrow">Synthetic demonstration · Module 1</p>
+      <main id="main-content" tabIndex={-1}>
+        <p className="eyebrow">Synthetic demonstration · Project review</p>
         {error && (
           <div role="alert" className="alert">
             {error}
@@ -246,7 +213,8 @@ export default function App() {
           <section className="auth card">
             <h1>{register ? "Create an account" : "Welcome back"}</h1>
             <p>Sign in to manage your patient records.</p>
-            <form onSubmit={authenticate}>
+            {(!csrf || connectionFailed) && <button disabled={busy} onClick={() => setConnectionAttempt((n) => n + 1)}>Reconnect to server</button>}
+            <ValidatedForm onSubmit={authenticate}>
               <fieldset disabled={busy}>
                 <label>
                   Email
@@ -290,7 +258,7 @@ export default function App() {
                       : "Sign in"}
                 </button>
               </fieldset>
-            </form>
+            </ValidatedForm>
             <button
               className="link"
               disabled={busy}
@@ -306,230 +274,30 @@ export default function App() {
           </section>
         ) : (
           <>
+            <button className="link" disabled={busy} aria-expanded={showAccount} aria-controls="account-settings" onClick={() => setShowAccount(!showAccount)}>{showAccount ? "Close account settings" : "Account and access"}</button>
+            <button className="link" disabled={busy} onClick={() => setShowEmergencyInbox(!showEmergencyInbox)}>{showEmergencyInbox ? "Close emergency inbox" : "Emergency inbox"}</button>
             <div className="intro">
               <div>
                 <h1>Hello, {user.displayName}</h1>
                 <p>
-                  Review prescriptions, organize your cabinet and hand over
-                  tasks.
+                  Review prescriptions, plan schedules, organize your cabinet and hand over tasks.
                 </p>
               </div>
-              <label>
-                Patient
-                <select
-                  value={patient}
-                  disabled={busy}
-                  onChange={(e) => setPatient(e.target.value)}
-                >
-                  <option value="">Choose patient</option>
-                  {user.patients?.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.displayName}
-                    </option>
-                  ))}
-                </select>
-              </label>
             </div>
-            {!patient ? (
+            {!showAccount && !showEmergencyInbox && <section className="workspace-heading" aria-label="Current work area">
+              <p className="workspace-owner">{({prescriptions:"A1 / IHFAZ RASHID SADAT", "cabinet-items":"B1 / FARAAZ JAMIL CHOWDHURY",tasks:"C1 / SAHIR JAWAD CHOWDHURY"})[activeTab] || "YOUR CARE WORKSPACE"}</p>
+              <h1>{({prescriptions:"Your prescriptions", "cabinet-items":"Medicine cabinet", tasks:"Caregiver tasks"})[activeTab] || tabs.find(([id]) => id === activeTab)?.[1]}</h1>
+              <div className="workspace-summary">{({prescriptions:"Import a prescription, review the details, then build a verified schedule.","cabinet-items":"Find an identity. Keep your cabinet organised.",tasks:"Assign clearly. Keep a useful handover history."})[activeTab] || "Review your saved records and coordinate care."}</div>
+            </section>}
+            {showAccount && !showEmergencyInbox && <AccountAccess key={user.id + patient} user={user} patient={patient} api={api} refreshUser={refreshUser} onBusy={setBusy} />}
+            {showEmergencyInbox ? <EmergencyInbox key={user.id} api={api} userId={user.id} onBusy={setBusy} /> : !patient ? (
               <p>
                 No accessible patient is available. Ask the owner to grant
                 access, then sign in again.
               </p>
-            ) : (
+            ) : !visibleTabs.length ? <p>No work areas are permitted for this patient. Use Account and access to refresh your permissions.</p> : (
               <>
-                <nav aria-label="Work areas">
-                  {tabs.map(([id, label]) => (
-                    <button
-                      key={id}
-                      disabled={busy}
-                      className={tab === id ? "selected" : ""}
-                      aria-current={tab === id ? "page" : undefined}
-                      onClick={() => setTab(id)}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </nav>
-                <div className="columns">
-                  <section className="card">
-                    <h2>
-                      {tab === "prescriptions"
-                        ? "New prescription draft"
-                        : tab === "cabinet-items"
-                          ? "Add medicine manually"
-                          : "Create caregiver task"}
-                    </h2>
-                    <form key={patient + tab} onSubmit={save}>
-                      <fieldset disabled={busy}>
-                        {tab === "prescriptions" ? (
-                          <>
-                            <label>
-                              Prescription title
-                              <input name="title" required maxLength={200} />
-                            </label>
-                            <label>
-                              Medicine name
-                              <input
-                                name="medicineText"
-                                required
-                                maxLength={200}
-                              />
-                            </label>
-                            <label>
-                              Instructions from prescription
-                              <textarea
-                                name="instructionsText"
-                                required
-                                maxLength={2000}
-                              />
-                            </label>
-                            <label className="check">
-                              <input
-                                name="review"
-                                type="checkbox"
-                                defaultChecked
-                              />
-                              Needs clarification or review
-                            </label>
-                            <p className="hint">
-                              Saves one instruction as a draft. Confirmation and
-                              OCR come later.
-                            </p>
-                          </>
-                        ) : tab === "cabinet-items" ? (
-                          <>
-                            <label>
-                              Medicine name
-                              <input
-                                name="displayName"
-                                required
-                                maxLength={200}
-                              />
-                            </label>
-                            <label>
-                              Strength (optional)
-                              <input name="strengthText" maxLength={200} />
-                            </label>
-                            <label>
-                              Form (optional)
-                              <input
-                                name="form"
-                                maxLength={200}
-                                placeholder="e.g. tablet"
-                              />
-                            </label>
-                            <p className="hint">
-                              User-entered medicine. No external identity
-                              verification.
-                            </p>
-                          </>
-                        ) : (
-                          <>
-                            <label>
-                              Task title
-                              <input name="title" required maxLength={200} />
-                            </label>
-                            <label>
-                              Assign to user ID
-                              <input
-                                name="assigneeUserId"
-                                placeholder={user.id}
-                                pattern="[a-fA-F0-9]{24}"
-                              />
-                            </label>
-                            <p className="hint">
-                              Leave blank to assign to yourself. Another
-                              assignee needs an active task.write grant.
-                            </p>
-                            <label>
-                              Type
-                              <select name="type">
-                                <option value="general">General</option>
-                                <option value="refill">Refill</option>
-                              </select>
-                            </label>
-                            <label>
-                              Due (your device local time, optional)
-                              <input name="dueAtUTC" type="datetime-local" />
-                            </label>
-                            <label>
-                              Handover note (optional)
-                              <textarea name="handoverNote" maxLength={2000} />
-                            </label>
-                            <p className="hint">
-                              Creates an open task. Telegram notifications are
-                              not enabled.
-                            </p>
-                          </>
-                        )}
-                        <button>
-                          {busy
-                            ? "Saving…"
-                            : "Save " +
-                              (tab === "prescriptions"
-                                ? "draft"
-                                : tab === "tasks"
-                                  ? "task"
-                                  : "medicine")}
-                        </button>
-                      </fieldset>
-                    </form>
-                  </section>
-                  <section className="card records" aria-busy={loading}>
-                    <div className="section-title">
-                      <h2>Saved records</h2>
-                      <button
-                        className="link"
-                        disabled={loading || busy}
-                        onClick={() => list()}
-                      >
-                        Refresh
-                      </button>
-                    </div>
-                    {loading && <p role="status">Loading records…</p>}
-                    {!loading && !rows.length && (
-                      <p>
-                        No records to show. Add your first entry or retry after
-                        an error.
-                      </p>
-                    )}
-                    <ul>
-                      {rows.map((r) => (
-                        <li key={r.id}>
-                          <strong>
-                            {r.title ||
-                              r.displayName ||
-                              "Untitled prescription"}
-                          </strong>
-                          <span className="badge">
-                            {tab === "prescriptions"
-                              ? r.draftVersionId
-                                ? "Draft · review required"
-                                : r.status
-                              : tab === "cabinet-items"
-                                ? "Manual · user-entered"
-                                : r.status}
-                          </span>
-                          <p>{r.strengthText || r.description || ""}</p>
-                          {r.dueAtUTC && (
-                            <p>Due: {new Date(r.dueAtUTC).toLocaleString()}</p>
-                          )}
-                          <small>
-                            {new Date(r.createdAt).toLocaleString()}
-                          </small>
-                        </li>
-                      ))}
-                    </ul>
-                    {cursor && (
-                      <button
-                        disabled={loading || busy}
-                        onClick={() => list(true)}
-                      >
-                        Load more
-                      </button>
-                    )}
-                  </section>
-                </div>
+                {activeTab === "prescriptions" ? <PrescriptionReview key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "cabinet-items" ? <MedicineCabinet key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "schedules" ? <ScheduleBuilder key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "information" ? <MedicineInformation key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "doses" ? <DoseBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} owner={selectedPatient.role === "owner"} onBusy={setBusy} /> : activeTab === "inventory" ? <InventoryBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "ingredient-reviews" ? <IngredientReview key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "education" ? <EducationalAssistant key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "followups" ? <FollowupBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} owner={selectedPatient.role === "owner"} onBusy={setBusy} /> : activeTab === "reports" ? <VisitReports key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} onBusy={setBusy} /> : activeTab === "sos" ? <SosBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} owner={selectedPatient.role === "owner"} userId={user.id} onBusy={setBusy} /> : <TaskBoard key={user.id + patient} api={api} patient={patient} permissions={selectedPatient.permissions} userId={user.id} owner={selectedPatient.role === "owner"} onBusy={setBusy} />}
               </>
             )}
           </>
@@ -539,6 +307,6 @@ export default function App() {
           still in development.
         </footer>
       </main>
-    </>
+    </div>
   );
 }

@@ -1,0 +1,8 @@
+{
+  "actor": "Codex starter-copy check, not Sadat",
+  "originalLimit": 200,
+  "default80CaseFailedAsExpected": true,
+  "default80Exit": 1,
+  "baseline200Passed": true,
+  "humanAssessment": "NOT_RUN"
+}

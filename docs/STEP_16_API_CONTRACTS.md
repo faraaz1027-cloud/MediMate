@@ -2,6 +2,8 @@
 Status: proposed implementation contract, 1 November 2026. Covers A1–A4, B1–B4 and C1–C5. This is the full implementation target. The six create/list APIs and identity/access foundation now have an implemented subset; see [Step 17](STEP_17_API_IMPLEMENTATION.md) for its exact coverage and limitations. The Step 10 localhost notes API remains a separate demonstration. Read with [Step 15](STEP_15_DATA_MODEL.md) and [acceptance criteria](STEP_11_ACCEPTANCE.md).
 
 ## Shared HTTP contract
+Step 20 keeps this envelope and authorization contract unchanged. Validation for email, password, timezone and task assignee now includes a field path/message so the UI can associate and focus the affected input. The client normalizes network/non-JSON responses locally; it does not convert a failure into an empty successful list or automatically repeat a mutation. No schema migration is needed.
+
 Base path: /api/v1. Patient routes below are relative to /patients/{patientId}. All ObjectIds are 24 hexadecimal characters. Dates/times are ISO UTC instants, local dates YYYY-MM-DD and wall times HH:mm. Decimal quantities are strings with explicit units. Arrays contain IDs unless stated otherwise.
 
 Success: {"data": resource-or-array, "meta":{"requestId":"opaque"}}. Lists additionally return meta.nextCursor (opaque string or null), limit (default 20, maximum 100) and applied filters. Cursor order is createdAt plus _id; dose lists order dueAtUTC plus _id. Never expose password hashes, raw callback tokens, Telegram chat IDs or storage keys.
@@ -30,6 +32,12 @@ Every mutable resource has integer revision starting at 0. PATCH and transition 
 Every state-changing patient request includes Idempotency-Key (UUID string). Save an operation record scoped by actor, patient, method and canonical route, with request hash and response. Same key/body returns the original outcome; changed body returns 409. Retain operation records for 30 days as the initial retry window. Domain unique keys for dose/stock/job/incident processing remain permanent; idempotency expiry never permits duplicate domain actions. Pending work returns the same job ID. A replay is authorized again before returning patient details.
 
 ## Authentication and authorization
+Step 19 adds PATCH `/me` with `{displayName,expectedRevision}`, POST `/patients` with `{displayName,timezone}`, owner-only PATCH `/patients/{patientId}` with `{displayName,timezone,expectedRevision}`, owner-only GET `/patients/{patientId}/access-grants`, and PATCH `/patients/{patientId}/access-grants/{grantId}` with `{permissions,expectedRevision}`. Each write requires CSRF and a UUID Idempotency-Key, including profile/patient creation. Writes, audit and replay response commit together. A replay is checked against current authorization.
+
+`/auth/me` includes the user's revision, caregiver permission catalog and accessible patient summaries with role (owner/caregiver), timezone, revision and effective permissions. It remains the bounded discovery route (up to 100 patients / 1,000 grants); the target paginated GET `/patients` below is not implemented yet. Grant listing is capped at 100 with an explicit GRANT_LIMIT error beyond that; pagination is future scale work.
+
+**Step 19 invitation decision:** the owner enters an already-registered caregiver's shared user ID and explicitly selects permissions. POST `/access-grants` grants access immediately; no pending invitation or email delivery is claimed. This reuses the existing registered-user contract and avoids introducing an email provider/account discovery service for the local demonstration. PATCH a revoked grant to restore selected permissions using its latest revision; the existing unique patient/user identity is retained. This technical choice changes no assessed function or ownership. Non-empty named permission subsets are required. `access.manage` is owner-only and cannot be delegated. No platform-wide administrator exists; each patient owner administers that patient's access.
+
 Use server-side sessions in an HttpOnly, Secure cookie in deployment; localhost HTTP development may omit Secure. SameSite=Lax, explicit origin allowlist, credentials enabled only for permitted origins. State-changing cookie-authenticated calls require a CSRF token and origin validation. Login rotates session; logout invalidates it. Never put secrets in URLs. Rate-limit login, search, upload, assistant and SOS routes. Workers authenticate as internal service actors, not user-provided role fields.
 
 | Full route | Request | Success |
@@ -58,150 +66,231 @@ Task: {id,title,description?,assigneeUserId,type,status,dueAtUTC?,revision}. Job
 Incident: {id,status,activatedAt,locationStatus,location?,alerts[],providerRequests[],revision}. Alert exposes minimal authorized recipient display name, attempt status and acknowledgement; never another contact's secrets. ProviderRequest always includes providerMode, request status and separate dispatchStatus.
 
 ## A1 Prescription import, review and history
-Permission prescription.read for reads; prescription.write for drafts/assets; prescription.confirm for confirmation.
+**Step 24 integration update:** optional InstructionInput.cabinetItemId is now implemented and appears in confirmed/draft/history projections and field comparison. New associations require cabinet.read and an active same-patient item; retaining an existing reference in a draft does not grant cabinet access. Existing archived references may remain in a draft for correction, but confirmation requires active references or their removal/replacement. Omitting the field in replacement instruction input clears it. Confirmed instructions/reference IDs remain immutable after cabinet edit/archive. Linking does not establish clinical equivalence or activate a schedule. See [Module 1 integration evidence](STEP_24_MODULE_1_INTEGRATION.md).
+
+**Step 21 implementation decision (2 November 2026):** OCR runs in the browser with pinned Tesseract.js 7.0.0. Image bytes are not uploaded or retained. The `/assets`, asset-content and OCR-job routes below remain an earlier proposal, **not implemented endpoints**. Current prescription payloads use optional `source` metadata instead of `sourceAssetId`: `{fileName,mimeType,sizeBytes,sha256,ocrText,confidence?,ocrStatus}` (PNG/JPEG, 1–5 MiB, SHA-256 hex, original OCR text up to 30000 characters, finite confidence 0–100, succeeded/failed). This is untrusted provenance, not authenticity evidence. See [implemented scope, rationale and validation](STEP_21_PRESCRIPTION_REVIEW.md). Browser-local OCR is not an external API course integration.
+
+Permission prescription.read for reads; prescription.write for drafts/replacement/archive; prescription.confirm independently for confirmation. Detail returns `{prescription,currentVersion,draftVersion}` with nested instructions. Draft PATCH and confirm use the version revision; replacement/archive use the parent revision. Draft edits also increment the parent revision. Confirmation stamps actor/time and preserves immutable instruction IDs. Replacement requires the current confirmed previousVersionId and no existing draft.
 | Route | Request or query | Response and rule |
 |---|---|---|
-| POST /assets | multipart image; PNG/JPEG only, maximum 5 MiB; validate signature and decoded dimensions | 201 {id,mimeType,sizeBytes}; private asset |
-| GET /assets/{assetId}/content | Scoped session | 200 private binary; private,no-store; no public storage key |
-| POST /prescriptions | {title?,sourceAssetId?,instructions:[InstructionInput]} | 201 Prescription + draft version |
+| Proposed only: POST /assets | multipart image; PNG/JPEG only, maximum 5 MiB; validate signature and decoded dimensions | Not implemented in Step 21 |
+| Proposed only: GET /assets/{assetId}/content | Scoped session | Not implemented in Step 21 |
+| POST /prescriptions | {title?,source?,instructions:[InstructionInput]} | 201 {prescription,draftVersion} |
 | GET /prescriptions | status?,cursor?,limit? | 200 list Prescription |
-| GET /prescriptions/{id} | None | 200 Prescription plus current version |
-| POST /prescriptions/{id}/versions | {expectedRevision,previousVersionId,instructions:[InstructionInput],sourceAssetId?} | 201 new draft; preserve prior versions |
-| PATCH /prescriptions/{id}/versions/{versionId} | {expectedRevision,instructions:[InstructionInput],reviewCorrections?} | 200 draft; 409 if confirmed |
+| GET /prescriptions/{id} | None | 200 {prescription,currentVersion,draftVersion} |
+| POST /prescriptions/{id}/versions | {expectedRevision,previousVersionId,instructions:[InstructionInput],source?} | 201 new draft; preserve prior versions |
+| PATCH /prescriptions/{id}/versions/{versionId} | {expectedRevision,instructions:[InstructionInput],reviewCorrections?,source?} | 200 draft; 409 if confirmed |
 | POST /prescriptions/{id}/versions/{versionId}/confirm | {expectedRevision,reviewed:true} | 200 confirmed immutable version; update current pointer atomically |
 | GET /prescriptions/{id}/versions | cursor?,limit? | 200 version history |
 | GET /prescriptions/{id}/comparison | fromVersionId,toVersionId | 200 {added,removed,changed}; both versions must belong to this prescription |
 | POST /prescriptions/{id}/archive | {expectedRevision} | 200 archived Prescription |
-| POST /assets/{assetId}/ocr | None | 202 Job; GET /jobs/{id} reports pending/succeeded/failed and editable draft text |
+| Proposed only: POST /assets/{assetId}/ocr | None | Not implemented in Step 21; recognition and progress run in the browser |
 
-InstructionInput requires medicineText (1–200 chars), instructionsText (1–2000), lineNumber positive integer, and explicit clarificationRequired. Confirmation additionally requires positive doseQuantity and supported doseUnit and reviewed timing/duration instructions. Missing/ambiguous details return 422; OCR cannot confirm or activate schedules. Local Tesseract is an implementation option behind this job contract, not an external API requirement.
+InstructionInput requires medicineText (1–200 chars), instructionsText (1–2000), lineNumber positive integer, and explicit clarificationRequired. Step 21 supports 1–30 lines and optional strengthText, frequencyText and durationText (each 1–200 chars when supplied). Confirmation requires positive decimal doseQuantity (string), supported doseUnit, nonempty frequencyText/durationText, clarificationRequired:false on every line, and reviewed:true. Supported confirmation units: tablet, capsule, mL, mg, g, drop, puff, unit, application. Missing/ambiguous details return 422; OCR cannot confirm or activate schedules. These are reviewed text fields, not clinical validation or schedule parsing.
 
 ## B1 Medicine search and cabinet
+**Step 22 implemented update (2 November 2026):** use the [B1 implementation guide](STEP_22_MEDICINE_CABINET.md) for source/cache/migration details. External creation accepts an RxCUI (`externalId`) and `reviewed:true`, then resolves the canonical name on the server and creates its own sourceRecordId. Client sourceRecordId, displayName for external entries, and ingredient claims are rejected. Manual names support 1–500 characters; optional strength/form are user transcription, not parsed identities. Ingredients remain a B3 evidence workflow.
+
 | Route | Permission | Request | Success |
 |---|---|---|---|
-| GET /medicine-search | cabinet.read | q (2–100 chars),cursor?,limit? | 200 {candidates:[{externalId,displayName,strengthText?,form?,sourceUrl}],provider,retrievedAt}; no match is an empty list |
-| POST /cabinet-items | cabinet.write | {displayName,entryType:external/manual,sourceRecordId?,strengthText?,form?,ingredients?} | 201 CabinetItem; external source required only for external entry |
-| GET /cabinet-items | cabinet.read | q?,status:active/archived,cursor?,limit? | 200 list CabinetItem |
-| GET /cabinet-items/{id} | cabinet.read | None | 200 CabinetItem |
-| PATCH /cabinet-items/{id} | cabinet.write | {expectedRevision,displayName?,strengthText?,form?,ingredients?,reason} | 200 item + append revision |
+| GET /medicine-search | cabinet.read | q (2–100 chars),cursor?,limit? (1–50) | 200 {candidates:[{externalId,displayName,termType,sourceUrl}],provider,retrievedAt}; meta total/nextCursor; no supported match is an empty list |
+| GET /medicine-search/{externalId} | cabinet.read | Numeric RxCUI | 200 resolved active SCD/SBD candidate with retrieval/source fields |
+| POST /cabinet-items | cabinet.write | Manual: {displayName,entryType:manual,strengthText?,form?}; external: {entryType:external,externalId,reviewed:true,strengthText?,form?} | 201 item + initial revision; external source is resolved and saved by the server |
+| GET /cabinet-items | cabinet.read | q?,entryType?,status:active(default)/archived/all,cursor?,limit? | 200 list CabinetItem |
+| GET /cabinet-items/{id} | cabinet.read | None | 200 CabinetItem plus stored source or null |
+| PATCH /cabinet-items/{id} | cabinet.write | {expectedRevision,displayName?,strengthText?,form?,reason}; one editable field required | 200 item + append revision; external name fixed; empty strength/form clears it |
 | POST /cabinet-items/{id}/archive | cabinet.write | {expectedRevision} | 200 archived item; history retained |
 | GET /cabinet-items/{id}/revisions | cabinet.read | cursor?,limit? | 200 immutable snapshots |
 
-The server revalidates external candidates instead of trusting arbitrary external IDs or URLs. Manual ingredient identities remain unverified until explicitly reviewed with evidence. Search failures return 502/503, not an empty successful search.
+The server revalidates external candidates instead of trusting arbitrary external IDs or URLs. Manual ingredient identities remain unverified until explicitly reviewed with evidence. Step 22 search failures return 503/RXNORM_UNAVAILABLE, not an empty successful search; unsupported/inactive selection returns 422. Supported search results are active SCD/SBD concepts, not packs. Search cursors bind query and offset over the cached sorted set; refresh search after cache expiry if upstream results change. Source snapshots remain readable without upstream access. Revision/CSRF/idempotency and patient authorization protect edit/archive; legacy items gain an honest baseline snapshot on first change.
 
 ## A2 Verified schedule builder
 | Route | Permission | Request | Success |
 |---|---|---|---|
-| POST /schedule-previews | schedule.write | {prescriptionInstructionId,cabinetItemId,timingMode,timezone,doseQuantity,doseUnit,effectiveFromUTC,endAtUTC?,localTimes? OR intervalMinutes+anchorAtUTC} | 200 {previewToken,expiresAt,occurrences[],warnings[]}; saves no active schedule |
-| POST /schedules | schedule.write | {previewToken,confirmed:true} | 201 Schedule + version; first seven-day horizon persisted |
+| POST /schedule-previews | schedule.write + prescription.read + cabinet.read | {prescriptionInstructionId,cabinetItemId,timingMode,timezone,doseQuantity,doseUnit,effectiveFromUTC,endAtUTC,reviewedAgainstSource:true,localTimes? OR intervalMinutes+anchorAtUTC,scheduleId?,expectedRevision?} | 200 {previewToken,expiresAt,input,sourceSnapshot,occurrenceCount,occurrences[],warnings[]}; full finite-course preview, no active schedule |
+| POST /schedules | schedule.write + source reads on first execution | {previewToken,confirmed:true} | 201 {schedule,version}; entire bounded course persisted |
 | GET /schedules | schedule.read | status?,cursor?,limit? | 200 list Schedule with current version |
 | GET /schedules/{id} | schedule.read | None | 200 Schedule + current version |
-| POST /schedules/{id}/versions | schedule.write | {expectedRevision,previewToken,confirmed:true} | 201 new version; cancel only unacted future old occurrences |
+| POST /schedules/{id}/versions | schedule.write + source reads on first execution | {expectedRevision,previewToken,confirmed:true} | 201 {schedule,version}; cancel only pending future old occurrences at effective boundary; active/paused schedule becomes active |
 | POST /schedules/{id}/pause | schedule.write | {expectedRevision,reason?} | 200 paused Schedule |
-| POST /schedules/{id}/resume | schedule.write | {expectedRevision,effectiveFromUTC} | 200 active Schedule; future occurrences only |
+| POST /schedules/{id}/resume | schedule.write + source reads on first execution | {expectedRevision,effectiveFromUTC} | 200 active Schedule; restore future pause-cancelled rows of current version only |
+| GET /schedules/{id}/versions | schedule.read | cursor?,limit? | 200 immutable versions, newest first |
+| GET /schedules/{id}/occurrences | schedule.read | view: upcoming(default)/history,cursor?,limit? | 200 persisted events with quantity/unit/timezone snapshots; upcoming = pending in next seven elapsed days, history = all states/dates, ascending dueAtUTC+id |
 
-Preview tokens expire after 15 minutes and bind actor, patient, normalized input and source version revision/hash. Reject confirmation if source changed or token expired. Both modes require a confirmed unambiguous instruction, positive quantity, compatible units and end >= start. Fixed times: unique localTimes, 1–24 entries. Interval: positive integer intervalMinutes with a UTC anchor; no localTimes. Reject unresolved ambiguous/nonexistent local times. Generated occurrence timestamps retain the selected timezone semantics.
+**Step 25 contract refinement and reason:** a required finite course (maximum 90 elapsed days / 2000 occurrences) is fully generated, validated and persisted in one transaction. This replaces the proposed rolling seven-day generation horizon so the feature works before the Step 28 worker and never silently stops after day seven. Start is inclusive, end exclusive and strictly later; new start must not be in the past. UTC endpoints must explicitly end in Z. Named IANA timezone is required; fixed times have 1–24 unique HH:mm entries, no interval fields. Interval uses positive integer minutes and an anchor at/before start, no localTimes. Reject ambiguous/nonexistent fixed local times anywhere in the course; no automatic DST shift. Preview returns all events. A technical bound is not a prescribed course duration; the reviewer must enter the source's actual duration and clarify incompatible/conditional/as-needed input outside this supported workflow.
+
+Quantity/unit must exactly match the current confirmed A1 instruction (decimal-equivalent quantity accepted), and remain separate from source strength text. Require complete source timing/duration and clarificationRequired=false. A1's explicit cabinet reference must match; an unlinked line requires explicit selection/review of an active same-patient item. No clinical name/strength matching or prose-to-time interpretation. reviewedAgainstSource is human acknowledgement, not evidence of clinician approval or machine validation of arbitrary prescription prose.
+
+Preview tokens are opaque, hashed in MongoDB, actor/patient bound, single use, and expire after 15 minutes regardless of delayed TTL cleanup. Bind normalized input, source snapshot/fingerprint, parent/cabinet revisions and optional scheduleId+expectedRevision for replacement. Confirmation rechecks source access/current status and source consistency inside the transaction; hidden source fences serialize concurrent edits/archive. Source change, expiry, consumed/wrong-target token or now-past start rejects without partial writes. Preview itself is an ephemeral CSRF-protected operation and does not require Idempotency-Key. All active schedule mutations require UUID keys, revision checks where specified, transactional audit/idempotency and current authorization on replay. One schedule per currently referenced A1 instruction prevents accidental duplicate generation. New instruction versions do not automatically stop older schedules; review/pause or replace explicitly.
+
+Reads use schedule.read and expose the retained minimal source snapshot, not the full prescription/cabinet chart. Lists/history accept limit 1–100 (default 20), cursor and documented filters only. Resume must be at/after the current version start and now, before the original end, with unchanged active source; it restores no taken/skipped/replaced/elapsed rows. If paused source changed, preview a replacement of the paused schedule. No dose-action/reminder/stock write or Telegram send occurs here.
 
 ## B2 Information cards and B3 ingredient evidence
 | Route | Permission | Request | Success |
 |---|---|---|---|
-| GET /cabinet-items/{id}/label-candidates | cabinet.read | None | 200 list candidate label IDs and source metadata |
-| PUT /cabinet-items/{id}/information-card | cabinet.write | {expectedRevision?,selectedLabelId}; expectedRevision required if card exists | 200/201 card with availability and EvidenceRef[] |
-| GET /cabinet-items/{id}/information-card | cabinet.read | None | 200 card or {availability:unavailable,reason:no_matching_label} |
-| PATCH /cabinet-items/{id}/information-card/note | cabinet.write | {expectedRevision,personalNote} | 200 card; note separate from evidence |
+| GET /cabinet-items/{id}/label-candidates | cabinet.read | cursor?,refresh=true? | 200 {availability:candidates/unavailable,reason?,itemRevision,rxcui?,candidates[],retrievedAt?,truncated?}, meta.nextCursor; no card activation |
+| PUT /cabinet-items/{id}/information-card | cabinet.write | {expectedRevision:int/null,expectedCabinetRevision,selectedLabelId:UUID/null,expectedContentHash?,applicabilityConfirmed?} | 200 saved card with source, selectedPassages, evidenceRefs and retained personalNote; null label removes association |
+| GET /cabinet-items/{id}/information-card | cabinet.read | None | 200 saved card, or {availability:unavailable,reason:not_selected,revision:null,personalNote:"",selectedPassages:[],evidenceRefs:[],source:null,itemChanged:false}; no upstream call |
+| PATCH /cabinet-items/{id}/information-card/note | cabinet.write | {expectedRevision:int/null,personalNote} (0–2000 chars) | 200 card; null revision creates note-only unavailable card; empty string clears note; no upstream call |
 | POST /ingredient-reviews | cabinet.write | {cabinetItemIds:[2–20 IDs]} | 201 {id,result,ingredientSnapshots,evidenceRefs,revision} |
 | GET /ingredient-reviews/{id} | cabinet.read | None | 200 review |
 | POST /ingredient-reviews/{id}/acknowledge | cabinet.write | {expectedRevision,note?} | 200 acknowledged review |
 
-Label selection must match item identity/strength/form adequately; unrelated matches return 422. Unavailable evidence is a valid explicit result; source outage remains 502/503. Ingredient results are overlap, no_overlap_in_confirmed_ingredients, or insufficient_information; missing identities/evidence never produce a safety guarantee.
+**Step 26 B2 implementation refinements:** only a saved selected RxNorm SCD/SBD identity is searched, using an exact openFDA.rxcui value. Manual/unverified identities return unavailable/unverified_identity without a network call; no fuzzy name/ingredient-only match is attached. Candidates must have the exact RxCUI, valid record/set/version identifiers, usable original passages and product metadata. Label selection additionally requires applicabilityConfirmed:true and the reviewed candidate's expectedContentHash. This is human acknowledgement of actual product/ingredient/strength/form applicability, not a clinical matching engine or FDA approval claim. The server refetches the exact label record by its UUID, rejects unrelated/missing labels with 422 and changed content/cabinet revision with 409. Required revisions, hash and explicit acknowledgement refine the proposed minimal PUT so reviewed facts cannot be silently replaced.
+
+Candidate pages contain at most five records, up to offsets 0–100 (newest 105 raw records). Cursor binds the saved RxCUI and cabinet revision; refresh=true bypasses the 12-hour public search cache. Candidates include original passage arrays, metadata, version/effective date, retrieval time, immutable-record source URL and raw-record SHA-256. Projection displays only selected sections (see Step 26 guide), preserving every included string verbatim, without summary or HTML execution. Unsupported/malformed/overlarge label records are not attachable. A page with no eligible evidence returns unavailable/no_matching_label; it never erases an existing card. No match is distinct from provider timeout/429/malformed transport (503 OPENFDA_UNAVAILABLE). Cached retrieval dates are never replaced with the current time merely on read.
+
+Source receipt, card pointer/passages, source-review actor/time, audit and idempotency response commit together. UUID Idempotency-Key is required for PUT/PATCH. A successful replay rechecks current permission but needs no upstream call; concurrent creation is unique per patient+cabinet item. Cabinet coordination fences conflict with concurrent archive/edit. Archived items retain readable cards but block new searches/writes. Changes after selection set itemChanged=true; old evidence remains explicitly the retained selection until reviewed again. A missing stored source returns 503 SOURCE_RECORD_UNAVAILABLE and hides uncited passages.
+
+Personal notes are patient-scoped, separate from immutable public source records. Selection/removal preserves the saved note, and the UI preserves an unsaved note draft. A source lookup failure never clears saved facts/notes. Explicit null selectedLabelId removes the current association/evidence projection while retaining the note and old public source receipts; it does not claim the provider found no label. GET card does not run a search, so its not_selected state is not evidence of a completed no-match lookup. No local/indefinite offline mutation queue or automatic source replacement is implemented.
+
+B3 ingredient-review routes above are implemented in Step 32. Their result categories are overlap, no_overlap_in_confirmed_ingredients, or insufficient_information; missing identities/evidence never produce a safety guarantee. B3 adds explicit ingredient confirmation; overall clinical interaction checking remains outside this comparison. See [Step 32](STEP_32_INGREDIENT_REVIEW.md).
+
+| Step 32 prerequisite/history route | Permission | Request | Success |
+|---|---|---|---|
+| GET /cabinet-items/{id}/ingredient-candidates | cabinet.read | None | 200 cabinetItem, resolved product, complete ingredients, sourceUrl, retrievedAt, contentHash, confirmationRevision; 422 unavailable identity/ingredients, 503 source outage |
+| GET /cabinet-items/{id}/ingredient-confirmation | cabinet.read | None | 200 {confirmation:null/object,itemChanged} |
+| PUT /cabinet-items/{id}/ingredient-confirmation | cabinet.write | {expectedRevision:int/null,expectedCabinetRevision:int,expectedContentHash,reviewed:true} | 200 saved confirmation; 409 stale facts/revisions |
+| GET /ingredient-reviews | cabinet.read | before?:reviewId | 200 {reviews:[up to 20],next:null/id} |
+
+Comparisons and acknowledgements require UUID Idempotency-Key and CSRF. Acknowledgement notes allow 0–2000 characters; a review can be acknowledged once. Comparison IDs must be distinct. Ingredient identity evidence and label passages are frozen separately; missing/outdated confirmations force insufficient_information. GET review adds itemsChanged without rewriting the historical result. Evidence over 1 MiB is rejected rather than truncated.
 
 ## B4 Source-grounded information assistant
+
+**Step 33 implemented refinement:** synchronous extractive search replaces the previously proposed unimplemented conversation/message worker. See [Step 33 rationale and limits](STEP_33_EDUCATIONAL_ASSISTANT.md). No model or external transmission of questions.
+
 | Route | Permission | Request | Success |
 |---|---|---|---|
-| POST /assistant-conversations | cabinet.write | {cabinetItemId,title?} | 201 conversation |
-| POST /assistant-conversations/{id}/messages | cabinet.write | {question} (1–2000 chars) | 202 {jobId,messageId,status:pending} |
-| GET /assistant-conversations/{id}/messages | cabinet.read | cursor?,limit? | 200 messages with outcome, text and EvidenceRef[] |
-| PATCH /assistant-messages/{id}/feedback | cabinet.write | {expectedRevision,rating:helpful/unhelpful,comment?} | 200 feedback |
-| DELETE /assistant-conversations/{id} | cabinet.write | {expectedRevision} | 204; remove message text/evidence payloads; minimal deletion audit |
+| POST /educational-answers | cabinet.write | {cabinetItemId,question:1–2000 chars} | 201 {id}; replay 200 {id} |
+| GET /educational-answers | cabinet.read | before?:answerId | 200 {answers:[up to 20],next:null/id}; deleted records excluded |
+| GET /educational-answers/{id} | cabinet.read | None | 200 saved question/outcome/reason/citations/revision/itemChanged; deleted 404 |
+| PATCH /educational-answers/{id}/feedback | cabinet.write | {expectedRevision,rating:helpful/unhelpful,comment?:0–2000 chars} | 200 {id}; stale revision 409 |
+| DELETE /educational-answers/{id} | cabinet.write | {expectedRevision} | 200 {id,deleted:true}; clears question/citations/feedback payloads, preserves minimal deletion audit |
 
-Worker produces outcome answered/insufficient_evidence/error. Answered requires cited retrieved passages; no source means abstention. API must not synthesize unsupported prescribing/treatment instructions. Unselected model/provider remains an implementation choice constrained by zero cost and grounding checks.
+Writes require CSRF and UUID Idempotency-Key. Receipts retain IDs only. Outcomes are answered (exact cited text), insufficient_evidence (unsupported question, missing/current-label-unavailable, multiple differing passages, or source size limit), and error (saved source unavailable). Only four documented educational questions map to label sections. No treatment instruction or synthesized answer is generated. Evidence is capped at 256 KiB without truncation. History is ordered by descending ID; reopened historical answers flag changed cabinet details. Deletion does not erase the shared B2 source or database backups.
 
 ## C1 Care tasks and channel linking
+**Step 23 implementation update (2 November 2026):** [task implementation, Telegram preparation and open gate](STEP_23_CAREGIVER_TASKS.md). Task workflows and controlled adapter/worker tests are implemented. The user has no bot or consenting test account; **no real Telegram delivery has been verified**, so full C1 and the external-integration demonstration remain open. A separate long-polling worker replaces the earlier proposed webhook for this local slice; no public update/link approval endpoint exists.
+
 | Route | Permission | Request | Success |
 |---|---|---|---|
 | POST /tasks | task.write | {title,description?,assigneeUserId,type,dueAtUTC?,handoverNote?} | 201 Task; notification queued separately |
-| GET /tasks | task.read | status?,assigneeUserId?,cursor?,limit? | 200 list Task |
+| GET /task-assignees | task.write | None | 200 current owner/caregiver IDs and names; assignees need task.read AND task.write |
+| GET /tasks | task.read | status?,assigneeUserId? (ID or me),cursor?,limit? | 200 list Task |
 | GET /tasks/{id} | task.read | None | 200 Task |
-| PATCH /tasks/{id} | task.write | {expectedRevision,title?,description?,assigneeUserId?,dueAtUTC?} | 200 Task; active grant required for assignee |
+| PATCH /tasks/{id} | task.write | {expectedRevision,title?,description?,assigneeUserId?,dueAtUTC?}; empty description/null due date clears | 200 Task; active grant required; creator/owner edits active tasks; reassign starts new generation |
 | POST /tasks/{id}/transitions | task.write | {expectedRevision,action:accept/complete/reopen} | 200 Task; only valid lifecycle transitions |
 | POST /tasks/{id}/notes | task.write | {text} (1–2000 chars) | 201 task note |
 | GET /tasks/{id}/history | task.read | cursor?,limit? | 200 append-only task events |
-| POST /api/v1/me/channel-link-challenges | Own session | {provider:telegram} | 201 {challengeUrl,expiresAt}; single use, 10-minute expiry |
-| DELETE /api/v1/me/channel-links/{linkId} | Own session | None | 204; revoke channel link and queued sends |
+| POST /tasks/{id}/acknowledgements | task.write; current active assignee | {expectedRevision} | 200 explicit app acknowledgement, separate from delivery/acceptance |
+| GET /tasks/{id}/notifications | task.read | cursor?,limit? | 200 jobs with sanitized delivery attempts |
+| POST /tasks/{id}/notifications/{jobId}/retry | task.write; participant | {} | 200 requeued current definitively unsent job; at most 3 processing attempts; unknown/sent cannot be resent |
+| GET /api/v1/me/channel-links | Own session | None | 200 configuration, masked own links/challenges and polling heartbeat |
+| POST /api/v1/me/channel-link-challenges | Own session, CSRF | {provider:telegram} | 201 {id,revision,challengeUrl,expiresAt}; single use, 10-minute expiry; URL shown once, replay URL null |
+| POST /api/v1/me/channel-link-challenges/{id}/confirm | Own session, CSRF | {expectedRevision,consent:true} | 200 masked link after private /start proof; no patient access granted |
+| DELETE /api/v1/me/channel-links/{linkId} | Own session, CSRF | None or {} | 200 {unlinked:true}; revoke link, suppress queued sends on worker recheck; idempotent envelope |
 
-Owner may transition assigned tasks; a caregiver needs task.write and must be the assignee to accept/complete. Reopening needs the creator/owner and task.write. Private callback verifies linkage, consent and active grants. Telegram webhook authenticates with the configured webhook secret and deduplicates update IDs; it is not a public channel-link approval endpoint.
+Owner may transition assigned tasks; a caregiver needs task.write and must be the assignee to accept/complete. Reopening needs the creator/owner and task.write. Handover notes are append-only for participants. All assignments require owner or active read/write caregiver access. Reopen/reassignment clears the current acknowledgement while retaining history. The dedicated bot poller deduplicates update IDs, requires matching private sender/chat IDs and stores only a hashed challenge. The app account separately confirms consent. Generic notices contain no patient/task/medicine text. Missing configuration is disabled, not delivered; uncertain sends stay unknown with no automatic resend. See Step 23 for dedicated bot/database, queue lease, retry and setup limits. Generic job/notification routes below remain future contracts; C1 implements task-scoped routes above.
 
-## C2 Doses and C3 follow-up
+## C2 Doses (Step 27 implemented) and C3 follow-up (Step 34 implemented)
 | Route | Permission | Request | Success |
 |---|---|---|---|
-| GET /doses | dose.read | fromUTC,toUTC,state?,cursor?,limit? | 200 list Dose; half-open range |
-| GET /doses/{id} | dose.read | None | 200 Dose + allowed action history |
-| POST /doses/{id}/actions | dose.record | {expectedRevision,action:taken/skipped,clientRequestId,effectiveAt?} | 200 Dose + actionId + stockSyncStatus |
-| POST /doses/{id}/snoozes | dose.record | {expectedRevision,minutes:10,clientRequestId} | 200 Dose; reminderDueAt changes, dueAtUTC unchanged |
-| POST /doses/{id}/corrections | dose.record | {expectedRevision,newState:pending/taken/skipped,reason,clientRequestId} | 200 Dose + corrective action + stockSyncStatus |
-| GET /followups | dose.read | status?,cursor?,limit? | 200 list follow-up |
-| POST /followups/{id}/acknowledge | dose.record | {expectedRevision} | 200 acknowledged follow-up |
-| POST /followups/{id}/resolve | dose.record | {expectedRevision,outcome,note?} | 200 resolved follow-up; stop pending escalation |
+| GET /doses | dose.read | date?,timezone? OR fromUTC,toUTC; state?,cursor?,limit? | 200 Dose list; half-open range, day summary and serverNow |
+| GET /doses/{id} | dose.read | None | 200 {dose,actions,nextActionCursor,reminders,nextReminderCursor}; latest 20 histories |
+| GET /doses/{id}/actions | dose.read | cursor?,limit? | 200 immutable action history |
+| GET /doses/{id}/reminders | dose.read | cursor?,limit? | 200 reminder jobs with processing attempts; no chat/link/provider IDs |
+| GET /dose-reminder-settings | dose.read | None | 200 enabled/revision/consentedAt, configured, channelLinked, recipient, workerLastActiveAt |
+| PUT /dose-reminder-settings | dose.record + owner | {expectedRevision:null/integer,enabled,consent:true when enabling} | 200 preference; explicit opt-in, default off |
+| POST /doses/{id}/reminders/{jobId}/retry | dose.record + owner | {expectedRevision:job.revision} | 200 current eligible unsent job queued again |
+| POST /doses/{id}/actions | dose.record | {expectedRevision,action:taken/skipped,clientRequestId,effectiveAt?} | 200 {dose,actionId,stockSyncStatus:not_implemented} |
+| POST /doses/{id}/snoozes | dose.record | {expectedRevision,minutes:10,clientRequestId} | 200 {dose,actionId,stockSyncStatus:not_implemented}; reminderDueAtUTC changes, dueAtUTC unchanged |
+| POST /doses/{id}/corrections | dose.record | {expectedRevision,newState:pending/taken/skipped,reason,clientRequestId} | 200 {dose,actionId,stockSyncStatus:not_implemented}; prior actions retained |
+| GET /followups | dose.read + owner/assigned active caregiver | status?,before?:id | 200 {followups:[up to 20],next:null/id} |
+| GET /followups/{id} | dose.read + owner/assigned active caregiver | None | 200 follow-up, current doseState, notices and attempts |
+| GET /followup-settings | dose.read + owner | None | 200 settings, eligible caregivers, telegramConfigured |
+| PUT /followup-settings | dose.record + owner | {expectedRevision:null/int,enabled,delayMinutes:10–1440,caregiverUserId:null/id,consent:true when enabling} | 200 preference |
+| POST /followups/{id}/acknowledge | dose.record + owner/assigned active caregiver | {expectedRevision} | 200 acknowledged follow-up |
+| POST /followups/{id}/resolve | dose.record + owner/assigned active caregiver | {expectedRevision,outcome,note?} | 200 resolved follow-up; stop pending escalation |
 
-expectedRevision maps to dose.actionRevision for dose routes. Repeated clientRequestId must match Idempotency-Key and returns the original result. Only pending can take a first terminal action; another terminal action returns 409 and requires correction. Reject future effectiveAt; record server recordedAt separately. Snooze requires pending occurrence and maximum 3 snoozes per occurrence in the initial version. Owner may resolve; caregiver additionally needs active assigned follow-up access, defined by its persisted recipient set. Follow-up creation is internal worker work, unique per occurrence; an unconfirmed event is never auto-skipped.
+expectedRevision maps to dose.actionRevision for dose routes. Repeated clientRequestId must match Idempotency-Key and returns the original result. Only pending can take a first terminal action; another terminal action returns 409 and requires correction. All actions require dueAtUTC <= server now and reject cancelled events. Optional effectiveAt must be between dueAtUTC and server now; recordedAt is the server time. Correction requires an existing taken/skipped record, a different new state and a nonempty reason; returning to pending preserves the prior reminder time. Snooze requires pending and reminderDueAtUTC <= now, allows at most 3 snoozes, and defers from server now by 10 minutes. It changes neither the prescribed due time nor dose quantity/state. Failed/stale/early actions do not append history. The unique patientId+clientRequestId key also prevents reuse across action routes. Operations recheck current permission on replay.
+
+The list defaults to today in the patient's IANA timezone; date is YYYY-MM-DD and optional timezone overrides its calendar boundaries. Explicit UTC bounds must both be supplied, end in Z and span a positive maximum of 31 elapsed days. Date and explicit bounds cannot be combined. State is pending/taken/skipped/cancelled; limit 1–100 (default 20). Dose pages ascend by dueAtUTC/id; histories descend by createdAt/id. Cursors bind their filters; invalid reuse returns 400. Summary counts cover the entire window regardless of state filter/page. overdueUnconfirmed means pending past due in this slice, not a C3 escalation or skipped event. It is not a terminal state. List meta includes fromUTC,toUTC,date,timezone,serverNow,summary,nextCursor. Generic schema revision and reminderQueuedRevision are hidden; actionRevision is the client write revision.
+
+Reminder consent belongs only to the patient owner and is separate from C1's task-channel consent. Enable requires consent:true even with no bot/link; configured/channelLinked are shown separately and no delivery is implied. Changing the enabled value suppresses pending jobs; saving an unchanged value is a no-op. Settings use their revision, null before first save. Retry needs the current pending dose/action revision, enabled consent, current active private link, configured adapter, an unexpired 60-minute window and fewer than 3 processing attempts; only failed/disabled/suppressed jobs qualify. Sent/unknown/processing/expired jobs cannot retry. The worker checks active patient/schedule/cabinet, dose revision/time, consent and link revision immediately before calling the provider. This is a point-in-time check, not cancellation of an already in-flight send. Reminder projections include actionRevision, status, errorCode, attemptCount, runAtUTC, expiresAtUTC and bounded attempts with attemptedAt/providerCallAt/status/errorCode. Attempts count processing claims, so a suppressed claim may have no provider call.
+
+Jobs are pending/processing/sent/failed/unknown/disabled/suppressed/expired. Sent means Telegram accepted a message, never receipt or reading. Unknown outcomes and interrupted leases are never blindly resent. Telegram disabled produces disabled/NOT_CONFIGURED with zero attempts for newly queued work. Expiry is 60 minutes after the current reminder time (including a snooze); expired reminders leave doses pending. Dedicated C2 collections/worker prevent the C1 task poller from claiming dose jobs. Step 30 connects C2 recording and correction to the A3 stock ledger. C3 follow-up routes are implemented in Step 34: owner or active assigned caregiver may acknowledge/resolve. Caregivers require dose.read, dose.record, task.read and task.write. Silence is never automatically skipped.
 
 ## A3 Inventory and A4 refill coordination
 | Route | Permission | Request | Success |
 |---|---|---|---|
-| GET /cabinet-items/{id}/stock | stock.read | None | 200 {balance,unit,coverageDays?,coverageStatus,lowStock,stockSyncStatus} |
+| GET /inventory-items | stock.read | cursor?,limit? | 200 paginated inventory summaries |
+| GET /cabinet-items/{id}/stock | stock.read | None | 200 stock summary, coverageDays, coverageStatus, firstUncoveredAtUTC, stockSyncStatus and first page of pending deductions |
 | GET /cabinet-items/{id}/stock-transactions | stock.read | cursor?,limit? | 200 ledger entries |
 | POST /cabinet-items/{id}/stock-transactions | stock.write | {expectedRevision,delta,unit,reason:opening/refill/correction,note?} | 201 ledger entry + resulting balance; expectedRevision compares inventory lock |
-| PUT /cabinet-items/{id}/inventory-settings | stock.write | {expectedRevision?,stockUnit,lowStockThreshold} | 200/201 settings; existing needs revision |
-| POST /refill-lists | stock.write | {items:[{cabinetItemId,requestedQuantity?,unit}]} | 201 list |
+| PUT /cabinet-items/{id}/inventory-settings | stock.write | {expectedRevision,stockUnit,lowStockThreshold} | 200 summary, use null revision before setup |
+| GET /cabinet-items/{id}/stock-reconciliation | stock.read | cursor?,limit? | 200 paginated unresolved deductions |
+| POST /cabinet-items/{id}/stock-reconciliation/{doseId} | stock.write | {expectedActionRevision} | 200 current stock status and issue |
+| POST /refill-lists | stock.write | {items:[{cabinetItemId,requestedQuantity?,unit}]} or {fromLowStock:true} | 201 list |
 | GET /refill-lists | stock.read | status?,cursor?,limit? | 200 lists |
-| PATCH /refill-lists/{id}/items/{itemId} | stock.write | {expectedRevision,state:needed/collected,requestedQuantity?} | 200 item; collection alone does not add stock |
+| PATCH /refill-lists/{id}/items/{itemId} | stock.write | {expectedRevision,state:needed/collected,requestedQuantity?} | 200 updated list, null clears requested quantity |
 | POST /refill-lists/{id}/complete | stock.write | {expectedRevision} | 200 completed list |
-| GET /pharmacies | stock.read | latitude,longitude,radiusMeters (100–5000) | 200 {listings,sourceUrl,retrievedAt}; listing availability is not stock evidence |
-| POST /pharmacy-preferences | stock.write | {externalPlaceKey} | 201 saved verified listing snapshot |
-| POST /refill-lists/{id}/collection-task | stock.write AND task.write | {assigneeUserId,pharmacyPreferenceId?,dueAtUTC?} | 201 Task + refill link; same key returns same task |
+| GET /pharmacies | stock.read | latitude,longitude,radiusMeters (100–5000) | 200 {listings,sourceUrl,retrievedAt,dataTimestamp,limited}; each listing carries a short-lived selection token |
+| GET /pharmacy-preferences | stock.read | None | 200 current preference with stale flag, or null |
+| POST /pharmacy-preferences | stock.write | {externalPlaceKey,selectionToken,expectedRevision} | 201 current preferred listing snapshot; use null revision before first save |
+| POST /refill-lists/{id}/collection-task | stock.write AND task.write | {expectedRevision,assigneeUserId,pharmacyPreferenceId?,expectedPharmacyRevision?,dueAtUTC?} | 201 {task,refillListId,refillListRevision}; same key replays the task receipt |
 
-Opening/refill deltas must be positive; correction delta nonzero with reason. Balance must remain >= 0 in a transaction serialized by the item inventory lock/revision. Only internal dose processing writes dose_deduction/dose_reversal; reject user-supplied reasons of those types. Record dose even if stock cannot reconcile and show needs_review. Coordinates must be valid ranges; location input may come from an entered area/geocoded selection after geocoding is separately implemented. Do not send patient IDs or medical notes to map services.
+Use decimal strings with up to six fractional digits. An opening count can be zero. Refills must be positive and corrections need a nonzero delta and a note. Balance remains nonnegative under the inventory revision lock. Only internal dose processing writes `dose_deduction` and `dose_reversal`. A taken dose with incompatible or insufficient stock stays taken and shows `needs_review`. Collection and completion leave stock unchanged. [Step 30 statuses and verification](STEP_30_INVENTORY_REFILLS.md).
 
-## C4 Analytics and visit reports
-Add report.write as an explicit permission for health-note writes; report.read alone never authorizes mutation. This extends Step 15's permission vocabulary.
+A4 validates the search bounds and sends rounded coordinates and radius to Overpass. A preference save requires the same patient, user and returned listing key as the ten-minute token. A saved listing becomes stale after 24 hours and requires a new search before linking it to a task. An open checklist allows one linked collection task. A task with a selected pharmacy requires the current preference revision. [Step 31 review and provider evidence](STEP_31_PHARMACY_COORDINATION.md).
+
+## C4 Analytics and visit reports (Step 35 implemented)
+
+[Implementation, metric definitions and limits](STEP_35_VISIT_REPORTS.md). report.write separately authorizes note writes. All writes require CSRF and UUID Idempotency-Key; note editing requires the current expectedRevision.
+
 | Route | Permission | Request | Success |
 |---|---|---|---|
-| GET /analytics | report.read | fromUTC,toUTC,timezone | 200 {taken,skipped,pending,overdueUnconfirmed,dataCutoffUTC,metricDefinitionVersion} |
-| POST /health-notes | report.write | {text,recordedAt} | 201 note |
-| PATCH /health-notes/{id} | report.write | {expectedRevision,text,reason} | 200 new note revision |
-| POST /report-exports | report.read | {fromUTC,toUTC,displayTimezone} | 202 report export job |
-| GET /report-exports/{id} | report.read | None | 200 {status,countsSnapshot?,generatedAt?,expiresAt?} |
-| GET /report-exports/{id}/content | report.read | None | 200 private PDF when ready; 409 if pending; 410 if expired |
+| GET /analytics | report.read | fromUTC,toUTC,timezone | 200 taken/skipped/pending/overdueUnconfirmed/cancelled/scheduled, range, displayTimezone, dataCutoffUTC, metricDefinitionVersion, delayMinutes/Source, followupEnabled, coverage |
+| GET /health-notes | report.read | fromUTC,toUTC,timezone | 200 up to 200 notes; larger range rejected |
+| POST /health-notes | report.write | {text:1–2000 chars,recordedAt:UTC} | 201 note; future time rejected |
+| PATCH /health-notes/{id} | report.write | {expectedRevision,text,reason:1–500 chars} | 200 revised note; prior revision retained; stale 409 |
+| POST /report-exports | report.read | {fromUTC,toUTC,displayTimezone} | 201 {id,status:ready}; successful replay 200 |
+| GET /report-exports | report.read | before?:id | 200 {exports:[up to 20 metadata records],next:null/id}; expired metadata marked |
+| GET /report-exports/{id} | report.read | None | 200 {id,status,snapshot,generatedAt,expiresAt}; expired 410 |
+| GET /report-exports/{id}/content | report.read | None | 200 private PDF attachment, no-store; expired 410; current access rechecked |
 
-Initial maximum range is 366 days. Counts use occurrence due time in [from,to), excluding cancelled events; pending is not-yet-overdue pending, overdueUnconfirmed is past configured follow-up threshold pending. They are disjoint. Recheck access on download; PDF expires after 24 hours. Report permission authorizes the defined report projection only, not unrestricted record browsing.
+The proposed pending-job 202 contract is refined to bounded synchronous 201 generation. Range is [from,to), positive and at most 366 elapsed days. Cancelled doses are excluded; pending and overdue-unconfirmed are disjoint. Overdue uses current C3 delay (labelled 30-minute default if absent), deferred to a later snooze time, at the saved cutoff. A zero indicates recorded dataset counts only. Snapshots freeze counts, source versions, exact refill quantities, task metadata and health-note text; private domain notes/contact data are excluded. Prescription sources for selected doses may predate the range and are explicitly labelled as context. No arbitrary historical cutoff or adherence score is inferred. Analytics cap: 20,000 occurrences. Export caps: 500 per detail collection, 200 notes, 1,000 detail entries, 1 MiB snapshot, 60 pages, 4 MiB PDF. Oversized data is rejected without partial export. Download expires after 24 hours; expiry does not purge database backups. Unsupported PDF glyphs fail explicitly. Regenerate for later state or note changes.
 
-## C5 Emergency SOS and assistance coordination
+## C5 Emergency SOS (Step 36 local implementation)
+
+[Workflow, consent rationale, worker and open evidence](STEP_36_SOS_MODULE3.md). All writes use CSRF/UUID Idempotency-Key. Recipient routes require their own authenticated account; no chart grant is created. Revision guards apply where shown.
+
 | Route | Permission | Request | Success |
 |---|---|---|---|
-| POST /emergency-contacts | Owner + sos.manage | {displayName,contactPhone?,channelLinkId?} | 201 contact with pending consent |
-| GET /emergency-contacts | Owner + sos.manage | cursor?,limit? | 200 contacts |
-| PATCH /emergency-contacts/{id} | Owner + sos.manage | {expectedRevision,displayName?,contactPhone?} | 200 contact; consent cannot be asserted by owner |
-| POST /emergency-contacts/{id}/revoke | Owner + sos.manage | {expectedRevision} | 200 revoked contact; stop future sends |
-| POST /sos-incidents | sos.activate | {confirmed:true,locationStatus:available/denied/unavailable,location?,callbackPhone?} | 201 Incident or 200 existing active incident; do not create duplicates |
-| GET /sos-incidents/{id} | sos.activate OR sos.manage | None | 200 authorized incident projection |
-| POST /sos-incidents/{id}/cancel | sos.manage OR originating activator with sos.activate | {expectedRevision,reason} | 200 cancelled Incident + closure jobs |
-| POST /sos-incidents/{id}/resolve | sos.manage OR originating activator with sos.activate | {expectedRevision,outcome} | 200 resolved Incident + closure jobs |
-| POST /sos-incidents/{id}/provider-requests | sos.manage | {providerKey,providerMode:simulated/verified_partner} | 202 ProviderRequest; verified mode requires configured partner |
-| GET /hospitals | sos.activate OR sos.manage | latitude,longitude,radiusMeters | 200 source listings, never ambulance availability |
+| POST /emergency-contacts | owner + sos.manage | {displayName,recipientUserId,contactPhone?} | 201 pending contact/invitation, 24-hour expiry; no owner consent assertion |
+| GET /emergency-contacts | owner + sos.manage | None | 200 contact history; explicit limit 100 |
+| PATCH /emergency-contacts/{id} | owner + sos.manage | {expectedRevision,displayName?,contactPhone?} | 200 contact |
+| POST /emergency-contacts/{id}/revoke | owner + sos.manage | {expectedRevision} | 200 revoked contact/new consent generation |
+| POST /sos-incidents | sos.activate | {confirmed:true,locationStatus:available/denied/unavailable,location?,callbackPhone?} | 201 {id,existing}; successful replay 200; a different key while active returns its existing ID without another alert |
+| GET /sos-incidents | sos.activate OR sos.manage | before?:id | 200 {incidents:[up to 20],next:null/id} |
+| GET /sos-incidents/{id} | sos.activate OR sos.manage | None | 200 incident, jobs/attempts, acknowledgements/events, providerRequests, dispatchConfirmed:false, simulationAvailable, telegramConfigured |
+| POST /sos-incidents/{id}/cancel | sos.manage OR originating activator with sos.activate | {expectedRevision,reason:1–500 chars} | 200 {id,status:cancelled}; pending alert suppression/closure jobs atomic |
+| POST /sos-incidents/{id}/resolve | same as cancellation | {expectedRevision,outcome:1–500 chars} | 200 {id,status:resolved}; outcome is user reported, never provider confirmation |
+| POST /sos-incidents/{id}/provider-requests | owner + sos.manage, development/test only | {providerKey:classroom_demo,providerMode:simulated} | 201 simulated_request_only; duplicate returns existing request; not mounted in production |
+| POST /sos-incidents/{id}/jobs/{jobId}/retry | sos.manage | {expectedRevision} | 200 definitely unsent current job queued; max three attempts; unknown/sent not retried |
+| GET /hospitals | sos.activate OR sos.manage | latitude,longitude,radiusMeters:100–5000 | 200 public source listings/retrieval/limited; 503 source unavailable |
 
-Consent/acknowledgement callbacks are separate recipient-scoped routes: POST /api/v1/recipient-actions accepts {token,action:consent/acknowledge/decline} with a one-time opaque token from the linked channel. Hash tokens at rest; token binds patient, recipient, operation and incident if relevant. Expire consent tokens after 24 hours and incident acknowledgement tokens after 30 minutes or incident closure, whichever occurs first. Callback checks current contact consent/revocation and incident state. Response contains minimal acknowledgement status and no chart data. Generic expired-token errors reveal no recipient details.
+Recipient-account routes (global /api/v1):
 
-Location requires coordinates plus accuracyMeters >= 0 and capturedAt when available; otherwise omit location. SOS rate limiting must return explicit retry guidance, never silently drop an incident. Provider callbacks use service authentication and operation-bound signatures; verified partner acceptance and dispatch confirmation require separate events/evidence. Classroom simulation routes are available only in development/test to the owner, must not be mounted in production and cannot send real requests.
+| Route | Authorization | Request | Success |
+|---|---|---|---|
+| GET /me/emergency-invitations | authenticated recipient | None | 200 invitations/status and patient display name only; limit 100 |
+| POST /me/emergency-invitations/{id}/respond | same recipient + CSRF/idempotency | {expectedRevision,action:consent/decline/revoke} | 200 {id,status}; pending consent/decline expires at 24 hours |
+| GET /me/sos-incidents | recipient with current bound contact consent | before?:jobId | 200 {incidents:[minimal projection],next:null/id}; no chart fields |
+| POST /me/sos-incidents/{id}/acknowledge | same bound recipient + CSRF/idempotency | {expectedRevision} | 200 {acknowledged:true}; one acknowledgement per incident/contact, 30 minutes or closure, whichever first |
+
+This refines the proposed anonymous recipient-actions token callback into authenticated recipient actions; no raw consent/acknowledgement tokens are issued. A new consent cycle cannot revive an old job/incident share. Existing /me/channel-links and private Telegram challenge routes are available in the recipient inbox, with separate chat ownership proof and consent.
+
+Available location requires finite latitude/longitude, accuracyMeters 0–100000, and a valid capturedAt within five minutes of server time. Otherwise omit location. Coordinates are client reported, not independently verified. Activation never automatically queries hospital listings. Contact snapshot maximum is 20; five new activations per patient per ten minutes yields explicit 429/Retry-After. No consenting contacts still creates an honest incident with no delivery claim. Alert jobs expire at 30 minutes, closure jobs at 24 hours. Suppression/revocation cannot recall already accepted/in-flight messages. Provider simulation sends no external request; verified_partner mode is rejected and no acceptance/dispatch callback exists. No generic route can manufacture a successful delivery or dispatch confirmation.
 
 ## Jobs, notification status and external adapters
 GET /jobs/{id} requires the same permission as its originating feature and current patient scope. GET /notifications?subjectType=&subjectId= requires the originating feature's read permission (prescription.read, cabinet.read, dose.read, task.read, or incident access). Return job and attempt states, never raw channel secrets. No generic user route lets clients mark notification accepted, provider confirmed or job succeeded.
@@ -217,7 +306,7 @@ Request:
 ```
 Response 200:
 ```json
-{"data":{"id":"222222222222222222222222","state":"taken","actionRevision":1,"stockSyncStatus":"pending","actionId":"333333333333333333333333"},"meta":{"requestId":"example-request"}}
+{"data":{"dose":{"id":"222222222222222222222222","state":"taken","actionRevision":1,"stockSyncStatus":"not_implemented"},"stockSyncStatus":"not_implemented","actionId":"333333333333333333333333"},"meta":{"requestId":"example-request"}}
 ```
 All example IDs and values are synthetic. Success records the dose, not an external delivery guarantee. Retry rechecks access and returns the same action; conflicting body or a stale expectedRevision under a new key returns 409.
 
@@ -228,3 +317,18 @@ For every selected route, implement server validation, active grant checks, pati
 
 Additional integration checks: confirmed versions cannot be patched; stale schedule preview rejected; dose double-submit deducts stock once; correction cancels stale stock work; simultaneous stock updates cannot underflow; queued sends recheck revocation; wrong label never silently matched; SOS without location still creates incident; provider simulation never reports real dispatch. Final contract values (limits and delays) are initial project defaults and can be revised with a recorded version.
 
+## Step 28 reminder reconciliation update — 4 November 2026
+Routes/request bodies and public history fields are unchanged. A worker restarted without Telegram configuration now reconciles **already committed pending jobs** as well as new requests: expired/WINDOW_EXPIRED at expiresAtUTC <= now, otherwise disabled/NOT_CONFIGURED. No processing attempt is added by this reconciliation, and dose state/history are untouched. Existing attempts remain retained. Restoring configuration does not implicitly resend a disabled job; explicit owner retry retains the Step 27 eligibility/expiry/three-attempt checks. An expired processing lease stays unknown/WORKER_INTERRUPTED, including when the adapter is disabled. The worker continues bounded recovery while progress is made; CLI processed counts work units, not delivered messages. Date bounds are based on saved UTC due times and selected IANA calendar; a snooze crossing midnight does not move the dose's original due-day membership. See [Step 28 tests and operating policy](STEP_28_TIMEZONE_RESTARTS.md). Stock effects and C3 follow-up remain future contracts, not assertions of this audit.
+
+## Step 29 hosting/readiness contract — 4 November 2026
+The combined HTTP entrypoint serves the compiled Vite app and existing /api/v1 routes from one origin; domain request bodies, permissions, CSRF and idempotency are preserved. Production requires an explicit private MONGODB_URI and exact HTTPS ALLOWED_ORIGINS; defaults bind 0.0.0.0 and serve the compiled client, with host-provided PORT. Start accepts an optional local .env and fails before listening for invalid/missing production configuration, missing required build, unavailable DB or nontransactional topology. Production API and worker startup check replica-set/mongos session capability; actual cloud privileges/workflows still require verification.
+
+GET /api/health is public, side-effect-free and no-store: 200 {database:"connected"} after a bounded DB ping, otherwise 503 {database:"unavailable"}, with no URI/error detail. It does not certify worker availability or external delivery. Unknown /api paths and missing assets/dotfiles return JSON 404 rather than the SPA HTML; GET HTML navigation can fall back to the compiled index. Production legacy /api/notes and /api/demo-records remain 404. Session cookies remain HttpOnly, Secure in production, SameSite=Lax and path /api/v1; the chosen same-origin layout avoids introducing cross-site CORS or SameSite=None. No harness endpoint/demo clock is added to the production entrypoint. [Step 29 preparation, verification limits and open deployment gate](STEP_29_DEPLOYMENT_MODULE2.md).
+
+
+## Step 34 C3 refinements
+See [implementation and worker policy](STEP_34_DOSE_FOLLOWUPS.md). C3 uses a separate follow-up status (overdue-unconfirmed/acknowledged/resolved), one unique record per occurrence, and a generic C1 task/job for durable notifications. C2 pending is preserved. Manual outcomes: contacted_patient, unable_to_contact, other; notes 0–2000 chars. Worker outcomes: dose_recorded or schedule_cancelled. Acknowledgement/resolution suppress queued pending notices; resolution never records a taken/skipped dose. All writes require CSRF, UUID Idempotency-Key and revisions. Opt-out, changed recipient, revoked access, acknowledgement, resolution or terminal dose blocks eligibility before sending. Current snooze time defers escalation if later than due time plus delay. Source rows/history survive restart. Configuring a new caregiver affects new follow-ups only; no duplicate escalation for an already linked occurrence.
+C3 detail also includes medicineText from the saved schedule-version source; it does not infer a medicine identity from current cabinet display fields.
+
+## Step 38 current-role and phone validation audit
+SOS cancel/resolve check the caller is a current SOS manager or the originating activator before returning even a successful stored receipt; losing sos.manage while retaining sos.activate cannot replay another activator's closure. The transactional role check remains for new transitions. Contact/callback phone inputs allow 5–30 characters with at least five digits, a leading digit after at most one leading plus, and supported space/parenthesis/hyphen separators. Malformed plus placement returns 422, matching the dial-link format. No schema or assessed-scope change. See STEP_38_FAILURE_PERMISSION_AUDIT.md and its before/final evidence.

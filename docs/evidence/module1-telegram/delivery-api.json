@@ -1,0 +1,47 @@
+{
+  "at": "2026-11-21T17:51:47.866Z",
+  "bot": "Medi911_bot",
+  "configured": true,
+  "activeLinks": 1,
+  "workerLastActiveAt": "2026-11-21T17:51:42.613Z",
+  "challengeStates": [],
+  "taskId": "6b01d9db8c442580a645bed6",
+  "synthetic": true,
+  "actor": "Codex-operated user-authorized real transport check; not Sahir individual viva/contribution evidence",
+  "task": {
+    "patientId": "6b01d7b98c442580a645bdd6",
+    "createdByUserId": "6b01d7b98c442580a645bdd4",
+    "assigneeUserId": "6b01d7b98c442580a645bde2",
+    "title": "Synthetic Module 1 Telegram receipt test 2026-11-21T17:43:45.690Z",
+    "type": "general",
+    "status": "open",
+    "assignmentGeneration": 0,
+    "schemaVersion": 1,
+    "revision": 1,
+    "createdAt": "2026-11-21T17:50:19.805Z",
+    "updatedAt": "2026-11-21T17:51:47.707Z",
+    "acknowledgedAt": "2026-11-21T17:51:47.707Z",
+    "acknowledgedByUserId": "6b01d7b98c442580a645bde2",
+    "id": "6b01d9db8c442580a645bed6"
+  },
+  "notifications": [
+    {
+      "id": "6b01d9db8c442580a645bedd",
+      "recipientId": "6b01d7b98c442580a645bde2",
+      "generation": 0,
+      "status": "sent",
+      "errorCode": null,
+      "attemptCount": 1,
+      "createdAt": "2026-11-21T17:50:19.808Z",
+      "attempts": [
+        {
+          "id": "6b01d9e0bb9d7e753ef3d68f",
+          "attemptNumber": 1,
+          "status": "accepted_by_channel",
+          "attemptedAt": "2026-11-21T17:50:24.613Z",
+          "errorCode": null
+        }
+      ]
+    }
+  ]
+}

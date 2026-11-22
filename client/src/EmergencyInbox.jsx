@@ -1,0 +1,31 @@
+import {useEffect,useRef,useState} from "react";
+const callHref=value=>/^\+?[0-9][0-9 ()-]{4,29}$/.test(value||"")?"tel:"+value.replace(/[^+0-9]/g,""):null;
+export default function EmergencyInbox({api,userId,onBusy}) {
+  const [invitations,setInvitations]=useState([]),[incidents,setIncidents]=useState([]),[next,setNext]=useState(null),[error,setError]=useState(""),[busy,setBusy]=useState(false);
+  const lock=useRef(false),receipt=useRef(null);
+  const [channels,setChannels]=useState(null),[challengeUrl,setChallengeUrl]=useState(""),[channelConsent,setChannelConsent]=useState(false);
+  async function load(){const [a,b,c]=await Promise.all([api("/me/emergency-invitations"),api("/me/sos-incidents"),api("/me/channel-links")]);setInvitations(a.data);setIncidents(b.data.incidents);setNext(b.data.next);setChannels(c.data);}
+  useEffect(()=>{let active=true;const c=new AbortController();Promise.all([api("/me/emergency-invitations",{signal:c.signal}),api("/me/sos-incidents",{signal:c.signal}),api("/me/channel-links",{signal:c.signal})]).then(([a,b,channel])=>{if(active){setInvitations(a.data);setIncidents(b.data.incidents);setNext(b.data.next);setChannels(channel.data);}}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;c.abort();};},[userId]);
+  async function act(path,body,method="POST"){if(lock.current)return;lock.current=true;setBusy(true);onBusy(true);setError("");const signature=JSON.stringify([path,method,body]);if(receipt.current?.signature!==signature)receipt.current={signature,key:crypto.randomUUID()};try{const result=await api(path,{method,body:JSON.stringify(body),headers:{"Idempotency-Key":receipt.current.key}});if(result?.data?.challengeUrl)setChallengeUrl(result.data.challengeUrl);if(path.endsWith("/confirm")||method==="DELETE"){setChallengeUrl("");setChannelConsent(false);}await load();receipt.current=null;}catch(e){setError(e.message);}finally{lock.current=false;setBusy(false);onBusy(false);}}
+  return <section className="card"><h2>Emergency inbox</h2><p>Your recipient account ID: <code>{userId}</code>. Share this ID with the patient owner only if you wish to receive an invitation.</p><p>Accepting shares that patient's SOS status, optional location and callback number with your account. It grants no access to their clinical chart. Telegram linking below is a separate consent step; this inbox works without it.</p>
+    {error&&<p role="alert">{error}</p>}
+    <button disabled={busy} onClick={async()=>{if(lock.current)return;lock.current=true;setBusy(true);onBusy(true);try{await load();setError("");}catch(e){setError(e.message);}finally{lock.current=false;setBusy(false);onBusy(false);}}}>Refresh emergency inbox</button>
+    <h3>Your private Telegram channel</h3>
+    {!channels?<p>Loading channel status.</p>:<>
+      {!channels.configured&&<p>Telegram is not configured. The inbox and contact consent still work; live SOS delivery remains unverified.</p>}
+      {channels.configured&&<p>Bot: @{channels.botUsername}. Start only your own private bot chat, then refresh this inbox.</p>}
+      {channels.links.map(l=><p key={l.id}>Linked account {l.accountHint} <button disabled={busy} onClick={()=>act("/me/channel-links/"+l.id,{},"DELETE")}>Unlink my Telegram</button></p>)}
+      {!channels.links.length&&<button disabled={busy||!channels.configured} onClick={()=>act("/me/channel-link-challenges",{provider:"telegram"})}>Generate my Telegram linking code</button>}
+      {challengeUrl&&<p><a href={challengeUrl} target="_blank" rel="noreferrer">Open my private bot linking invitation</a>. Expires in ten minutes; keep this URL private.</p>}
+      {channels.challenges.map(c=><div key={c.id}><p>Channel linking: {c.status} · expires {c.expiresAt}</p>{c.status==="proposed"&&!channels.links.length&&<><label><input type="checkbox" checked={channelConsent} disabled={busy} onChange={e=>setChannelConsent(e.target.checked)}/>I started this private bot chat and consent to generic notices.</label><button disabled={busy||!channelConsent} onClick={()=>act("/me/channel-link-challenges/"+c.id+"/confirm",{expectedRevision:c.revision,consent:true})}>Confirm my private Telegram link</button></>}</div>)}
+    </>}
+    <h3>Contact invitations</h3>{!invitations.length&&<p>No invitations.</p>}{invitations.map(c=><article key={c.id}><p>{c.patientName} · {c.status}{c.status==="pending"&&c.expired?" · invitation expired":""}</p>
+      {c.status==="pending"&&!c.expired&&["consent","decline"].map(action=><button key={action} disabled={busy} onClick={()=>act("/me/emergency-invitations/"+c.id+"/respond",{expectedRevision:c.revision,action})}>{action==="consent"?"Accept SOS contact invitation":"Decline SOS contact invitation"}</button>)}
+      {c.status==="active"&&<button disabled={busy} onClick={()=>act("/me/emergency-invitations/"+c.id+"/respond",{expectedRevision:c.revision,action:"revoke"})}>Revoke my SOS contact consent</button>}
+    </article>)}
+    <h3>Consented incidents</h3>{!incidents.length&&<p>No visible incidents.</p>}{incidents.map(i=><article key={i.id}><h3>{i.patientName}: {i.status}</h3><p>Activated: {i.activatedAt}</p><p>Location: {i.locationStatus}</p>{i.location&&<p>{i.location.latitude}, {i.location.longitude} · accuracy {i.location.accuracyMeters} metres · {i.location.capturedAt}</p>}{callHref(i.callbackPhone)&&<p><a href={callHref(i.callbackPhone)}>Call incident callback number</a></p>}<p>{i.acknowledged?"You acknowledged this incident.":i.acknowledgementExpired?"Acknowledgement window expired.":"Not acknowledged by you."}</p>
+      {i.status==="active"&&!i.acknowledged&&!i.acknowledgementExpired&&<button disabled={busy} onClick={()=>act("/me/sos-incidents/"+i.id+"/acknowledge",{expectedRevision:i.revision})}>Acknowledge SOS incident</button>}<p>Acknowledgement does not confirm that a provider accepted a request or that help was dispatched.</p>
+    </article>)}
+    {next&&<button disabled={busy} onClick={async()=>{if(lock.current)return;lock.current=true;setBusy(true);onBusy(true);try{const r=await api("/me/sos-incidents?before="+next);setIncidents(v=>[...v,...r.data.incidents]);setNext(r.data.next);}catch(e){setError(e.message);}finally{lock.current=false;setBusy(false);onBusy(false);}}}>Load older inbox incidents</button>}
+  </section>;
+}

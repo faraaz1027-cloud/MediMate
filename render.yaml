@@ -1,0 +1,32 @@
+# Review-only web configuration. Apply after the feature stack is reviewed/merged.
+# Does not provision MongoDB or an always-running reminder worker.
+# No paid services are declared. See docs/STEP_29_DEPLOYMENT_MODULE2.md.
+services:
+  - type: web
+    name: medimate-module2-web
+    runtime: node
+    repo: https://github.com/faraaz1027-cloud/MediMate
+    branch: main
+    region: singapore
+    plan: free
+    autoDeployTrigger: "off"
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: SERVE_CLIENT
+        value: "true"
+      - key: MONGODB_URI
+        sync: false
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: TELEGRAM_BOT_TOKEN
+        value: ""
+      - key: TELEGRAM_BOT_USERNAME
+        value: ""

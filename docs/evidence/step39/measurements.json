@@ -1,0 +1,1527 @@
+{
+  "recordedAt": "2026-11-21T10:18:37.931Z",
+  "synthetic": true,
+  "host": {
+    "platform": "win32",
+    "release": "10.0.26200",
+    "cpu": "AMD Ryzen 5 5600X 6-Core Processor",
+    "logicalCpus": 12,
+    "totalGiB": 16
+  },
+  "limitations": [
+    "Loopback origin, disposable replica database and controlled providers.",
+    "CLI Lighthouse uses simulated throttling and an isolated headless profile.",
+    "Bootstrap session redirect is measurement-only and contributes to these timings.",
+    "Native Chrome uses the existing profile/extensions; counts include extension requests.",
+    "Single-run measurements with one diagnostic desktop repeat; no field-percentile claim."
+  ],
+  "runs": [
+    {
+      "file": "desktop-after.report.json",
+      "at": "2026-11-21T10:04:29.412Z",
+      "lighthouse": "13.6.0",
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36",
+        "benchmarkIndex": 3685,
+        "credits": {
+          "axe-core": "4.14.0"
+        }
+      },
+      "config": {
+        "output": [
+          "json",
+          "html"
+        ],
+        "maxWaitForFcp": 30000,
+        "maxWaitForLoad": 45000,
+        "pauseAfterFcpMs": 1000,
+        "pauseAfterLoadMs": 1000,
+        "networkQuietThresholdMs": 1000,
+        "cpuQuietThresholdMs": 1000,
+        "formFactor": "desktop",
+        "throttling": {
+          "rttMs": 40,
+          "throughputKbps": 10240,
+          "requestLatencyMs": 0,
+          "downloadThroughputKbps": 0,
+          "uploadThroughputKbps": 0,
+          "cpuSlowdownMultiplier": 1
+        },
+        "throttlingMethod": "simulate",
+        "screenEmulation": {
+          "mobile": false,
+          "width": 1350,
+          "height": 940,
+          "deviceScaleFactor": 1,
+          "disabled": false
+        },
+        "emulatedUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+        "auditMode": false,
+        "gatherMode": false,
+        "clearStorageTypes": [
+          "file_systems",
+          "shader_cache",
+          "service_workers",
+          "cache_storage"
+        ],
+        "disableStorageReset": false,
+        "debugNavigation": false,
+        "channel": "cli",
+        "usePassiveGathering": false,
+        "disableFullPageScreenshot": false,
+        "skipAboutBlank": false,
+        "blankPage": "about:blank",
+        "ignoreStatusCode": false,
+        "locale": "en-US",
+        "blockedUrlPatterns": null,
+        "additionalTraceCategories": null,
+        "extraHeaders": null,
+        "precomputedLanternData": null,
+        "onlyAudits": null,
+        "onlyCategories": [
+          "performance",
+          "accessibility",
+          "best-practices"
+        ],
+        "skipAudits": null
+      },
+      "url": "http://127.0.0.1:17339/",
+      "warnings": [
+        "The page may not be loading as expected because your test URL (http://127.0.0.1:17339/__step39/session) was redirected to http://127.0.0.1:17339/. Try testing the second URL directly."
+      ],
+      "scores": {
+        "performance": 76,
+        "accessibility": 100,
+        "best-practices": 100
+      },
+      "metrics": {
+        "first-contentful-paint": {
+          "value": 243.97200000000004,
+          "unit": "millisecond"
+        },
+        "largest-contentful-paint": {
+          "value": 686.2959999999999,
+          "unit": "millisecond"
+        },
+        "cumulative-layout-shift": {
+          "value": 0.8020878157622121,
+          "unit": "unitless"
+        },
+        "total-blocking-time": {
+          "value": 0,
+          "unit": "millisecond"
+        },
+        "speed-index": {
+          "value": 243.97200000000004,
+          "unit": "millisecond"
+        }
+      },
+      "requests": 9,
+      "transferBytes": 407088,
+      "network": [
+        {
+          "url": "http://127.0.0.1:17339/__step39/session",
+          "status": 302,
+          "transferBytes": 403,
+          "startMs": 0.5239999998593703,
+          "endMs": 2.006999999866821,
+          "durationMs": 1.4830000000074506
+        },
+        {
+          "url": "http://127.0.0.1:17339/",
+          "status": 200,
+          "type": "Document",
+          "transferBytes": 952,
+          "startMs": 2.2589999999618158,
+          "endMs": 3.740999999921769,
+          "durationMs": 1.4819999999599531
+        },
+        {
+          "url": "http://127.0.0.1:17339/assets/index-BuahnYIp.js",
+          "status": 200,
+          "type": "Script",
+          "transferBytes": 394792,
+          "startMs": 58.12599999981467,
+          "endMs": 62.45699999993667,
+          "durationMs": 4.331000000122003
+        },
+        {
+          "url": "http://127.0.0.1:17339/assets/index-BBJ7rxoo.css",
+          "status": 200,
+          "type": "Stylesheet",
+          "transferBytes": 6685,
+          "startMs": 58.27700000000186,
+          "endMs": 60.50799999991432,
+          "durationMs": 2.2309999999124557
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/auth/csrf",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 443,
+          "startMs": 95.61699999996927,
+          "endMs": 98.19899999990594,
+          "durationMs": 2.58199999993667
+        },
+        {
+          "url": "http://127.0.0.1:17339/favicon.svg",
+          "status": 200,
+          "type": "Other",
+          "transferBytes": 523,
+          "startMs": 96.35899999982212,
+          "endMs": 97.82099999987986,
+          "durationMs": 1.462000000057742
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/auth/me",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 1208,
+          "startMs": 100.9069999998901,
+          "endMs": 105.9199999999255,
+          "durationMs": 5.01300000003539
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions?limit=20",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 684,
+          "startMs": 111.28399999986868,
+          "endMs": 116.16599999985192,
+          "durationMs": 4.881999999983236
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items?status=active&limit=100",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 1398,
+          "startMs": 111.66999999980908,
+          "endMs": 117.03999999992084,
+          "durationMs": 5.370000000111759
+        }
+      ],
+      "consoleErrors": []
+    },
+    {
+      "file": "desktop-final.report.json",
+      "at": "2026-11-21T10:07:03.929Z",
+      "lighthouse": "13.6.0",
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36",
+        "benchmarkIndex": 3705.5,
+        "credits": {
+          "axe-core": "4.14.0"
+        }
+      },
+      "config": {
+        "output": [
+          "json",
+          "html"
+        ],
+        "maxWaitForFcp": 30000,
+        "maxWaitForLoad": 45000,
+        "pauseAfterFcpMs": 1000,
+        "pauseAfterLoadMs": 1000,
+        "networkQuietThresholdMs": 1000,
+        "cpuQuietThresholdMs": 1000,
+        "formFactor": "desktop",
+        "throttling": {
+          "rttMs": 40,
+          "throughputKbps": 10240,
+          "requestLatencyMs": 0,
+          "downloadThroughputKbps": 0,
+          "uploadThroughputKbps": 0,
+          "cpuSlowdownMultiplier": 1
+        },
+        "throttlingMethod": "simulate",
+        "screenEmulation": {
+          "mobile": false,
+          "width": 1350,
+          "height": 940,
+          "deviceScaleFactor": 1,
+          "disabled": false
+        },
+        "emulatedUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+        "auditMode": false,
+        "gatherMode": false,
+        "clearStorageTypes": [
+          "file_systems",
+          "shader_cache",
+          "service_workers",
+          "cache_storage"
+        ],
+        "disableStorageReset": false,
+        "debugNavigation": false,
+        "channel": "cli",
+        "usePassiveGathering": false,
+        "disableFullPageScreenshot": false,
+        "skipAboutBlank": false,
+        "blankPage": "about:blank",
+        "ignoreStatusCode": false,
+        "locale": "en-US",
+        "blockedUrlPatterns": null,
+        "additionalTraceCategories": null,
+        "extraHeaders": null,
+        "precomputedLanternData": null,
+        "onlyAudits": null,
+        "onlyCategories": [
+          "performance",
+          "accessibility",
+          "best-practices"
+        ],
+        "skipAudits": null
+      },
+      "url": "http://127.0.0.1:17339/",
+      "warnings": [
+        "The page may not be loading as expected because your test URL (http://127.0.0.1:17339/__step39/session) was redirected to http://127.0.0.1:17339/. Try testing the second URL directly."
+      ],
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100
+      },
+      "metrics": {
+        "first-contentful-paint": {
+          "value": 243.7653,
+          "unit": "millisecond"
+        },
+        "largest-contentful-paint": {
+          "value": 686.0204,
+          "unit": "millisecond"
+        },
+        "cumulative-layout-shift": {
+          "value": 0.01713921428002231,
+          "unit": "unitless"
+        },
+        "total-blocking-time": {
+          "value": 0,
+          "unit": "millisecond"
+        },
+        "speed-index": {
+          "value": 243.7653,
+          "unit": "millisecond"
+        }
+      },
+      "requests": 9,
+      "transferBytes": 407117,
+      "network": [
+        {
+          "url": "http://127.0.0.1:17339/__step39/session",
+          "status": 302,
+          "transferBytes": 403,
+          "startMs": 0.5199999999022111,
+          "endMs": 2.8390000000363216,
+          "durationMs": 2.3190000001341105
+        },
+        {
+          "url": "http://127.0.0.1:17339/",
+          "status": 200,
+          "type": "Document",
+          "transferBytes": 952,
+          "startMs": 3.0740000000223517,
+          "endMs": 4.410999999963678,
+          "durationMs": 1.3369999999413267
+        },
+        {
+          "url": "http://127.0.0.1:17339/assets/index-Bvk2oNdR.js",
+          "status": 200,
+          "type": "Script",
+          "transferBytes": 394792,
+          "startMs": 11.535999999963678,
+          "endMs": 14.785999999963678,
+          "durationMs": 3.25
+        },
+        {
+          "url": "http://127.0.0.1:17339/assets/index-_1GjzDs9.css",
+          "status": 200,
+          "type": "Stylesheet",
+          "transferBytes": 6714,
+          "startMs": 11.687999999965541,
+          "endMs": 13.84499999997206,
+          "durationMs": 2.1570000000065193
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/auth/csrf",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 443,
+          "startMs": 47.192000000039116,
+          "endMs": 49.67299999995157,
+          "durationMs": 2.4809999999124557
+        },
+        {
+          "url": "http://127.0.0.1:17339/favicon.svg",
+          "status": 200,
+          "type": "Other",
+          "transferBytes": 523,
+          "startMs": 48.59299999999348,
+          "endMs": 52.03499999991618,
+          "durationMs": 3.4419999999227002
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/auth/me",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 1208,
+          "startMs": 50.58699999994133,
+          "endMs": 54.544999999925494,
+          "durationMs": 3.9579999999841675
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions?limit=20",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 684,
+          "startMs": 59.20299999997951,
+          "endMs": 63.54000000003725,
+          "durationMs": 4.337000000057742
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items?status=active&limit=100",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 1398,
+          "startMs": 59.421999999904074,
+          "endMs": 64.28200000000652,
+          "durationMs": 4.8600000001024455
+        }
+      ],
+      "consoleErrors": []
+    },
+    {
+      "file": "desktop-repeat.json",
+      "at": "2026-11-21T10:06:01.488Z",
+      "lighthouse": "13.6.0",
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36",
+        "benchmarkIndex": 3639.5,
+        "credits": {
+          "axe-core": "4.14.0"
+        }
+      },
+      "config": {
+        "output": [
+          "json"
+        ],
+        "maxWaitForFcp": 30000,
+        "maxWaitForLoad": 45000,
+        "pauseAfterFcpMs": 1000,
+        "pauseAfterLoadMs": 1000,
+        "networkQuietThresholdMs": 1000,
+        "cpuQuietThresholdMs": 1000,
+        "formFactor": "desktop",
+        "throttling": {
+          "rttMs": 40,
+          "throughputKbps": 10240,
+          "requestLatencyMs": 0,
+          "downloadThroughputKbps": 0,
+          "uploadThroughputKbps": 0,
+          "cpuSlowdownMultiplier": 1
+        },
+        "throttlingMethod": "simulate",
+        "screenEmulation": {
+          "mobile": false,
+          "width": 1350,
+          "height": 940,
+          "deviceScaleFactor": 1,
+          "disabled": false
+        },
+        "emulatedUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+        "auditMode": false,
+        "gatherMode": false,
+        "clearStorageTypes": [
+          "file_systems",
+          "shader_cache",
+          "service_workers",
+          "cache_storage"
+        ],
+        "disableStorageReset": false,
+        "debugNavigation": false,
+        "channel": "cli",
+        "usePassiveGathering": false,
+        "disableFullPageScreenshot": false,
+        "skipAboutBlank": false,
+        "blankPage": "about:blank",
+        "ignoreStatusCode": false,
+        "locale": "en-US",
+        "blockedUrlPatterns": null,
+        "additionalTraceCategories": null,
+        "extraHeaders": null,
+        "precomputedLanternData": null,
+        "onlyAudits": null,
+        "onlyCategories": [
+          "performance",
+          "accessibility",
+          "best-practices"
+        ],
+        "skipAudits": null
+      },
+      "url": "http://127.0.0.1:17339/",
+      "warnings": [
+        "The page may not be loading as expected because your test URL (http://127.0.0.1:17339/__step39/session) was redirected to http://127.0.0.1:17339/. Try testing the second URL directly."
+      ],
+      "scores": {
+        "performance": 76,
+        "accessibility": 100,
+        "best-practices": 100
+      },
+      "metrics": {
+        "first-contentful-paint": {
+          "value": 243.813,
+          "unit": "millisecond"
+        },
+        "largest-contentful-paint": {
+          "value": 687.084,
+          "unit": "millisecond"
+        },
+        "cumulative-layout-shift": {
+          "value": 0.8020878157622121,
+          "unit": "unitless"
+        },
+        "total-blocking-time": {
+          "value": 0,
+          "unit": "millisecond"
+        },
+        "speed-index": {
+          "value": 243.813,
+          "unit": "millisecond"
+        }
+      },
+      "requests": 9,
+      "transferBytes": 407088,
+      "network": [
+        {
+          "url": "http://127.0.0.1:17339/__step39/session",
+          "status": 302,
+          "transferBytes": 403,
+          "startMs": 0.5330000000540167,
+          "endMs": 2.756000000052154,
+          "durationMs": 2.2229999999981374
+        },
+        {
+          "url": "http://127.0.0.1:17339/",
+          "status": 200,
+          "type": "Document",
+          "transferBytes": 952,
+          "startMs": 2.9970000000903383,
+          "endMs": 4.589000000036322,
+          "durationMs": 1.5919999999459833
+        },
+        {
+          "url": "http://127.0.0.1:17339/assets/index-BuahnYIp.js",
+          "status": 200,
+          "type": "Script",
+          "transferBytes": 394792,
+          "startMs": 49.14099999994505,
+          "endMs": 52.14500000001863,
+          "durationMs": 3.0040000000735745
+        },
+        {
+          "url": "http://127.0.0.1:17339/assets/index-BBJ7rxoo.css",
+          "status": 200,
+          "type": "Stylesheet",
+          "transferBytes": 6685,
+          "startMs": 49.33500000007916,
+          "endMs": 51.42800000007264,
+          "durationMs": 2.0929999999934807
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/auth/csrf",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 443,
+          "startMs": 86.4440000000177,
+          "endMs": 89.18100000009872,
+          "durationMs": 2.737000000081025
+        },
+        {
+          "url": "http://127.0.0.1:17339/favicon.svg",
+          "status": 200,
+          "type": "Other",
+          "transferBytes": 523,
+          "startMs": 87.26199999998789,
+          "endMs": 90.54500000004191,
+          "durationMs": 3.2830000000540167
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/auth/me",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 1208,
+          "startMs": 90.98100000014529,
+          "endMs": 96.29400000011083,
+          "durationMs": 5.312999999965541
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions?limit=20",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 684,
+          "startMs": 124.36800000001676,
+          "endMs": 129.81500000006054,
+          "durationMs": 5.447000000043772
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items?status=active&limit=100",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 1398,
+          "startMs": 124.93200000014622,
+          "endMs": 131.02600000007078,
+          "durationMs": 6.093999999924563
+        }
+      ],
+      "consoleErrors": []
+    },
+    {
+      "file": "desktop-reviewed.report.json",
+      "at": "2026-11-21T10:13:18.546Z",
+      "lighthouse": "13.6.0",
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36",
+        "benchmarkIndex": 3558,
+        "credits": {
+          "axe-core": "4.14.0"
+        }
+      },
+      "config": {
+        "output": [
+          "json",
+          "html"
+        ],
+        "maxWaitForFcp": 30000,
+        "maxWaitForLoad": 45000,
+        "pauseAfterFcpMs": 1000,
+        "pauseAfterLoadMs": 1000,
+        "networkQuietThresholdMs": 1000,
+        "cpuQuietThresholdMs": 1000,
+        "formFactor": "desktop",
+        "throttling": {
+          "rttMs": 40,
+          "throughputKbps": 10240,
+          "requestLatencyMs": 0,
+          "downloadThroughputKbps": 0,
+          "uploadThroughputKbps": 0,
+          "cpuSlowdownMultiplier": 1
+        },
+        "throttlingMethod": "simulate",
+        "screenEmulation": {
+          "mobile": false,
+          "width": 1350,
+          "height": 940,
+          "deviceScaleFactor": 1,
+          "disabled": false
+        },
+        "emulatedUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36",
+        "auditMode": false,
+        "gatherMode": false,
+        "clearStorageTypes": [
+          "file_systems",
+          "shader_cache",
+          "service_workers",
+          "cache_storage"
+        ],
+        "disableStorageReset": false,
+        "debugNavigation": false,
+        "channel": "cli",
+        "usePassiveGathering": false,
+        "disableFullPageScreenshot": false,
+        "skipAboutBlank": false,
+        "blankPage": "about:blank",
+        "ignoreStatusCode": false,
+        "locale": "en-US",
+        "blockedUrlPatterns": null,
+        "additionalTraceCategories": null,
+        "extraHeaders": null,
+        "precomputedLanternData": null,
+        "onlyAudits": null,
+        "onlyCategories": [
+          "performance",
+          "accessibility",
+          "best-practices"
+        ],
+        "skipAudits": null
+      },
+      "url": "http://127.0.0.1:17339/",
+      "warnings": [
+        "The page may not be loading as expected because your test URL (http://127.0.0.1:17339/__step39/session) was redirected to http://127.0.0.1:17339/. Try testing the second URL directly."
+      ],
+      "scores": {
+        "performance": 100,
+        "accessibility": 100,
+        "best-practices": 100
+      },
+      "metrics": {
+        "first-contentful-paint": {
+          "value": 605.14135,
+          "unit": "millisecond"
+        },
+        "largest-contentful-paint": {
+          "value": 687.5218,
+          "unit": "millisecond"
+        },
+        "cumulative-layout-shift": {
+          "value": 0.018327544788474124,
+          "unit": "unitless"
+        },
+        "total-blocking-time": {
+          "value": 0,
+          "unit": "millisecond"
+        },
+        "speed-index": {
+          "value": 605.14135,
+          "unit": "millisecond"
+        }
+      },
+      "requests": 9,
+      "transferBytes": 407102,
+      "network": [
+        {
+          "url": "http://127.0.0.1:17339/__step39/session",
+          "status": 302,
+          "transferBytes": 403,
+          "startMs": 0.5410000002011657,
+          "endMs": 2.9220000002533197,
+          "durationMs": 2.381000000052154
+        },
+        {
+          "url": "http://127.0.0.1:17339/",
+          "status": 200,
+          "type": "Document",
+          "transferBytes": 952,
+          "startMs": 3.1790000000037253,
+          "endMs": 4.427000000141561,
+          "durationMs": 1.2480000001378357
+        },
+        {
+          "url": "http://127.0.0.1:17339/assets/index-CCPfzUd1.js",
+          "status": 200,
+          "type": "Script",
+          "transferBytes": 394777,
+          "startMs": 46.3570000003092,
+          "endMs": 54.83500000019558,
+          "durationMs": 8.477999999886379
+        },
+        {
+          "url": "http://127.0.0.1:17339/assets/index-_1GjzDs9.css",
+          "status": 200,
+          "type": "Stylesheet",
+          "transferBytes": 6714,
+          "startMs": 46.57000000029802,
+          "endMs": 49.31400000001304,
+          "durationMs": 2.7439999997150153
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/auth/csrf",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 443,
+          "startMs": 83.3410000000149,
+          "endMs": 85.54799999995157,
+          "durationMs": 2.20699999993667
+        },
+        {
+          "url": "http://127.0.0.1:17339/favicon.svg",
+          "status": 200,
+          "type": "Other",
+          "transferBytes": 523,
+          "startMs": 83.52700000000186,
+          "endMs": 86.66000000014901,
+          "durationMs": 3.133000000147149
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/auth/me",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 1208,
+          "startMs": 86.93700000015087,
+          "endMs": 90.6820000000298,
+          "durationMs": 3.744999999878928
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions?limit=20",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 684,
+          "startMs": 95.68699999991804,
+          "endMs": 99.51100000017323,
+          "durationMs": 3.8240000002551824
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items?status=active&limit=100",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 1398,
+          "startMs": 96.07900000014342,
+          "endMs": 100.32500000018626,
+          "durationMs": 4.246000000042841
+        }
+      ],
+      "consoleErrors": []
+    },
+    {
+      "file": "mobile-after.report.json",
+      "at": "2026-11-21T10:03:40.911Z",
+      "lighthouse": "13.6.0",
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Mobile Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36",
+        "benchmarkIndex": 3676.5,
+        "credits": {
+          "axe-core": "4.14.0"
+        }
+      },
+      "config": {
+        "output": [
+          "json",
+          "html"
+        ],
+        "maxWaitForFcp": 30000,
+        "maxWaitForLoad": 45000,
+        "pauseAfterFcpMs": 1000,
+        "pauseAfterLoadMs": 1000,
+        "networkQuietThresholdMs": 1000,
+        "cpuQuietThresholdMs": 1000,
+        "formFactor": "mobile",
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675,
+          "cpuSlowdownMultiplier": 4
+        },
+        "throttlingMethod": "simulate",
+        "screenEmulation": {
+          "mobile": true,
+          "width": 412,
+          "height": 823,
+          "deviceScaleFactor": 1.75,
+          "disabled": false
+        },
+        "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+        "auditMode": false,
+        "gatherMode": false,
+        "clearStorageTypes": [
+          "file_systems",
+          "shader_cache",
+          "service_workers",
+          "cache_storage"
+        ],
+        "disableStorageReset": false,
+        "debugNavigation": false,
+        "channel": "cli",
+        "usePassiveGathering": false,
+        "disableFullPageScreenshot": false,
+        "skipAboutBlank": false,
+        "blankPage": "about:blank",
+        "ignoreStatusCode": false,
+        "locale": "en-US",
+        "blockedUrlPatterns": null,
+        "additionalTraceCategories": null,
+        "extraHeaders": null,
+        "precomputedLanternData": null,
+        "onlyAudits": null,
+        "onlyCategories": [
+          "performance",
+          "accessibility",
+          "best-practices"
+        ],
+        "skipAudits": null
+      },
+      "url": "http://127.0.0.1:17339/",
+      "warnings": [
+        "The page may not be loading as expected because your test URL (http://127.0.0.1:17339/__step39/session) was redirected to http://127.0.0.1:17339/. Try testing the second URL directly."
+      ],
+      "scores": {
+        "performance": 92,
+        "accessibility": 100,
+        "best-practices": 100
+      },
+      "metrics": {
+        "first-contentful-paint": {
+          "value": 905.4333,
+          "unit": "millisecond"
+        },
+        "largest-contentful-paint": {
+          "value": 3310.2444,
+          "unit": "millisecond"
+        },
+        "cumulative-layout-shift": {
+          "value": 0.04258632283027994,
+          "unit": "unitless"
+        },
+        "total-blocking-time": {
+          "value": 0,
+          "unit": "millisecond"
+        },
+        "speed-index": {
+          "value": 905.4333,
+          "unit": "millisecond"
+        }
+      },
+      "requests": 9,
+      "transferBytes": 407088,
+      "network": [
+        {
+          "url": "http://127.0.0.1:17339/__step39/session",
+          "status": 302,
+          "transferBytes": 403,
+          "startMs": 0.6089999999385327,
+          "endMs": 2.3989999998593703,
+          "durationMs": 1.7899999999208376
+        },
+        {
+          "url": "http://127.0.0.1:17339/",
+          "status": 200,
+          "type": "Document",
+          "transferBytes": 952,
+          "startMs": 2.60999999998603,
+          "endMs": 3.750999999931082,
+          "durationMs": 1.140999999945052
+        },
+        {
+          "url": "http://127.0.0.1:17339/assets/index-BuahnYIp.js",
+          "status": 200,
+          "type": "Script",
+          "transferBytes": 394792,
+          "startMs": 13.207999999867752,
+          "endMs": 17.181999999913387,
+          "durationMs": 3.974000000045635
+        },
+        {
+          "url": "http://127.0.0.1:17339/assets/index-BBJ7rxoo.css",
+          "status": 200,
+          "type": "Stylesheet",
+          "transferBytes": 6685,
+          "startMs": 13.369999999995343,
+          "endMs": 16.147999999928288,
+          "durationMs": 2.7779999999329448
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/auth/csrf",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 443,
+          "startMs": 49.64799999992829,
+          "endMs": 52.09799999999814,
+          "durationMs": 2.450000000069849
+        },
+        {
+          "url": "http://127.0.0.1:17339/favicon.svg",
+          "status": 200,
+          "type": "Other",
+          "transferBytes": 523,
+          "startMs": 50.652999999932945,
+          "endMs": 54.656999999890104,
+          "durationMs": 4.003999999957159
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/auth/me",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 1208,
+          "startMs": 53.26799999992363,
+          "endMs": 57.198999999905936,
+          "durationMs": 3.930999999982305
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions?limit=20",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 684,
+          "startMs": 61.94599999987986,
+          "endMs": 65.8519999999553,
+          "durationMs": 3.906000000075437
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items?status=active&limit=100",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 1398,
+          "startMs": 62.30299999983981,
+          "endMs": 68.05099999986123,
+          "durationMs": 5.74800000002142
+        }
+      ],
+      "consoleErrors": []
+    },
+    {
+      "file": "mobile-before.report.json",
+      "at": "2026-11-21T10:01:48.516Z",
+      "lighthouse": "13.6.0",
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Mobile Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36",
+        "benchmarkIndex": 3391.5,
+        "credits": {
+          "axe-core": "4.14.0"
+        }
+      },
+      "config": {
+        "output": [
+          "json",
+          "html"
+        ],
+        "maxWaitForFcp": 30000,
+        "maxWaitForLoad": 45000,
+        "pauseAfterFcpMs": 1000,
+        "pauseAfterLoadMs": 1000,
+        "networkQuietThresholdMs": 1000,
+        "cpuQuietThresholdMs": 1000,
+        "formFactor": "mobile",
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675,
+          "cpuSlowdownMultiplier": 4
+        },
+        "throttlingMethod": "simulate",
+        "screenEmulation": {
+          "mobile": true,
+          "width": 412,
+          "height": 823,
+          "deviceScaleFactor": 1.75,
+          "disabled": false
+        },
+        "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+        "auditMode": false,
+        "gatherMode": false,
+        "clearStorageTypes": [
+          "file_systems",
+          "shader_cache",
+          "service_workers",
+          "cache_storage"
+        ],
+        "disableStorageReset": false,
+        "debugNavigation": false,
+        "channel": "cli",
+        "usePassiveGathering": false,
+        "disableFullPageScreenshot": false,
+        "skipAboutBlank": false,
+        "blankPage": "about:blank",
+        "ignoreStatusCode": false,
+        "locale": "en-US",
+        "blockedUrlPatterns": null,
+        "additionalTraceCategories": null,
+        "extraHeaders": null,
+        "precomputedLanternData": null,
+        "onlyAudits": null,
+        "onlyCategories": [
+          "performance",
+          "accessibility",
+          "best-practices"
+        ],
+        "skipAudits": null
+      },
+      "url": "http://127.0.0.1:17339/",
+      "warnings": [
+        "The page may not be loading as expected because your test URL (http://127.0.0.1:17339/__step39/session) was redirected to http://127.0.0.1:17339/. Try testing the second URL directly."
+      ],
+      "scores": {
+        "performance": 68,
+        "accessibility": 100,
+        "best-practices": 96
+      },
+      "metrics": {
+        "first-contentful-paint": {
+          "value": 907.3491,
+          "unit": "millisecond"
+        },
+        "largest-contentful-paint": {
+          "value": 3313.7988,
+          "unit": "millisecond"
+        },
+        "cumulative-layout-shift": {
+          "value": 0.9258101428588281,
+          "unit": "unitless"
+        },
+        "total-blocking-time": {
+          "value": 0,
+          "unit": "millisecond"
+        },
+        "speed-index": {
+          "value": 907.3491,
+          "unit": "millisecond"
+        }
+      },
+      "requests": 9,
+      "transferBytes": 406752,
+      "network": [
+        {
+          "url": "http://127.0.0.1:17339/__step39/session",
+          "status": 302,
+          "transferBytes": 403,
+          "startMs": 0.5309999999590218,
+          "endMs": 3.052999999956228,
+          "durationMs": 2.521999999997206
+        },
+        {
+          "url": "http://127.0.0.1:17339/",
+          "status": 200,
+          "type": "Document",
+          "transferBytes": 886,
+          "startMs": 3.2660000000032596,
+          "endMs": 6.146999999997206,
+          "durationMs": 2.8809999999939464
+        },
+        {
+          "url": "http://127.0.0.1:17339/assets/index-EdpnbTAT.js",
+          "status": 200,
+          "type": "Script",
+          "transferBytes": 394711,
+          "startMs": 16.760000000009313,
+          "endMs": 20.57400000002235,
+          "durationMs": 3.8140000000130385
+        },
+        {
+          "url": "http://127.0.0.1:17339/assets/index-BBJ7rxoo.css",
+          "status": 200,
+          "type": "Stylesheet",
+          "transferBytes": 6685,
+          "startMs": 16.927000000025146,
+          "endMs": 22.103000000002794,
+          "durationMs": 5.175999999977648
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/auth/csrf",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 443,
+          "startMs": 54.88400000002002,
+          "endMs": 57.94600000005448,
+          "durationMs": 3.062000000034459
+        },
+        {
+          "url": "http://127.0.0.1:17339/favicon.ico",
+          "status": 404,
+          "type": "Other",
+          "transferBytes": 334,
+          "startMs": 55.10799999994924,
+          "endMs": 57.447999999974854,
+          "durationMs": 2.3400000000256114
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/auth/me",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 1208,
+          "startMs": 59.102000000013504,
+          "endMs": 63.57700000004843,
+          "durationMs": 4.475000000034925
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions?limit=20",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 684,
+          "startMs": 68.04300000000512,
+          "endMs": 74.23800000001211,
+          "durationMs": 6.195000000006985
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items?status=active&limit=100",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 1398,
+          "startMs": 68.45299999997951,
+          "endMs": 75.16200000001118,
+          "durationMs": 6.709000000031665
+        }
+      ],
+      "consoleErrors": [
+        {
+          "source": "network",
+          "description": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "sourceLocation": {
+            "type": "source-location",
+            "url": "http://127.0.0.1:17339/favicon.ico",
+            "urlProvider": "network",
+            "line": 0,
+            "column": 0
+          }
+        }
+      ]
+    },
+    {
+      "file": "mobile-final.report.json",
+      "at": "2026-11-21T10:07:41.873Z",
+      "lighthouse": "13.6.0",
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Mobile Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36",
+        "benchmarkIndex": 3631.5,
+        "credits": {
+          "axe-core": "4.14.0"
+        }
+      },
+      "config": {
+        "output": [
+          "json",
+          "html"
+        ],
+        "maxWaitForFcp": 30000,
+        "maxWaitForLoad": 45000,
+        "pauseAfterFcpMs": 1000,
+        "pauseAfterLoadMs": 1000,
+        "networkQuietThresholdMs": 1000,
+        "cpuQuietThresholdMs": 1000,
+        "formFactor": "mobile",
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675,
+          "cpuSlowdownMultiplier": 4
+        },
+        "throttlingMethod": "simulate",
+        "screenEmulation": {
+          "mobile": true,
+          "width": 412,
+          "height": 823,
+          "deviceScaleFactor": 1.75,
+          "disabled": false
+        },
+        "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+        "auditMode": false,
+        "gatherMode": false,
+        "clearStorageTypes": [
+          "file_systems",
+          "shader_cache",
+          "service_workers",
+          "cache_storage"
+        ],
+        "disableStorageReset": false,
+        "debugNavigation": false,
+        "channel": "cli",
+        "usePassiveGathering": false,
+        "disableFullPageScreenshot": false,
+        "skipAboutBlank": false,
+        "blankPage": "about:blank",
+        "ignoreStatusCode": false,
+        "locale": "en-US",
+        "blockedUrlPatterns": null,
+        "additionalTraceCategories": null,
+        "extraHeaders": null,
+        "precomputedLanternData": null,
+        "onlyAudits": null,
+        "onlyCategories": [
+          "performance",
+          "accessibility",
+          "best-practices"
+        ],
+        "skipAudits": null
+      },
+      "url": "http://127.0.0.1:17339/",
+      "warnings": [
+        "The page may not be loading as expected because your test URL (http://127.0.0.1:17339/__step39/session) was redirected to http://127.0.0.1:17339/. Try testing the second URL directly."
+      ],
+      "scores": {
+        "performance": 92,
+        "accessibility": 100,
+        "best-practices": 100
+      },
+      "metrics": {
+        "first-contentful-paint": {
+          "value": 904.2560999999998,
+          "unit": "millisecond"
+        },
+        "largest-contentful-paint": {
+          "value": 3309.6748,
+          "unit": "millisecond"
+        },
+        "cumulative-layout-shift": {
+          "value": 0.04258632283027994,
+          "unit": "unitless"
+        },
+        "total-blocking-time": {
+          "value": 0,
+          "unit": "millisecond"
+        },
+        "speed-index": {
+          "value": 904.2560999999998,
+          "unit": "millisecond"
+        }
+      },
+      "requests": 9,
+      "transferBytes": 407117,
+      "network": [
+        {
+          "url": "http://127.0.0.1:17339/__step39/session",
+          "status": 302,
+          "transferBytes": 403,
+          "startMs": 0.5250000000232831,
+          "endMs": 2.3260000000009313,
+          "durationMs": 1.8009999999776483
+        },
+        {
+          "url": "http://127.0.0.1:17339/",
+          "status": 200,
+          "type": "Document",
+          "transferBytes": 952,
+          "startMs": 2.569000000017695,
+          "endMs": 3.627000000094995,
+          "durationMs": 1.0580000000772998
+        },
+        {
+          "url": "http://127.0.0.1:17339/assets/index-Bvk2oNdR.js",
+          "status": 200,
+          "type": "Script",
+          "transferBytes": 394792,
+          "startMs": 12.732000000076368,
+          "endMs": 15.760000000009313,
+          "durationMs": 3.0279999999329448
+        },
+        {
+          "url": "http://127.0.0.1:17339/assets/index-_1GjzDs9.css",
+          "status": 200,
+          "type": "Stylesheet",
+          "transferBytes": 6714,
+          "startMs": 12.911000000080094,
+          "endMs": 14.841000000014901,
+          "durationMs": 1.9299999999348074
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/auth/csrf",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 443,
+          "startMs": 48.28099999995902,
+          "endMs": 50.96400000003632,
+          "durationMs": 2.6830000000772998
+        },
+        {
+          "url": "http://127.0.0.1:17339/favicon.svg",
+          "status": 200,
+          "type": "Other",
+          "transferBytes": 523,
+          "startMs": 48.48800000001211,
+          "endMs": 50.574999999953434,
+          "durationMs": 2.0869999999413267
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/auth/me",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 1208,
+          "startMs": 53.67399999999907,
+          "endMs": 57.74499999999534,
+          "durationMs": 4.070999999996275
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions?limit=20",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 684,
+          "startMs": 62.58500000007916,
+          "endMs": 66.35800000000745,
+          "durationMs": 3.772999999928288
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items?status=active&limit=100",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 1398,
+          "startMs": 62.961000000010245,
+          "endMs": 68.51400000008289,
+          "durationMs": 5.553000000072643
+        }
+      ],
+      "consoleErrors": []
+    },
+    {
+      "file": "mobile-reviewed.report.json",
+      "at": "2026-11-21T10:13:07.694Z",
+      "lighthouse": "13.6.0",
+      "environment": {
+        "networkUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/158.0.0.0 Mobile Safari/537.36",
+        "hostUserAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/158.0.0.0 Safari/537.36",
+        "benchmarkIndex": 3603.5,
+        "credits": {
+          "axe-core": "4.14.0"
+        }
+      },
+      "config": {
+        "output": [
+          "json",
+          "html"
+        ],
+        "maxWaitForFcp": 30000,
+        "maxWaitForLoad": 45000,
+        "pauseAfterFcpMs": 1000,
+        "pauseAfterLoadMs": 1000,
+        "networkQuietThresholdMs": 1000,
+        "cpuQuietThresholdMs": 1000,
+        "formFactor": "mobile",
+        "throttling": {
+          "rttMs": 150,
+          "throughputKbps": 1638.4,
+          "requestLatencyMs": 562.5,
+          "downloadThroughputKbps": 1474.5600000000002,
+          "uploadThroughputKbps": 675,
+          "cpuSlowdownMultiplier": 4
+        },
+        "throttlingMethod": "simulate",
+        "screenEmulation": {
+          "mobile": true,
+          "width": 412,
+          "height": 823,
+          "deviceScaleFactor": 1.75,
+          "disabled": false
+        },
+        "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+        "auditMode": false,
+        "gatherMode": false,
+        "clearStorageTypes": [
+          "file_systems",
+          "shader_cache",
+          "service_workers",
+          "cache_storage"
+        ],
+        "disableStorageReset": false,
+        "debugNavigation": false,
+        "channel": "cli",
+        "usePassiveGathering": false,
+        "disableFullPageScreenshot": false,
+        "skipAboutBlank": false,
+        "blankPage": "about:blank",
+        "ignoreStatusCode": false,
+        "locale": "en-US",
+        "blockedUrlPatterns": null,
+        "additionalTraceCategories": null,
+        "extraHeaders": null,
+        "precomputedLanternData": null,
+        "onlyAudits": null,
+        "onlyCategories": [
+          "performance",
+          "accessibility",
+          "best-practices"
+        ],
+        "skipAudits": null
+      },
+      "url": "http://127.0.0.1:17339/",
+      "warnings": [
+        "The page may not be loading as expected because your test URL (http://127.0.0.1:17339/__step39/session) was redirected to http://127.0.0.1:17339/. Try testing the second URL directly."
+      ],
+      "scores": {
+        "performance": 92,
+        "accessibility": 100,
+        "best-practices": 100
+      },
+      "metrics": {
+        "first-contentful-paint": {
+          "value": 905.6424000000001,
+          "unit": "millisecond"
+        },
+        "largest-contentful-paint": {
+          "value": 3311.5231999999996,
+          "unit": "millisecond"
+        },
+        "cumulative-layout-shift": {
+          "value": 0.04258632283027994,
+          "unit": "unitless"
+        },
+        "total-blocking-time": {
+          "value": 0,
+          "unit": "millisecond"
+        },
+        "speed-index": {
+          "value": 905.6424000000001,
+          "unit": "millisecond"
+        }
+      },
+      "requests": 9,
+      "transferBytes": 407102,
+      "network": [
+        {
+          "url": "http://127.0.0.1:17339/__step39/session",
+          "status": 302,
+          "transferBytes": 403,
+          "startMs": 0.6859999997541308,
+          "endMs": 2.5649999999441206,
+          "durationMs": 1.8790000001899898
+        },
+        {
+          "url": "http://127.0.0.1:17339/",
+          "status": 200,
+          "type": "Document",
+          "transferBytes": 952,
+          "startMs": 2.825999999884516,
+          "endMs": 4.004999999888241,
+          "durationMs": 1.1790000000037253
+        },
+        {
+          "url": "http://127.0.0.1:17339/assets/index-CCPfzUd1.js",
+          "status": 200,
+          "type": "Script",
+          "transferBytes": 394777,
+          "startMs": 56.71999999973923,
+          "endMs": 60.14599999971688,
+          "durationMs": 3.4259999999776483
+        },
+        {
+          "url": "http://127.0.0.1:17339/assets/index-_1GjzDs9.css",
+          "status": 200,
+          "type": "Stylesheet",
+          "transferBytes": 6714,
+          "startMs": 56.94799999985844,
+          "endMs": 59.325999999651685,
+          "durationMs": 2.3779999997932464
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/auth/csrf",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 443,
+          "startMs": 95.64599999994971,
+          "endMs": 98.45799999986775,
+          "durationMs": 2.8119999999180436
+        },
+        {
+          "url": "http://127.0.0.1:17339/favicon.svg",
+          "status": 200,
+          "type": "Other",
+          "transferBytes": 523,
+          "startMs": 96.70499999984168,
+          "endMs": 99.40099999983795,
+          "durationMs": 2.6959999999962747
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/auth/me",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 1208,
+          "startMs": 99.71999999973923,
+          "endMs": 108.01899999985471,
+          "durationMs": 8.299000000115484
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions?limit=20",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 684,
+          "startMs": 112.71299999998882,
+          "endMs": 116.52899999986403,
+          "durationMs": 3.8159999998752028
+        },
+        {
+          "url": "http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items?status=active&limit=100",
+          "status": 200,
+          "type": "Fetch",
+          "transferBytes": 1398,
+          "startMs": 113.09099999978207,
+          "endMs": 117.26099999970756,
+          "durationMs": 4.169999999925494
+        }
+      ],
+      "consoleErrors": []
+    }
+  ]
+}

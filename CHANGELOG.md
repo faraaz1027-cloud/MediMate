@@ -1,5 +1,40 @@
 # Change log
 
+## Step 24 — Module 1 technical integration
+- Implemented the planned optional instruction-to-cabinet reference with patient/permission checks, explicit UI selection and immutable historical references.
+- Preserved correction of archived references in replacement drafts while blocking new confirmation until an active reference is selected or cleared.
+- Added one-patient A1/B1/C1 API integration, live/controlled runner, shared UI regression checks and combined Postman evidence; verified actual browser OCR and DB readback.
+- Prepared owner demonstration/review materials. Full Module 1 acceptance remains open for real Telegram receipt, individual contributions/rehearsal, Jira and faculty sign-off.
+
+## Step 23 — C1 tasks and Telegram preparation
+- Added assignment/edit/accept/complete/reopen, append-only handover snapshots and separate authenticated acknowledgement.
+- Added private-chat proof plus in-app consent linking, hashed one-time codes, unlinking, a persisted task delivery queue/attempts and a separate Telegram polling worker.
+- Recheck assignment/access/link before send; keep uncertain outcomes unknown without blind resend. Missing bot configuration is explicitly disabled.
+- Added API/provider, DOM, two-account browser and Postman evidence. Real Telegram receipt remains unverified because no bot/test recipient is available; C1's final gate and Sahir's individual review remain open.
+
+## Step 22 — B1 live search and cabinet
+- Added bounded/cached RxNorm lookup, explicit candidate selection and server revalidation, source snapshots and honest manual fallback.
+- Added cabinet details, filters, revision-checked editing and archive with immutable history and an honest baseline for earlier items.
+- Kept external requests outside database transactions while allowing successful request replay during upstream outages.
+- Added API/provider and DOM checks, live Chromium evidence and a passing Postman collection; preserved Faraaz's ownership and remaining review/integration gates.
+
+## Step 21 — A1 prescription review and history
+- Added multi-line manual drafts and browser-local printed-image OCR with editable suggestions, timeout/cancellation and manual fallback.
+- Added explicit reviewed confirmation, immutable versions, replacements, field differences and archival, using scoped permissions, revision checks, idempotency and transactions.
+- Added additive source/timing/history schema fields, API and production-bundle DOM tests, Postman evidence and real browser checks; documented the change from proposed server asset/OCR jobs.
+- Preserved Ihfaz's ownership and remaining individual review, external API and Module 1 integration gates.
+
+## Step 20 — Shared UI and backend behavior
+- Added safe request errors, startup reconnect and explicit list retry/empty states.
+- Added shared accessible field validation, permission-aware navigation and view-context guards against stale records and old 401s.
+- Verified real mobile/keyboard states and controlled slow/failing requests; retained server-side authorization and explicit AI-assisted shared-work attribution.
+
+## Step 19 — Shared account and access workflows
+- Added profile editing, patient creation/editing and explicit owner/caregiver summaries.
+- Added registered-caregiver direct grants, permission editing, revocation and restoration UI/API, with transactional audit/replay and revision checks.
+- Reused session recovery from review PR #1 and corrected registration-to-logout navigation.
+- Added database access regression tests and a real Postman/Newman collection; this is shared infrastructure, not assessed-feature contribution credit.
+
 ## Step 18 — React integration
 - Added registration/login, patient selection and six API-backed create/list views.
 - Added loading/error/empty feedback, input preservation, retry keys and paginated lists.
@@ -44,4 +79,13 @@ Earlier entries below describe the state at those checkpoints and are superseded
 - Added a 15-page Word design submission, screen data, 24 supplementary SVG renderings and a standalone HTML prototype including simulated SOS.
 - Inspected the A1 Figma screenshot and rendered Word layout; checked prototype JavaScript syntax.
 - Recorded the remaining Figma interaction/export verification block caused by the Starter tool allowance. Step 14 is not marked fully verified.
+
+# Completed implementation publication review — 22 November 2026
+
+- Consolidate remaining ingredient/educational evidence, follow-up, report and SOS
+  workflows, Assignment 03 behavior corrections and refined Module 1 interface.
+- Add reproducible startup/verification tooling and an indexed-file publication
+  check; keep private configuration, full-window captures and generated caches local.
+- Preserve dated evidence and outstanding individual/live/deployment/course gates.
+  Current PR and exact-revision validation: [publication record](docs/PUBLICATION_REVIEW.md).
 

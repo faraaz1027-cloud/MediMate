@@ -1,6 +1,10 @@
 # Step 14 — Interface designs and submission
 Updated 1 November 2026.
 
+Step 26 implementation review (2 November): retrieved the actual B2 desktop frame/screenshot (node 4:525). [B2 implementation and evidence](STEP_26_MEDICINE_INFORMATION.md) follows its source-selection, original-passages, separate-note and source-evidence panels, with mobile stacking and real failure states. Native React/CSS controls reuse the established app rather than adding a runtime library solely for the prototype's Material kit examples. No new faculty submission or complete pixel-parity claim is made.
+
+Step 25 implementation review (2 November): the actual A2 desktop frame and screenshot were retrieved from Figma. [Implementation/adaptation notes and evidence](STEP_25_CONFIRMED_SCHEDULES.md) explain source selection, explicit UTC boundaries, full-course preview, immutable history and the shared list/detail layout. The original design/submission artifacts remain the course design baseline; no new faculty submission or exact pixel-parity claim is made.
+
 ## Deliverables
 - [Editable Figma designs](https://www.figma.com/design/1Zy0JqsSdfzL9Lno6GlWbB?node-id=2-2409): detailed desktop, mobile, error and success designs for six screens, preserving original wireframes.
 - [Word submission](submission/MediMate_Step14_Design_Submission.docx): 16 pages, with member allocations, labelled figures, Figma links, mobile/error views, interaction rules and C5 SOS specification.
@@ -36,3 +40,6 @@ The HTML and SVG files remain supplementary earlier review artifacts. Figma and 
 
 ## Completion
 Step 14's detailed design and Word preparation are complete. Uploading the document to a university submission portal and faculty acceptance are separate actions; neither is claimed here. The native verification record is [available here](../design/step14/native_verification.json).
+
+## Step 27 C2 implementation crosswalk — 3 November 2026
+Retrieved the actual [C2 desktop frame 4:1017](https://www.figma.com/design/1Zy0JqsSdfzL9Lno6GlWbB?node-id=4-1017) and native screenshot before implementation. Today’s doses reuses the purple shared navigation, saved medicine/quantity/time cards, taken/skipped/snooze controls, separate reminder/action history and day summary; its two columns stack on mobile. Existing React/CSS and ValidatedForm controls replace prototype placeholders. Material kit components have no installed runtime mapping; the frame has no static asset requiring download. Explicit date/status apply, correction reasons, channel readiness/consent, failed/unknown history, read-only/empty/loading/retry states reflect working contracts. Prototype stock-deduction claims are adapted to the truthful A3-not-implemented message. These technical choices preserve C2 scope/ownership. Desktop 1440×1000/mobile 390×844 were inspected; pixel-perfect equivalence and full accessibility certification are not claimed. [Implementation and evidence](STEP_27_DOSE_REMINDERS.md).

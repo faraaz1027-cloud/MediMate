@@ -14,21 +14,33 @@
 ## Shared foundation and Module 1
 
 ### Step 19 — Complete account and access workflows
+Implementation update (1 November 2026): the [shared local slice](STEP_19_ACCOUNT_ACCESS.md) adds editable account/patient profiles, owner-administered direct grants to registered caregiver IDs, named permissions and revoke/restore. API, DOM, Postman and browser evidence are recorded. Email/pending invitations, scale pagination and comprehensive accessibility remain explicitly open; no faculty submission or individual feature credit is claimed. Technical decisions and contracts are documented alongside the implementation.
+
 Build signup/login/logout, profile and patient profile selection, invitation/grant/revocation of caregiver access, roles and any necessary admin path. Reconcile with Step 17's existing session/CSRF/authorization code rather than duplicating it. Specify who may confirm a prescription, edit tasks, record a dose and view an SOS. Persist grants and audit state; enforce permission on every server read/write, including a previously authorized caregiver after revocation. Test another patient's ID, expired session, CSRF failure and grant revocation. **Evidence:** working UI/API, DB records and access tests. These are shared infrastructure, not assessed A/B/C features.
 
 ### Step 20 — Finish shared UI/backend behavior
+Implementation update (1 November 2026): [shared behavior and evidence](STEP_20_SHARED_BEHAVIOR.md) records reconnect/retry, field-associated validation, permission-aware navigation, stale-response guards and desktop/mobile/keyboard/controlled-fault checks. This is shared infrastructure, not a claim that later feature screens or a comprehensive accessibility/performance audit are complete.
+
 Extend Step 18 React screens with navigation, form field validation, loading/empty/error states, mobile responsiveness and accessible labels. Normalize API errors and protect patient routes server-side. Avoid full-page generated templates that owners cannot explain. Test keyboard navigation, small viewport, slow request and stale session. **Evidence:** screenshots of real states and a passing build.
 
 ### Step 21 — A1 prescription import, review and change tracking (Ihfaz)
+Implementation update (2 November 2026): [implemented A1 scope, technical decision, owner review and evidence](STEP_21_PRESCRIPTION_REVIEW.md) covers manual/printed-image OCR drafts, explicit completeness/review gates, immutable confirmed history, replacement differences and archive. API, DOM, Postman and real Chromium cases passed. Browser-local OCR replaces the earlier proposed server asset/job contract; it is not external API course credit. Individual ownership review and Module 1 integration remain open.
+
 Implement manual prescription draft first; add printed-image OCR as editable suggestions. Confirm only complete, reviewed instructions; retain immutable confirmed versions and field-level differences on replacement. Verify a confirmed version persists after reload and past versions remain accessible. Test blurry image, missing quantity, duplicate submission and unauthorized access. **Dependency:** Step 19 permissions and Step 15 version model. **Demo:** upload or enter → correct → confirm → replace → compare.
 
 ### Step 22 — B1 medicine search and personal cabinet (Faraaz)
+Implementation update (2 November 2026): [B1 implementation and lab evidence](STEP_22_MEDICINE_CABINET.md) covers live RxNorm search/explicit candidate review, labelled manual fallback, persistent cabinet details/edit/filter/archive and immutable source/revision history. API/provider, DOM, Newman and real Chromium checks passed. Faraaz's personal contribution/live-edit review, faculty acceptance and Module 1 integration remain open.
+
 Integrate RxNorm as a **live external API** with search result IDs, selectable candidate and an honest manual entry fallback for unmatched Bangladesh products. Store source/manual status, strength/form and patient ownership; support view, edit, filter and archive while preserving referenced history. Test outage, ambiguous match, invalid input and cross-patient request. **Demo:** external search → save → reload → edit/archive; show manual fallback.
 
 ### Step 23 — C1 caregiver tasks and handover (Sahir)
+Implementation update (2 November 2026): [implemented tasks and Telegram preparation](STEP_23_CAREGIVER_TASKS.md) covers assign/edit/accept/complete/reopen, append-only handover, separate acknowledgement and notification attempts, consent linking and a durable polling worker. API/DOM/Postman and two-account Chromium task checks passed. **Gate open:** the user has no bot/test recipient; real Telegram linking/receipt and Sahir's external-integration demonstration are unverified. CI or controlled fixtures do not complete that gate.
+
 Implement create/assign/accept/complete/reopen task transitions, handover notes and status history. Link consenting test Telegram account, send task notice and record delivery attempts separately from acknowledgement. Test invalid transition, revoked caregiver, failed notification and duplicate retry. **Demo:** patient assigns, caregiver accepts/completes, patient sees history and a linked test account receives a notification.
 
 ### Step 24 — Integrate and demonstrate Module 1
+Implementation update (2 November 2026): [technical integration and demonstration materials](STEP_24_MODULE_1_INTEGRATION.md) verify one-patient A1/B1/C1 flows, the planned cabinet reference on instructions, actual browser OCR/live RxNorm, cross-feature revocation, archive/history and API restart readback. API/DOM/Newman and browser evidence are recorded. **Full Module 1 gate remains open:** real Telegram receipt, individual contribution/live-edit rehearsal, Jira and faculty acceptance are not supplied or claimed.
+
 Use one synthetic patient and real shared identifiers across A1/B1/C1. Run manual and OCR review, cabinet and caregiver task flows in the same application. Record screen/API/database evidence, failure handling, each member's own commits and Jira status. Recheck permissions and persistence after integration. Rehearse each member's explanation and live edit. **Gate:** A1/B1/C1 meet Step 11 acceptance checks; no disconnected mock data is presented as working CRUD.
 
 ## Module 2
@@ -36,62 +48,94 @@ Use one synthetic patient and real shared identifiers across A1/B1/C1. Run manua
 ### Step 25 — A2 verified medication schedule (Ihfaz)
 Use **confirmed** A1 instructions. Keep medicine strength, quantity per dose, time, interval, duration and timezone distinct; preview and confirm a schedule version, edit/pause future events without erasing past events. Reject ambiguous input until clarified. Test day boundaries, changes after prior events and duplicate event generation. **Gate:** persisted schedule and reproducible upcoming dose events.
 
+Implementation prepared on `feature/step25-confirmed-schedules`, stacked on Step 24. [Step 25 evidence and owner review](STEP_25_CONFIRMED_SCHEDULES.md) records the tested bounded finite-course design, API/UI/DB proof and remaining human gates. Full-course persistence (90-day/2000-event maximum, explicit end) replaces the proposed rolling horizon to avoid dependence on an unimplemented daily extension worker. The upcoming read window remains seven days. A2 stays Ihfaz's function; individual review/contribution, live modification, Jira/faculty evidence and Module 2 acceptance remain open. C2 reminders and dose recording are Step 27, worker reconciliation Step 28; Telegram remains unconfigured.
+
 ### Step 26 — B2 source-linked medicine information cards (Faraaz)
 Use the planned openFDA integration to retrieve a relevant label and display source link/identifier, retrieval date and the original relevant passage. Store personal notes separately from source facts. Confirm product/ingredient applicability; show unavailable when no valid label exists. Test source outage and a wrong candidate. **Gate:** cited passage in UI corresponds to a real source response.
 
+Technical slice prepared on `feature/step26-medicine-information`, stacked on Step 25. [Step 26 review and evidence](STEP_26_MEDICINE_INFORMATION.md) records actual RxNorm/openFDA requests, exact response-field/passage comparisons, immutable receipts, personal-note persistence and desktop/mobile/outage checks. Selection is restricted to exact saved RxNorm product identities plus explicit applicability review; manual/unmapped items remain unavailable. Candidate content hash and cabinet/card revisions prevent saving an unseen changed source. Faraaz must personally review/contribute, explain the integration and make live frontend/backend changes. Jira, faculty acceptance and Module 2 demonstration remain open; real Telegram is still unavailable. Next implementation: Step 27 / C2, without claiming real delivery before configuration/consent exist.
+
 ### Step 27 — C2 reminders and dose recording (Sahir)
 Use A2 occurrences, send reminders and record taken/skipped/snoozed actions. Store notification attempts and dose status as separate objects; repeated action must not create a second effective record. Snooze affects the notification timing, not the prescribed schedule. Test all three actions and a failed channel. **Gate:** accurate, persistent dose history and no double action.
+
+Technical slice prepared on feature/step27-dose-reminders, stacked on Step 26. [Step 27 evidence and Sahir review](STEP_27_DOSE_REMINDERS.md) records persistent action history, concurrency/replay/rollback tests, reminder consent and separate notification outcomes, production-bundle/browser/DB proof and the real disabled worker command. The user has no bot or consenting test account: no live Telegram send/receipt is claimed. Stock effects remain A3, follow-up remains C3, and individual contribution/Jira/faculty acceptance remain open. Next work is Step 28's broader timezone/restart audit; basic restart cases here do not close that gate.
 
 ### Step 28 — Timezone and restart behavior
 Persist due events and processing state. Test Asia/Dhaka date boundary, schedule edits, worker restart, delayed execution, duplicate retry and a notification outage. Define whether overdue reminders are delivered late or marked missed according to recorded time, without inventing a taken/skipped dose. **Gate:** a restart cannot silently lose an event or generate duplicate dose/stock effects. Record process availability limits.
 
 ### Step 29 — Deployment and Module 2 demonstration
+Step 28 technical audit prepared on `feature/step28-timezone-restarts`, stacked on Step 27. [Findings, crash/timezone tests and operating policy](STEP_28_TIMEZONE_RESTARTS.md) record 109 passing API/provider tests, actual killed worker processes, midnight/schedule/snooze/retry checks and disabled/expired reconciliation fixes. No real Telegram receipt, stock deduction, deployment, personal contribution or faculty acceptance is claimed. Step 29 is next; its online/faculty and zero-cash worker questions remain open.
+
 Confirm faculty's online requirement. The Lab 06 Vercel example deploys a web application, but this system also needs API, DB and scheduled worker. Choose an arrangement with verified current terms under the team's zero-cash rule; if no viable always-on free worker exists, document the limitation and obtain faculty acceptance of the demonstration mode. Set environment variables privately; test frontend, backend, database and reminder behavior at deployed URL, then regression-test Module 1. **Gate:** working online or faculty-approved alternative, actual URL and evidence; avoid claiming deployment from a static frontend alone.
 
 ## Module 3, including extra C5
 
 ### Step 30 — A3 inventory and refill (Ihfaz)
+Step 29 technical preparation is on `feature/step29-deployment-demo`, stacked on Step 28. **Step 29's deployment gate remains open** pending the database, worker arrangement and faculty requirement. [Deployment preparation and Module 2 rehearsal](STEP_29_DEPLOYMENT_MODULE2.md).
+
 Add opening stock, refill and correction ledger entries. Link a confirmed C2 taken action to exactly one stock deduction using a domain unique key and atomic update/transaction strategy; corrections must be auditable. Compute remaining coverage from current confirmed schedule only when units and dose quantities are known. Test duplicate action, concurrent requests, invalid quantity and schedule change. **Gate:** balance reconciles with ledger and refill threshold creates a checklist.
+
+The A3 review branch implements the ledger, transactional C2 integration, bounded coverage estimate, and low-stock checklists. Ihfaz owns the lab demonstration and individual contribution. [Step 30 review and demonstration guide](STEP_30_INVENTORY_REFILLS.md).
 
 ### Step 31 — A4 pharmacy search and coordination (Ihfaz)
 Use live Overpass lookup for nearby pharmacy listings and explicit location/manual-area fallback. Save preferred listing and link refill checklist to C1 collection task. Keep retrieved contact/location provenance and timestamp. Test denied location, no results, timeout and stale listing. **Gate:** no wording implying medicine stock or ambulance service is verified by a map listing.
 
+The A4 review branch connects Overpass, an explicit area-center fallback, the saved pharmacy, the A3 checklist and C1 task history. Live provider evidence and Ihfaz's individual demonstration are tracked in the [Step 31 guide](STEP_31_PHARMACY_COORDINATION.md).
+
 ### Step 32 — B3 duplicate ingredient and label review (Faraaz)
+Local implementation and evidence: [Step 32 guide](STEP_32_INGREDIENT_REVIEW.md). Student rehearsal and visual browser review remain separate completion evidence.
 Compare confirmed ingredient identities, including combination products, across cabinet items. Distinguish overlap, relevant label evidence and insufficient information, with source passages and acknowledgement notes. Test aliases, duplicates, missing ingredient, wrong strength/form and source outage. **Gate:** insufficient evidence cannot be interpreted as a safe result.
 
 ### Step 33 — B4 source-grounded educational assistant (Faraaz)
+Local extractive implementation: [Step 33 guide](STEP_33_EDUCATIONAL_ASSISTANT.md). Owner rehearsal and browser visual evidence remain separate.
 Choose a feasible local or no-cost grounded approach and test it on known passages before integrating. Retrieve relevant sources, cite passage/URL and retrieval date, constrain response to educational content, abstain when evidence is missing and allow feedback/deletion. A model is optional if a transparent source search/answer workflow meets the approved function. Test invented question, contradictory/absent passages and personal treatment request. **Gate:** answers match their cited passages; no invented citations or prescribing decision.
 
 ### Step 34 — C3 unconfirmed-dose follow-up (Sahir)
+Local implementation: [Step 34 guide](STEP_34_DOSE_FOLLOWUPS.md). Live Telegram, student rehearsal and browser visuals remain separate evidence.
 After the configured delay, mark unanswered C2 occurrence **overdue-unconfirmed**, notify active authorized caregiver and track attempts, acknowledgement and follow-up outcome. Prevent duplicate escalation, cease future notices after resolution/revocation, and never relabel silence as skipped. Test worker restart and revoked caregiver. **Gate:** one traceable escalation with correct status transitions.
 
 ### Step 35 — C4 analytics and visit report (Sahir)
+Local implementation: [Step 35 guide](STEP_35_VISIT_REPORTS.md). Sahir rehearsal and native-browser review remain separate evidence.
 Compute date-filtered taken/skipped/unconfirmed values from stored events, add visit/health notes and generate a PDF that includes history, refills and caregiver activity as permitted. Check report patient and range authorization, compare on-screen/PDF numbers to DB fixtures and define zero versus unavailable. **Gate:** report can be regenerated accurately from a known synthetic dataset.
 
 ### Step 36 — Module 3 and C5 demonstration (Sahir)
+C5 local implementation and seven-feature rehearsal: [Step 36 guide](STEP_36_SOS_MODULE3.md). Live Telegram/map success and individual student demonstration remain separate open evidence.
 The original step named six Module 3 features. The revised demo includes **seven**: A3/A4, B3/B4, C3/C4 and C5. Build C5 before this gate: contact setup/linking, deliberate SOS activation, incident record, permitted location or unavailable marker, Telegram alert attempts, contact acknowledgements, cancellation/resolution notice, call option and nearby hospital information. Only send provider requests to a verified participant; otherwise use an unmistakably labelled simulated provider dashboard. Test accidental cancellation, denied location, failed Telegram, repeated press and no confirmation. **Gate:** no "ambulance dispatched" state without explicit provider confirmation. Also demonstrate taken → one stock deduction → low stock → pharmacy listing → caregiver collection task.
 
 ## Final verification and delivery
 
 ### Step 37 — Complete end-to-end scenario
+Connected technical verification: [Step 37 guide and capture order](STEP_37_COMPLETE_SCENARIO.md). Fourteen checkpoints use one patient and independent caregiver/contact; live/individual evidence remains separate.
 Create a synthetic patient, caregiver and linked test contact. Execute A1 → B1/B2 → A2 → C2 → A3/A4 → C1/C3 → B3/B4 → C4 and a separate C5 branch. Record the input, expected state, actual state and evidence link at each point. Use real DB records, not hardcoded screen fixtures.
 
 ### Step 38 — Failure and permission tests
+Local audit and two confirmed fixes: [Step 38 report](STEP_38_FAILURE_PERMISSION_AUDIT.md). Full backend 186/186 passed; actual synthetic OCR engine check recorded separately. Native-browser/live/student gates remain open.
 Exercise cross-patient IDs, revoked grant, expired session/CSRF, duplicate clicks, concurrent stock updates, blurry OCR, unmatched RxNorm item, openFDA/Overpass/Telegram outages, backend restart, historical versions and SOS status boundaries. Fix concrete failures; record any accepted limitations. Avoid tests that alert real emergency providers.
 
 ### Step 39 — Chrome DevTools and measured performance
+Local measurements and focused layout/favicon fixes: [Step 39 report](STEP_39_BROWSER_PERFORMANCE.md). Reviewed Lighthouse: mobile 92 / LCP 3.312 s / CLS 0.043; desktop 100 / LCP 0.688 s / CLS 0.018. Genuine native DevTools, 360px viewport, Slow 4G and offline/retry captures included. Mobile LCP and wider real-device/live/student gates remain open. Next numbered step: Step 40.
 Use the Lab 02 procedure on MediMate: Elements/Console/Network Fetch/XHR headers and responses, slow-network throttling, empty-cache reload, Performance, Lighthouse and mobile viewports. Record device, date, connection, page, number of requests, load/response timings, LCP/CLS where available and actual improvements. Compare before/after if changed. Do not copy sample report scores or fabricate metrics.
 
 ### Step 40 — Final documentation package
+Local report and evidence package prepared: [Step 40 handoff](STEP_40_FINAL_DOCUMENTATION.md). Both user-supplied Lab 7 samples share 12 core chapters; the 19-page MediMate PDF and editable Markdown follow that structure. Original member reports/collections and 59 captures are indexed with verified hashes (19/16/24). Deployment/live/student/faculty gates remain explicit; this is not a course submission. Next: Step 41.
 Write the report using the Lab 07 **sample structure**, with MediMate facts only: system request and feasibility; approved functional requirements and ownership; architecture/data/API; Figma and implementation; user manual with real synthetic screenshots; Postman evidence; observed network/performance analysis; repository/deployment links; contributions; limitations and references. Check whether faculty supplied a newer template or rubric. Explain the provider simulation and zero-cash deployment limitations prominently.
 
 ### Step 41 — CI/CD and reproducible handover
+Local handover prepared and fresh-install tested: [Step 41 report](STEP_41_REPRODUCIBLE_HANDOVER.md). Node 24.22.3 build, 187 backend tests and compiled UI passed; portable helper/seed retained IDs after MongoDB and API restart. Windows/Linux CI and retained logs are prepared locally; remote main remains behind the draft PR stack, so publication, hosted runs and another member's actual clone remain open. Next numbered step: Step 42.
 Add GitHub Actions build and meaningful API/unit/integration checks, with secrets supplied through secure CI settings where needed. Include `.env.example`, scripts and synthetic seed data; verify another member can clone, install, configure local DB, run tests and demonstrate. Do not treat a green frontend build as proof of backend/worker function.
 
 ### Step 42 — Individual viva and live modifications
+Rehearsal preparation: [Step 42 pack](STEP_42_INDIVIDUAL_VIVA.md). Three member sheets and isolated frontend/API/Mongoose reference changes were tested (3 baseline cases; 190 modified backend tests; compiled inputs/UI and build passed). Canonical application behavior is unchanged. Human viva/live-edit, individual commits/Jira and live external evidence remain NOT_RUN or open; this is not a student pass. Next numbered step: Step 43 readiness audit.
 Each owner explains their own UI, API, database updates, external integration and failure cases. Practice a real frontend field/change, backend validation, model/schema change and regression run. Review any AI-assisted code until each member can explain and modify it without Codex. Keep individual contributions identifiable in Git and Jira.
 
 ### Step 43 — Final readiness and submission
+Audit preparation: [Step 43 findings and final demonstration order](STEP_43_FINAL_READINESS.md).
+Current source regression, course matrix and local backup are recorded in the
+Step 43 evidence/delivery package. Final submission remains NOT READY: personal
+demonstrations/live edits, genuine Git/Jira evidence, live integrations, current
+hosted CI/another-member clone and faculty logistics/deployment decision are open.
+Do not treat the end of the numbered roadmap as course completion.
+
 Audit all 13 IDs and any faculty additions against Step 11 criteria, real demo evidence, per-member external API call and four-feature minimum, Git history, Jira, responsive UI, six API assignment evidence, report, deployment/faculty exception and backup. Rehearse the final demo with synthetic data and record links/deadline. Mark done only what is verifiably done.
 
 ## Suggested Codex task format

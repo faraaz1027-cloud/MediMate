@@ -1,0 +1,110 @@
+npm warn deprecated har-validator@5.1.5: this library is no longer supported
+npm warn deprecated uuid@3.4.0: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated @faker-js/faker@5.5.3: Please update to a newer version.
+newman
+
+MediMate Step 22 B1 live search and cabinet
+
+→ Anonymous CSRF
+  GET http://127.0.0.1:3006/api/v1/auth/csrf [200 OK, 597B, 24ms]
+  √  HTTP 200
+
+→ Register synthetic B1 reviewer
+  POST http://127.0.0.1:3006/api/v1/auth/register [201 Created, 780B, 52ms]
+  √  HTTP 201
+
+→ Live RxNorm search
+  GET http://127.0.0.1:3006/api/v1/patients/6ae79a348603f1314604a535/medicine-search?q=cymbalta [200 OK, 1.01kB, 3ms]
+  √  HTTP 200
+  √  Candidates with RxCUIs
+
+→ Inspect selected live RxNorm concept
+  GET http://127.0.0.1:3006/api/v1/patients/6ae79a348603f1314604a535/medicine-search/596928 [200 OK, 579B, 3ms]
+  √  HTTP 200
+  √  Selected source ID
+
+→ Explicit review required
+  POST http://127.0.0.1:3006/api/v1/patients/6ae79a348603f1314604a535/cabinet-items [422 Unprocessable Entity, 514B, 3ms]
+  √  HTTP 422
+
+→ Save selected external identity
+  POST http://127.0.0.1:3006/api/v1/patients/6ae79a348603f1314604a535/cabinet-items [201 Created, 736B, 13ms]
+  √  HTTP 201
+  √  Server source reference
+
+→ Read saved source snapshot
+  GET http://127.0.0.1:3006/api/v1/patients/6ae79a348603f1314604a535/cabinet-items/6ae79a358603f1314604a548 [200 OK, 1.41kB, 4ms]
+  √  HTTP 200
+  √  RxNorm source retained
+
+→ Edit transcription with reason
+  PATCH http://127.0.0.1:3006/api/v1/patients/6ae79a348603f1314604a535/cabinet-items/6ae79a358603f1314604a548 [200 OK, 731B, 12ms]
+  √  HTTP 200
+
+→ Stale edit rejected
+  PATCH http://127.0.0.1:3006/api/v1/patients/6ae79a348603f1314604a535/cabinet-items/6ae79a358603f1314604a548 [409 Conflict, 416B, 5ms]
+  √  HTTP 409
+
+→ Filter external cabinet
+  GET http://127.0.0.1:3006/api/v1/patients/6ae79a348603f1314604a535/cabinet-items?entryType=external&q=duloxetine [200 OK, 762B, 3ms]
+  √  HTTP 200
+  √  Saved item found
+
+→ Archive without removing references
+  POST http://127.0.0.1:3006/api/v1/patients/6ae79a348603f1314604a535/cabinet-items/6ae79a358603f1314604a548/archive [200 OK, 733B, 10ms]
+  √  HTTP 200
+
+→ Read immutable revision history
+  GET http://127.0.0.1:3006/api/v1/patients/6ae79a348603f1314604a535/cabinet-items/6ae79a358603f1314604a548/revisions [200 OK, 2.6kB, 4ms]
+  √  HTTP 200
+  √  Three revisions
+  √  Original transcription retained
+
+→ Archived item cannot be edited
+  PATCH http://127.0.0.1:3006/api/v1/patients/6ae79a348603f1314604a535/cabinet-items/6ae79a358603f1314604a548 [409 Conflict, 432B, 5ms]
+  √  HTTP 409
+
+→ Archived source remains readable
+  GET http://127.0.0.1:3006/api/v1/patients/6ae79a348603f1314604a535/cabinet-items/6ae79a358603f1314604a548 [200 OK, 1.41kB, 4ms]
+  √  HTTP 200
+  √  Archived status
+
+→ Honest manual fallback
+  POST http://127.0.0.1:3006/api/v1/patients/6ae79a348603f1314604a535/cabinet-items [201 Created, 636B, 13ms]
+  √  HTTP 201
+  √  Manual identity
+
+→ Manual cannot claim source
+  POST http://127.0.0.1:3006/api/v1/patients/6ae79a348603f1314604a535/cabinet-items [422 Unprocessable Entity, 514B, 3ms]
+  √  HTTP 422
+
+→ Active list excludes archive
+  GET http://127.0.0.1:3006/api/v1/patients/6ae79a348603f1314604a535/cabinet-items [200 OK, 662B, 4ms]
+  √  HTTP 200
+  √  Only active manual item
+
+┌─────────────────────────┬──────────────────┬─────────────────┐
+│                         │         executed │          failed │
+├─────────────────────────┼──────────────────┼─────────────────┤
+│              iterations │                1 │               0 │
+├─────────────────────────┼──────────────────┼─────────────────┤
+│                requests │               17 │               0 │
+├─────────────────────────┼──────────────────┼─────────────────┤
+│            test-scripts │               17 │               0 │
+├─────────────────────────┼──────────────────┼─────────────────┤
+│      prerequest-scripts │               17 │               0 │
+├─────────────────────────┼──────────────────┼─────────────────┤
+│              assertions │               27 │               0 │
+├─────────────────────────┴──────────────────┴─────────────────┤
+│ total run duration: 1622ms                                   │
+├──────────────────────────────────────────────────────────────┤
+│ total data received: 9.63kB (approx)                         │
+├──────────────────────────────────────────────────────────────┤
+│ average response time: 9ms [min: 3ms, max: 52ms, s.d.: 11ms] │
+└──────────────────────────────────────────────────────────────┘
+npm notice
+npm notice New major version of npm available! 11.20.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

@@ -1,3 +1,21 @@
+import { installPrescriptions } from "./prescriptions.js";
+import { installCabinet } from "./cabinet.js";
+import { createRxNorm } from "./rxnorm.js";
+import { createTelegram } from "./telegram.js";
+import { installChannels } from "./channels.js";
+import { installTasks } from "./tasks.js";
+import { installSchedules } from "./schedules.js";
+import { createOpenFDA } from "./openfda.js";
+import { installInformationCards } from "./information-cards.js";
+import { installDoses } from "./doses.js";
+import { installInventory } from "./inventory.js";
+import { installPharmacies } from "./pharmacies.js";
+import { installIngredientReviews } from "./ingredient-reviews.js";
+import { installEducationalAnswers } from "./educational-answers.js";
+import { installFollowups } from "./followups.js";
+import { installReports } from "./reports.js";
+import { installSos } from "./sos.js";
+import { createOverpass } from "./overpass.js";
 import express from "express";
 import mongoose from "mongoose";
 import {
@@ -94,13 +112,13 @@ function authInput(body, register = false) {
   );
   const email = text(body.email, "email", 254).toLowerCase();
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-    fail(422, "VALIDATION_ERROR", "Valid email required.");
+      fail(422, "VALIDATION_ERROR", "Valid email required.", [{ path: "email", message: "Enter a valid email address." }]);
   if (
     typeof body.password !== "string" ||
     body.password.length < 12 ||
     body.password.length > 128
   )
-    fail(422, "VALIDATION_ERROR", "Password must contain 12–128 characters.");
+    fail(422, "VALIDATION_ERROR", "Password must contain 12–128 characters.", [{ path: "password", message: "Enter 12–128 characters." }]);
   return {
     email,
     password: body.password,
@@ -111,6 +129,11 @@ function authInput(body, register = false) {
 }
 export function createV1({
   db,
+  rxnorm = createRxNorm(),
+  openfda = createOpenFDA(),
+  overpass = createOverpass(),
+  hospitals = createOverpass({amenity:"hospital"}),
+  telegram = createTelegram(),
   secure = process.env.NODE_ENV === "production",
   origins = ["http://localhost:5173", "http://127.0.0.1:5173"],
   now = () => new Date(),
@@ -296,11 +319,48 @@ export function createV1({
       id: String(u._id),
       email: u.emailNormalized,
       displayName: u.displayName,
-      patients: (await accessiblePatients(req.actorId)).map((p) => ({
-        id: String(p._id),
-        displayName: p.displayName,
+      revision: u.revision,
+      permissionCatalog: permissionSet.filter((p) => p !== "access.manage"),
+      patients: await Promise.all((await accessiblePatients(req.actorId)).map(async (p) => {
+        const owner = String(p.ownerUserId) === String(req.actorId);
+        const grant = owner ? null : await db.one("AccessGrant", {
+          patientId: p._id, userId: req.actorId, revokedAt: null,
+        });
+        return { id: String(p._id), displayName: p.displayName,
+          timezone: p.timezone, revision: p.revision,
+          role: owner ? "owner" : "caregiver",
+          permissions: owner ? permissionSet : grant?.permissions || [] };
       })),
     });
+  });
+  function revision(value) {
+    if (!Number.isInteger(value) || value < 0)
+      fail(422, "VALIDATION_ERROR", "Integer revision required.");
+    return value;
+  }
+  function timezone(value) {
+    if (typeof value !== "string" || value.length > 100)
+      fail(422, "VALIDATION_ERROR", "Valid IANA timezone required.", [{ path: "timezone", message: "Enter a valid IANA timezone, for example Asia/Dhaka." }]);
+    try { new Intl.DateTimeFormat("en", { timeZone: value }); }
+    catch { fail(422, "VALIDATION_ERROR", "Valid IANA timezone required.", [{ path: "timezone", message: "Enter a valid IANA timezone, for example Asia/Dhaka." }]); }
+    return value;
+  }
+  app.patch("/me", authenticated, csrf, async (req, res) => {
+    const b = object(req.body, ["displayName", "expectedRevision"], ["displayName", "expectedRevision"]);
+    const displayName = text(b.displayName, "displayName", 100);
+    revision(b.expectedRevision);
+    await mutate(req, res, null, async (s) => {
+      const u = await db.update("User", { _id: req.actorId, revision: b.expectedRevision }, { displayName }, s);
+      if (!u) fail(409, "REVISION_CONFLICT", "Reload your profile and retry.");
+      return { id: String(u._id), displayName: u.displayName, email: u.emailNormalized, revision: u.revision };
+    }, 200);
+  });
+  app.post("/patients", authenticated, csrf, async (req, res) => {
+    const b = object(req.body, ["displayName", "timezone"], ["displayName", "timezone"]);
+    const displayName = text(b.displayName, "displayName", 100), zone = timezone(b.timezone);
+    await mutate(req, res, null, async (s) => publicDoc(await db.insert("Patient", {
+      ownerUserId: req.actorId, displayName, timezone: zone, status: "active",
+    }, s)));
   });
   async function access(req, permission, s) {
     const p = await db.one(
@@ -316,7 +376,7 @@ export function createV1({
       s,
     );
     if (!grant) fail(404, "NOT_FOUND", "Record not found.");
-    if (permission && !grant.permissions.includes(permission))
+    if (permission && ![permission].flat().every((p) => grant.permissions.includes(p)))
       fail(403, "FORBIDDEN", "This operation is not permitted.");
     return p;
   }
@@ -333,7 +393,7 @@ export function createV1({
   patient.get("/", scope(null), (req, res) =>
     send(req, res, publicDoc(req.patient)),
   );
-  async function mutate(req, res, permission, fn, status = 201) {
+  async function mutate(req, res, permission, fn, status = 201, prepare, present = value => value) {
     const key = req.get("Idempotency-Key");
     if (
       !key ||
@@ -343,15 +403,15 @@ export function createV1({
     )
       fail(400, "IDEMPOTENCY_REQUIRED", "Supply a UUID Idempotency-Key.");
     const requestHash = hash(JSON.stringify(canonical(req.body))),
-      route = req.method + "/patients/:patientId" + req.path;
+      route = req.method + (req.patient ? "/patients/:patientId" : "") + req.path;
     const query = {
-      patientId: req.patient._id,
+      patientId: req.patient?._id || null,
       actorUserId: req.actorId,
       key,
       route,
     };
     async function replay(s) {
-      await access(req, permission, s);
+      if (req.patient) await access(req, permission, s);
       const old = await db.one("Operation", query, s);
       if (old && old.requestHash !== requestHash)
         fail(
@@ -361,6 +421,9 @@ export function createV1({
         );
       return old;
     }
+    // Resolve external data before opening a transaction. A successful replay
+    // must remain usable during an upstream outage; access is checked again below.
+    if (prepare && !(await replay())) await prepare();
     let result;
     try {
       result = await db.transaction(async (s) => {
@@ -370,7 +433,7 @@ export function createV1({
         await db.insert(
           "AuditEvent",
           {
-            patientId: req.patient._id,
+            patientId: req.patient?._id,
             actorUserId: req.actorId,
             action: route,
             requestId: req.requestId,
@@ -390,8 +453,50 @@ export function createV1({
         result = { ...result, status: 200 };
       } else throw e;
     }
-    send(req, res, result.response, result.status);
+    send(req, res, present(result.response), result.status);
   }
+  const ownerOnly = (req) => {
+    if (String(req.patient.ownerUserId) !== String(req.actorId))
+      fail(403, "FORBIDDEN", "Owner access required.");
+  };
+  function grantPermissions(value) {
+    if (!Array.isArray(value) || !value.length || value.length > permissionSet.length ||
+      value.some((p) => !permissionSet.includes(p) || p === "access.manage"))
+      fail(422, "VALIDATION_ERROR", "Choose named caregiver permissions; only owners manage access.");
+    return [...new Set(value)];
+  }
+  patient.patch("/", csrf, scope("access.manage"), async (req, res) => {
+    ownerOnly(req);
+    const b = object(req.body, ["displayName", "timezone", "expectedRevision"], ["displayName", "timezone", "expectedRevision"]);
+    const displayName = text(b.displayName, "displayName", 100), zone = timezone(b.timezone);
+    revision(b.expectedRevision);
+    await mutate(req, res, "access.manage", async (s) => {
+      const p = await db.update("Patient", { _id: req.patient._id, revision: b.expectedRevision }, { displayName, timezone: zone }, s);
+      if (!p) fail(409, "REVISION_CONFLICT", "Reload the patient and retry.");
+      return publicDoc(p);
+    }, 200);
+  });
+  patient.get("/access-grants", scope("access.manage"), async (req, res) => {
+    ownerOnly(req);
+    if (Object.keys(req.query).length) fail(400, "INVALID_QUERY", "Unsupported query.");
+    const rows = await db.list("AccessGrant", { patientId: req.patient._id }, 101);
+    if (rows.length > 100) fail(422, "GRANT_LIMIT", "Contact the project owner to review grant pagination.");
+    send(req, res, rows.map(publicDoc));
+  });
+  patient.patch("/access-grants/:grantId", csrf, scope("access.manage"), async (req, res) => {
+    ownerOnly(req);
+    const b = object(req.body, ["permissions", "expectedRevision"], ["permissions", "expectedRevision"]);
+    const permissions = grantPermissions(b.permissions), grantId = id(req.params.grantId);
+    revision(b.expectedRevision);
+    await mutate(req, res, "access.manage", async (s) => {
+      const current = await db.one("AccessGrant", { _id: grantId, patientId: req.patient._id }, s);
+      if (!current) fail(404, "NOT_FOUND", "Record not found.");
+      const g = await db.update("AccessGrant", { _id: grantId, patientId: req.patient._id, revision: b.expectedRevision },
+        { permissions, revokedAt: null }, s);
+      if (!g) fail(409, "REVISION_CONFLICT", "Reload the grant and retry.");
+      return publicDoc(g);
+    }, 200);
+  });
   patient.post(
     "/access-grants",
     csrf,
@@ -405,11 +510,9 @@ export function createV1({
         ["userId", "permissions"],
       );
       const userId = id(b.userId);
-      if (
-        !Array.isArray(b.permissions) ||
-        b.permissions.some((p) => !permissionSet.includes(p))
-      )
-        fail(422, "VALIDATION_ERROR", "Unknown permissions.");
+      const permissions = grantPermissions(b.permissions);
+      if (String(userId) === String(req.actorId))
+        fail(422, "VALIDATION_ERROR", "The owner already has full access.");
       if (!(await db.one("User", { _id: userId })))
         fail(422, "VALIDATION_ERROR", "Registered user required.");
       await mutate(req, res, "access.manage", (s) =>
@@ -419,7 +522,7 @@ export function createV1({
             {
               patientId: req.patient._id,
               userId,
-              permissions: [...new Set(b.permissions)],
+              permissions,
             },
             s,
           )
@@ -470,10 +573,22 @@ export function createV1({
       );
     },
   );
+  installPrescriptions(patient, { db, csrf, scope, access, mutate, fail, id, object, text, publicDoc, now });
+  installCabinet(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, rxnorm });
+  installChannels(app, { db, authenticated, csrf, mutate, object, fail, id, telegram, now, throttle });
+  const { createTask, date: taskDate } = installTasks(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now, telegram });
+  installSchedules(patient, { db, csrf, scope, access, mutate, fail, id, object, text, publicDoc, now, send });
+  installInformationCards(patient, { db, csrf, scope, mutate, fail, id, object, publicDoc, now, send, openfda });
+  installDoses(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now, send, telegram });
+  installInventory(patient, { db, csrf, scope, mutate, fail, id, object, text, publicDoc, now, send });
+  installPharmacies(patient, { db, csrf, scope, mutate, fail, id, object, publicDoc, now, send, overpass, createTask, taskDate });
+  installIngredientReviews(patient, { db, csrf, scope, mutate, fail, id, object, publicDoc, now, send, rxnorm });
+  installEducationalAnswers(patient, { db, csrf, scope, mutate, fail, id, object, publicDoc, now, send });
+  installFollowups(patient, { db, csrf, scope, mutate, fail, id, object, publicDoc, now, send, telegram });
+  installReports(patient, { db, csrf, scope, mutate, access, fail, id, object, text, publicDoc, now, send });
+  installSos(app, patient, { db, authenticated, csrf, scope, access, mutate, fail, id, object, text, publicDoc, now, send, telegram, hospitals, production:process.env.NODE_ENV==="production" });
   const resources = [
     ["prescriptions", "Prescription", "prescription"],
-    ["cabinet-items", "CabinetItem", "cabinet"],
-    ["tasks", "Task", "task"],
   ];
   for (const [route, model, perm] of resources) {
     patient.get("/" + route, scope(perm + ".read"), async (req, res) => {
@@ -529,242 +644,8 @@ export function createV1({
           : null,
       });
     });
-    patient.post(
-      "/" + route,
-      csrf,
-      scope(perm + ".write"),
-      async (req, res) => {
-        let doc;
-        if (model === "Prescription") {
-          const b = object(
-            req.body,
-            ["title", "instructions"],
-            ["instructions"],
-          );
-          if (
-            !Array.isArray(b.instructions) ||
-            b.instructions.length < 1 ||
-            b.instructions.length > 30
-          )
-            fail(422, "VALIDATION_ERROR", "Enter 1–30 instructions.");
-          const used = new Set();
-          const instructions = b.instructions.map((x, i) => {
-            object(
-              x,
-              [
-                "lineNumber",
-                "medicineText",
-                "instructionsText",
-                "strengthText",
-                "doseQuantity",
-                "doseUnit",
-                "clarificationRequired",
-              ],
-              [
-                "lineNumber",
-                "medicineText",
-                "instructionsText",
-                "clarificationRequired",
-              ],
-            );
-            if (
-              !Number.isInteger(x.lineNumber) ||
-              x.lineNumber < 1 ||
-              used.has(x.lineNumber)
-            )
-              fail(
-                422,
-                "VALIDATION_ERROR",
-                "Line numbers must be positive and unique.",
-              );
-            used.add(x.lineNumber);
-            if (typeof x.clarificationRequired !== "boolean")
-              fail(422, "VALIDATION_ERROR", "Review state is required.");
-            const out = {
-              lineNumber: x.lineNumber,
-              medicineText: text(
-                x.medicineText,
-                `instructions.${i}.medicineText`,
-              ),
-              instructionsText: text(
-                x.instructionsText,
-                `instructions.${i}.instructionsText`,
-                2000,
-              ),
-              clarificationRequired: x.clarificationRequired,
-            };
-            if (x.strengthText !== undefined)
-              out.strengthText = text(x.strengthText, "strengthText");
-            if (x.doseQuantity !== undefined) {
-              if (
-                typeof x.doseQuantity !== "string" ||
-                !/^\d{1,12}(\.\d{1,6})?$/.test(x.doseQuantity) ||
-                Number(x.doseQuantity) <= 0 ||
-                !x.doseUnit
-              )
-                fail(
-                  422,
-                  "VALIDATION_ERROR",
-                  "Positive decimal quantity and unit required.",
-                );
-              out.doseQuantity = x.doseQuantity;
-              out.doseUnit = text(x.doseUnit, "doseUnit", 30);
-            } else if (x.doseUnit !== undefined)
-              fail(422, "VALIDATION_ERROR", "Quantity required with unit.");
-            return out;
-          });
-          const title =
-            b.title === undefined ? undefined : text(b.title, "title");
-          await mutate(req, res, perm + ".write", async (s) => {
-            const prescriptionId = new mongoose.Types.ObjectId(),
-              versionId = new mongoose.Types.ObjectId();
-            const p = await db.insert(
-              "Prescription",
-              {
-                _id: prescriptionId,
-                patientId: req.patient._id,
-                title,
-                status: "active",
-                draftVersionId: versionId,
-              },
-              s,
-            );
-            const version = await db.insert(
-              "PrescriptionVersion",
-              {
-                _id: versionId,
-                patientId: req.patient._id,
-                prescriptionId,
-                versionNumber: 1,
-                status: "draft",
-              },
-              s,
-            );
-            const lines = [];
-            for (const x of instructions)
-              lines.push(
-                publicDoc(
-                  await db.insert(
-                    "PrescriptionInstruction",
-                    {
-                      ...x,
-                      patientId: req.patient._id,
-                      prescriptionVersionId: versionId,
-                    },
-                    s,
-                  ),
-                ),
-              );
-            return {
-              prescription: publicDoc(p),
-              draftVersion: { ...publicDoc(version), instructions: lines },
-            };
-          });
-          return;
-        }
-        if (model === "CabinetItem") {
-          const b = object(
-            req.body,
-            ["displayName", "entryType", "strengthText", "form"],
-            ["displayName", "entryType"],
-          );
-          if (b.entryType !== "manual")
-            fail(
-              422,
-              "EXTERNAL_ENTRY_NOT_IMPLEMENTED",
-              "Step 17 supports labelled manual entries only.",
-            );
-          doc = {
-            displayName: text(b.displayName, "displayName"),
-            entryType: "manual",
-            status: "active",
-          };
-          for (const k of ["strengthText", "form"])
-            if (b[k] !== undefined) doc[k] = text(b[k], k);
-        } else {
-          const b = object(
-            req.body,
-            [
-              "title",
-              "description",
-              "assigneeUserId",
-              "type",
-              "dueAtUTC",
-              "handoverNote",
-            ],
-            ["title", "assigneeUserId", "type"],
-          );
-          doc = {
-            title: text(b.title, "title"),
-            createdByUserId: req.actorId,
-            assigneeUserId: id(b.assigneeUserId),
-            type: b.type,
-            status: "open",
-          };
-          if (!["general", "refill"].includes(b.type))
-            fail(422, "VALIDATION_ERROR", "Unknown task type.");
-          if (b.description !== undefined)
-            doc.description = text(b.description, "description", 2000);
-          if (b.dueAtUTC !== undefined) {
-            if (
-              typeof b.dueAtUTC !== "string" ||
-              !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z$/.test(
-                b.dueAtUTC,
-              ) ||
-              !Number.isFinite(Date.parse(b.dueAtUTC)) ||
-              new Date(b.dueAtUTC).toISOString().slice(0, 19) !==
-                b.dueAtUTC.slice(0, 19)
-            )
-              fail(422, "VALIDATION_ERROR", "UTC due date required.");
-            doc.dueAtUTC = new Date(b.dueAtUTC);
-          }
-          if (b.handoverNote !== undefined)
-            text(b.handoverNote, "handoverNote", 2000);
-        }
-        await mutate(req, res, perm + ".write", async (s) => {
-          if (
-            model === "Task" &&
-            String(doc.assigneeUserId) !== String(req.patient.ownerUserId)
-          ) {
-            const grant = await db.one(
-              "AccessGrant",
-              {
-                patientId: req.patient._id,
-                userId: doc.assigneeUserId,
-                revokedAt: null,
-              },
-              s,
-            );
-            if (!grant?.permissions.includes("task.write"))
-              fail(
-                422,
-                "ASSIGNEE_UNAUTHORIZED",
-                "Choose an active caregiver with task permission.",
-              );
-          }
-          const created = await db.insert(
-            model,
-            { ...doc, patientId: req.patient._id },
-            s,
-          );
-          if (model === "Task") {
-            await db.insert(
-              "TaskEvent",
-              {
-                patientId: req.patient._id,
-                taskId: created._id,
-                actorUserId: req.actorId,
-                eventType: "created",
-                text: req.body.handoverNote,
-              },
-              s,
-            );
-          }
-          return publicDoc(created);
-        });
-      },
-    );
   }
+
   app.use((req, res, next) =>
     next(new ApiError(404, "NOT_FOUND", "Endpoint not found.")),
   );

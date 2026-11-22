@@ -1,0 +1,99 @@
+npm warn deprecated har-validator@5.1.5: this library is no longer supported
+npm warn deprecated uuid@3.4.0: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated uuid@8.3.2: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+npm warn deprecated @faker-js/faker@5.5.3: Please update to a newer version.
+newman
+
+MediMate Step 21 A1 prescription review
+
+→ Anonymous CSRF
+  GET http://127.0.0.1:3005/api/v1/auth/csrf [200 OK, 597B, 29ms]
+  √  HTTP 200
+
+→ Register synthetic reviewer
+  POST http://127.0.0.1:3005/api/v1/auth/register [201 Created, 780B, 83ms]
+  √  HTTP 201
+
+→ Create incomplete unconfirmed draft
+  POST http://127.0.0.1:3005/api/v1/patients/6ae78cd367b1bbeacc32ac2e/prescriptions [201 Created, 1.27kB, 19ms]
+  √  HTTP 201
+  √  No current confirmed pointer
+
+→ Incomplete draft cannot confirm
+  POST http://127.0.0.1:3005/api/v1/patients/6ae78cd367b1bbeacc32ac2e/prescriptions/6ae78cd367b1bbeacc32ac37/versions/6ae78cd367b1bbeacc32ac38/confirm [422 Unprocessable Entity, 541B, 8ms]
+  √  HTTP 422
+
+→ Complete reviewed draft fields
+  PATCH http://127.0.0.1:3005/api/v1/patients/6ae78cd367b1bbeacc32ac2e/prescriptions/6ae78cd367b1bbeacc32ac37/versions/6ae78cd367b1bbeacc32ac38 [200 OK, 1.43kB, 18ms]
+  √  HTTP 200
+
+→ Confirm explicit review
+  POST http://127.0.0.1:3005/api/v1/patients/6ae78cd367b1bbeacc32ac2e/prescriptions/6ae78cd367b1bbeacc32ac37/versions/6ae78cd367b1bbeacc32ac38/confirm [200 OK, 1.55kB, 14ms]
+  √  HTTP 200
+  √  Confirmed with time
+
+→ Confirmed version is immutable
+  PATCH http://127.0.0.1:3005/api/v1/patients/6ae78cd367b1bbeacc32ac2e/prescriptions/6ae78cd367b1bbeacc32ac37/versions/6ae78cd367b1bbeacc32ac38 [409 Conflict, 450B, 6ms]
+  √  HTTP 409
+
+→ Create replacement draft
+  POST http://127.0.0.1:3005/api/v1/patients/6ae78cd367b1bbeacc32ac2e/prescriptions/6ae78cd367b1bbeacc32ac37/versions [201 Created, 1.48kB, 13ms]
+  √  HTTP 201
+
+→ Compare changed quantity
+  GET http://127.0.0.1:3005/api/v1/patients/6ae78cd367b1bbeacc32ac2e/prescriptions/6ae78cd367b1bbeacc32ac37/comparison?fromVersionId=6ae78cd367b1bbeacc32ac38&toVersionId=6ae78cd467b1bbeacc32ac76 [200 OK, 448B, 7ms]
+  √  HTTP 200
+  √  Quantity difference
+
+→ Confirm replacement
+  POST http://127.0.0.1:3005/api/v1/patients/6ae78cd367b1bbeacc32ac2e/prescriptions/6ae78cd367b1bbeacc32ac37/versions/6ae78cd467b1bbeacc32ac76/confirm [200 OK, 1.55kB, 13ms]
+  √  HTTP 200
+
+→ Retained immutable history
+  GET http://127.0.0.1:3005/api/v1/patients/6ae78cd367b1bbeacc32ac2e/prescriptions/6ae78cd367b1bbeacc32ac37/versions [200 OK, 2.13kB, 5ms]
+  √  HTTP 200
+  √  Both versions retained
+  √  Original quantity unchanged
+
+→ Read current version
+  GET http://127.0.0.1:3005/api/v1/patients/6ae78cd367b1bbeacc32ac2e/prescriptions/6ae78cd367b1bbeacc32ac37 [200 OK, 1.57kB, 5ms]
+  √  HTTP 200
+  √  Replacement is current
+
+→ Archive without deleting history
+  POST http://127.0.0.1:3005/api/v1/patients/6ae78cd367b1bbeacc32ac2e/prescriptions/6ae78cd367b1bbeacc32ac37/archive [200 OK, 631B, 9ms]
+  √  HTTP 200
+
+→ Archived history readable
+  GET http://127.0.0.1:3005/api/v1/patients/6ae78cd367b1bbeacc32ac2e/prescriptions/6ae78cd367b1bbeacc32ac37/versions [200 OK, 2.13kB, 5ms]
+  √  HTTP 200
+  √  Archive retains both versions
+
+→ Archived record cannot be replaced
+  POST http://127.0.0.1:3005/api/v1/patients/6ae78cd367b1bbeacc32ac2e/prescriptions/6ae78cd367b1bbeacc32ac37/versions [409 Conflict, 432B, 4ms]
+  √  HTTP 409
+
+┌─────────────────────────┬──────────────────┬──────────────────┐
+│                         │         executed │           failed │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              iterations │                1 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│                requests │               15 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│            test-scripts │               15 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│      prerequest-scripts │               15 │                0 │
+├─────────────────────────┼──────────────────┼──────────────────┤
+│              assertions │               22 │                0 │
+├─────────────────────────┴──────────────────┴──────────────────┤
+│ total run duration: 1483ms                                    │
+├───────────────────────────────────────────────────────────────┤
+│ total data received: 12.65kB (approx)                         │
+├───────────────────────────────────────────────────────────────┤
+│ average response time: 15ms [min: 4ms, max: 83ms, s.d.: 19ms] │
+└───────────────────────────────────────────────────────────────┘
+npm notice
+npm notice New major version of npm available! 11.20.0 -> 12.2.1
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.1
+npm notice To update run: npm install -g npm@12.2.1
+npm notice

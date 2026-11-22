@@ -1,0 +1,413 @@
+{
+  "runAt": "2026-11-22T11:55:29.083Z",
+  "mode": "Real compiled-app HTTP/Express/MongoDB; controlled public/Telegram adapters only",
+  "exchanges": [
+    {
+      "method": "GET",
+      "path": "/auth/csrf",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/auth/register",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/auth/csrf",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/auth/register",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/auth/csrf",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/auth/register",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/access-grants",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/me/channel-link-challenges",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/me/channel-links",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/me/channel-link-challenges/6b02d82fa9ae5816cb416204/confirm",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/me/channel-links",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/me/channel-link-challenges",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/me/channel-links",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/me/channel-link-challenges/6b02d82fa9ae5816cb416226/confirm",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/me/channel-links",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/prescriptions",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/cabinet-items",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/cabinet-items",
+      "status": 201
+    },
+    {
+      "method": "PATCH",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/prescriptions/6b02d82fa9ae5816cb416248/versions/6b02d82fa9ae5816cb416249",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/prescriptions/6b02d82fa9ae5816cb416248/versions/6b02d82fa9ae5816cb416249/confirm",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/cabinet-items/6b02d82fa9ae5816cb41625d/label-candidates",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/cabinet-items/6b02d82fa9ae5816cb41625d/information-card",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/schedule-previews",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/schedules",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/schedules/6b02d82fa9ae5816cb4162c8/occurrences?view=history&limit=100",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/cabinet-items/6b02d82fa9ae5816cb41625d/inventory-settings",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/cabinet-items/6b02d82fa9ae5816cb41625d/stock-transactions",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/doses/6b02d82fa9ae5816cb4162cd/actions",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/doses/6b02d82fa9ae5816cb4162cd/actions",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/doses/6b02d82fa9ae5816cb4162ce/actions",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/cabinet-items/6b02d82fa9ae5816cb41625d/stock",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/refill-lists",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/pharmacies?latitude=23.7465&longitude=90.376&radiusMeters=1000",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/pharmacy-preferences",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/refill-lists/6b02d830a9ae5816cb41633d/collection-task",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/tasks/6b02d830a9ae5816cb416359",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/tasks/6b02d830a9ae5816cb416359/acknowledgements",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/tasks/6b02d830a9ae5816cb416359/transitions",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/tasks/6b02d830a9ae5816cb416359/transitions",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/refill-lists",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/refill-lists/6b02d830a9ae5816cb41633d/items/6b02d830a9ae5816cb41633c",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/refill-lists/6b02d830a9ae5816cb41633d/complete",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/cabinet-items/6b02d82fa9ae5816cb41625d/stock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/cabinet-items/6b02d82fa9ae5816cb41625d/stock",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/cabinet-items/6b02d82fa9ae5816cb41625d/stock-transactions",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/cabinet-items/6b02d82fa9ae5816cb41625d/stock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/cabinet-items/6b02d82fa9ae5816cb41625d/stock",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/followup-settings",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/followups",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/followups/6b02d830a9ae5816cb416403/acknowledge",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/followups/6b02d830a9ae5816cb416403/resolve",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/cabinet-items/6b02d82fa9ae5816cb41625d/ingredient-candidates",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/cabinet-items/6b02d82fa9ae5816cb41625d/ingredient-confirmation",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/cabinet-items/6b02d82fa9ae5816cb41626d/ingredient-candidates",
+      "status": 200
+    },
+    {
+      "method": "PUT",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/cabinet-items/6b02d82fa9ae5816cb41626d/ingredient-confirmation",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/ingredient-reviews",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/ingredient-reviews/6b02d830a9ae5816cb416490/acknowledge",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/educational-answers",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/educational-answers/6b02d830a9ae5816cb4164a9",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/educational-answers",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/educational-answers/6b02d830a9ae5816cb4164bc",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/educational-answers/6b02d830a9ae5816cb4164a9/feedback",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/health-notes",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/report-exports",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/report-exports/6b02d830a9ae5816cb4164eb",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/analytics?fromUTC=2026-11-21T00%3A00%3A00.000Z&toUTC=2026-11-21T02%3A01%3A00.000Z&timezone=Asia%2FDhaka",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/report-exports/6b02d830a9ae5816cb4164eb/content",
+      "status": 200,
+      "response": "PDF bytes"
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/emergency-contacts",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/me/emergency-invitations/6b02d830a9ae5816cb416507/respond",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/sos-incidents",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/sos-incidents",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/sos-incidents/6b02d830a9ae5816cb41651f",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/sos-incidents/6b02d830a9ae5816cb41651f/provider-requests",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/me/sos-incidents/6b02d830a9ae5816cb41651f/acknowledge",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/sos-incidents/6b02d830a9ae5816cb41651f",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/sos-incidents/6b02d830a9ae5816cb41651f/resolve",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/sos-incidents/6b02d830a9ae5816cb41651f",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/cabinet-items/6b02d82fa9ae5816cb41625d",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/followups/6b02d830a9ae5816cb416403",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/sos-incidents/6b02d830a9ae5816cb41651f",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d82fa9ae5816cb4161dc/report-exports/6b02d830a9ae5816cb4164eb/content",
+      "status": 200,
+      "response": "PDF bytes"
+    }
+  ]
+}

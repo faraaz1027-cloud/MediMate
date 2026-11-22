@@ -1,0 +1,170 @@
+{
+  "runAt": "2026-11-21T08:40:33.431Z",
+  "matrix": [
+    {
+      "topic": "Cross-patient identifiers",
+      "expectation": "Caller owning both patients cannot borrow resource IDs",
+      "testFiles": [
+        "server/test/failure-audit.test.js",
+        "server/test/api.test.js"
+      ],
+      "outcome": "passed",
+      "evidence": "docs/evidence/step38-regression.txt"
+    },
+    {
+      "topic": "Revoked and partial grants",
+      "expectation": "Current permissions protect reads, mutations and receipt replay",
+      "testFiles": [
+        "server/test/failure-audit.test.js",
+        "server/test/followups.test.js",
+        "server/test/sos.test.js",
+        "server/test/reports.test.js"
+      ],
+      "outcome": "passed",
+      "evidence": "docs/evidence/step38-regression.txt"
+    },
+    {
+      "topic": "Expired session and CSRF",
+      "expectation": "Rejected writes have no side effects; fresh sign-in recovers",
+      "testFiles": [
+        "server/test/failure-audit.test.js",
+        "server/test/api.test.js"
+      ],
+      "outcome": "passed",
+      "evidence": "docs/evidence/step38-regression.txt"
+    },
+    {
+      "topic": "Duplicate/concurrent submissions",
+      "expectation": "One committed effect and honest conflicts",
+      "testFiles": [
+        "server/test/api.test.js",
+        "server/test/end-to-end.test.js",
+        "server/test/sos.test.js"
+      ],
+      "outcome": "passed",
+      "evidence": "docs/evidence/step38-regression.txt"
+    },
+    {
+      "topic": "Concurrent stock and rollback",
+      "expectation": "Exact balance/debits and transaction rollback",
+      "testFiles": [
+        "server/test/inventory.test.js"
+      ],
+      "outcome": "passed",
+      "evidence": "docs/evidence/step38-regression.txt"
+    },
+    {
+      "topic": "Blurred OCR",
+      "expectation": "Clear control recognized; blur degrades; clarification blocks confirmation",
+      "testFiles": [
+        "server/test/failure-audit.test.js",
+        "server/test/prescriptions.test.js"
+      ],
+      "outcome": "passed",
+      "evidence": "docs/evidence/step38-regression.txt"
+    },
+    {
+      "topic": "Unmatched/unavailable RxNorm",
+      "expectation": "No false identity; malformed/unavailable evidence rejected",
+      "testFiles": [
+        "server/test/rxnorm.test.js",
+        "server/test/cabinet.test.js"
+      ],
+      "outcome": "passed",
+      "evidence": "docs/evidence/step38-regression.txt"
+    },
+    {
+      "topic": "Label absence/outage",
+      "expectation": "No invented source passage or activation",
+      "testFiles": [
+        "server/test/openfda.test.js",
+        "server/test/information-cards.test.js"
+      ],
+      "outcome": "passed",
+      "evidence": "docs/evidence/step38-regression.txt"
+    },
+    {
+      "topic": "Map outage/partial data",
+      "expectation": "Empty, partial, timeout and outage remain distinct",
+      "testFiles": [
+        "server/test/pharmacies.test.js",
+        "server/test/hospitals.test.js"
+      ],
+      "outcome": "passed",
+      "evidence": "docs/evidence/step38-regression.txt"
+    },
+    {
+      "topic": "Telegram failure/uncertainty",
+      "expectation": "Unknown delivery is preserved without automatic resend",
+      "testFiles": [
+        "server/test/telegram.test.js",
+        "server/test/tasks.test.js",
+        "server/test/doses.test.js",
+        "server/test/sos.test.js"
+      ],
+      "outcome": "passed",
+      "evidence": "docs/evidence/step38-regression.txt"
+    },
+    {
+      "topic": "Restart/crash boundaries",
+      "expectation": "Persisted state/leases prevent duplicate effects",
+      "testFiles": [
+        "server/test/timezone-restarts.test.js",
+        "server/test/followups.test.js",
+        "server/test/sos.test.js",
+        "server/test/end-to-end.test.js"
+      ],
+      "outcome": "passed",
+      "evidence": "docs/evidence/step38-regression.txt"
+    },
+    {
+      "topic": "Historical versions",
+      "expectation": "Confirmed history is immutable and persists",
+      "testFiles": [
+        "server/test/prescriptions.test.js",
+        "server/test/schedules.test.js"
+      ],
+      "outcome": "passed",
+      "evidence": "docs/evidence/step38-regression.txt"
+    },
+    {
+      "topic": "SOS boundaries",
+      "expectation": "Forged state, expired consent/ack and production simulation rejected",
+      "testFiles": [
+        "server/test/failure-audit.test.js",
+        "server/test/sos.test.js"
+      ],
+      "outcome": "passed",
+      "evidence": "docs/evidence/step38-regression.txt"
+    }
+  ],
+  "findings": [
+    {
+      "priority": "P2",
+      "file": "server/v1/sos.js",
+      "finding": "A former SOS manager retaining only sos.activate could replay a previously successful closure of another activator's incident.",
+      "impact": "Current-role check was bypassed for a stored receipt; replay returned old success without performing a new closure.",
+      "fix": "Check current manager/originator role before receipt lookup and retain the transactional transition check.",
+      "status": "fixed"
+    },
+    {
+      "priority": "P2",
+      "file": "server/v1/sos.js",
+      "finding": "Malformed plus placement in contact/callback phone numbers passed server validation while UI call links rejected the format.",
+      "impact": "Stored phone could be unusable through the call control.",
+      "fix": "Allow at most one leading plus, a leading digit, supported separators and at least five digits within 5–30 characters.",
+      "status": "fixed"
+    }
+  ],
+  "actualOcr": {
+    "context": "Node/WASM engine, synthetic locally generated PNGs; no browser upload or real prescription",
+    "clearConfidence": 77,
+    "blurredConfidence": 0,
+    "status": "passed"
+  },
+  "limitations": [
+    "Node/WASM synthetic OCR is not a native-browser image-upload or handwriting-accuracy test",
+    "No real Telegram alert or emergency-provider request was sent",
+    "Live public map source availability and faculty/student/native-browser evidence remain open"
+  ]
+}

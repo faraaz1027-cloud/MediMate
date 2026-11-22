@@ -1,0 +1,9 @@
+Final C4 acceptance excerpt from the full 161/161 passing regression run.
+▶ Step 35 report counts, source projections, notes and private PDF
+  ✔ disjoint counts, UTC boundaries and default delay match Mongo fixtures (50.1271ms)
+  ✔ notes require write, preserve revisions and reject future dates (48.655ms)
+  ✔ report includes history, exact fractional refill and task metadata without private notes (190.173ms)
+  ✔ report-read is a bounded projection, cannot write notes; access rechecked on download (141.4806ms)
+  ✔ saved counts stay frozen after note/action changes; export expires at 24 hours (32.0936ms)
+  ✔ export limits, missing source and unsupported glyph errors leave no partial export (628.3953ms)
+✔ Step 35 report counts, source projections, notes and private PDF (2549.6795ms)

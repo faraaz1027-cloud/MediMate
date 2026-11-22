@@ -1,4 +1,6 @@
 # Logs
+.runtime/
+.local-data/
 logs
 *.log
 npm-debug.log*
@@ -57,3 +59,30 @@ vite.config.ts.timestamp-*
 Thumbs.db
 .vscode/
 .idea/
+
+# Generated PDF samples and rendering checks
+/output/
+
+# Local interpreter caches and private database/diagnostic exports
+__pycache__/
+*.py[cod]
+*.har
+*.heapsnapshot
+*.key
+*.pem
+*.wt
+*.turtle
+
+# Native full-window captures include personal browser chrome; retain locally.
+/docs/evidence/figma-module1-ui/*.jpg
+/docs/evidence/module1-readiness/browser/*.jpg
+/docs/evidence/step39/native-*.png
+
+# Retain reviewed Lighthouse JSON, not duplicate generated HTML/interim reports.
+/docs/evidence/step39/*.report.html
+/docs/evidence/step39/*.report.json
+!/docs/evidence/step39/*-reviewed.report.json
+/docs/evidence/step39/desktop-repeat.json
+
+# Historical failed export contains literal "undefined", not usable JSON evidence.
+/docs/evidence/step43/github-review.json

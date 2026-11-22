@@ -1,0 +1,40 @@
+{
+  "type": "isolated reference rehearsal; not production or student evidence",
+  "rehearsal": "C:\\Users\\jfaar\\Documents\\Codex\\MediMate-A3\\Support\\Step42_Review\\Rehearsal_Source",
+  "changes": [
+    {
+      "member": "sadat",
+      "field": "title",
+      "oldLimit": 200,
+      "practiceLimit": 80,
+      "paths": [
+        "client/src/PrescriptionReview.jsx",
+        "server/v1/prescriptions.js",
+        "server/v1/store.js"
+      ]
+    },
+    {
+      "member": "faraaz",
+      "field": "strengthText",
+      "oldLimit": 200,
+      "practiceLimit": 80,
+      "paths": [
+        "client/src/MedicineCabinet.jsx",
+        "server/v1/cabinet.js",
+        "server/v1/store.js"
+      ]
+    },
+    {
+      "member": "sahir",
+      "field": "title",
+      "oldLimit": 200,
+      "practiceLimit": 80,
+      "paths": [
+        "client/src/TaskBoard.jsx",
+        "server/v1/tasks.js",
+        "server/v1/store.js"
+      ]
+    }
+  ],
+  "ui": "Three actual compiled inputs test 81 typed characters result in length 80; existing UI workflows then continue."
+}

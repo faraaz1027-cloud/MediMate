@@ -1,3 +1,18 @@
+.confirmation-dialog {
+  width: min(760px, calc(100vw - 32px));
+  max-height: calc(100vh - 48px);
+  overflow: auto;
+  border: 1px solid #e0dbe9;
+  border-radius: 16px;
+  padding: 28px;
+  color: #111827;
+  background: #f8fafc;
+}
+.confirmation-dialog::backdrop { background: #11182799; }
+.confirmation-content { background: white; border-radius: 16px; padding: 20px; margin: 20px 0; }
+.confirmation-summary { background: linear-gradient(90deg, #111827, #244d7d); color: white; border-radius: 12px; padding: 18px; }
+.confirmation-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.confirmation-actions button { background: #bdedfd; color: #111827; min-height: 48px; }
 header {
   display: flex;
   align-items: center;
@@ -82,6 +97,27 @@ nav .selected {
 .hint {
   font-size: 0.85rem;
 }
+.instruction-editor { border-top: 1px solid #d9d4e2; margin: 20px 0; padding-top: 18px; }
+.prescription-workspace button { margin: 6px 8px 6px 0; }
+.prescription-workspace li { overflow-wrap: anywhere; }
+.prescription-workspace li > button { margin-left: 8px; }
+.cabinet-workspace > .card { margin-bottom: 24px; }
+.cabinet-workspace button { margin: 6px 8px 6px 0; }
+.cabinet-workspace li { overflow-wrap: anywhere; }
+.candidate-list { max-height: 340px; overflow-y: auto; padding-right: 14px; }
+.task-workspace button { margin: 6px 8px 6px 0; }
+.task-workspace li { overflow-wrap: anywhere; }
+.task-workspace form { margin: 18px 0; }
+.channel-linking { margin-top: 24px; overflow-wrap: anywhere; }
+.skip-link { position: absolute; left: 16px; top: -100px; background: white; color: #262233; padding: 12px; z-index: 2; }
+.skip-link:focus { top: 12px; outline: 3px solid #65518f; }
+[aria-invalid="true"] { border: 2px solid #8b2519; }
+.columns > * { min-width: 0; }
+.account { margin: 16px 0; overflow-wrap: anywhere; }
+.account form { margin: 24px 0; }
+.account legend { font-weight: 650; }
+.account button { margin: 8px 12px 0 0; }
+.permission-options { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; }
 .check {
   display: flex;
   align-items: center;
@@ -142,6 +178,35 @@ footer {
   color: #6c6578;
   margin: 40px 0 10px;
 }
+.dose-columns { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.dose-columns > * { min-width: 0; }
+.dose-columns .card, .dose-filters { margin-bottom: 24px; }
+.dose-workspace p, .dose-workspace li { overflow-wrap: anywhere; }
+.dose-workspace button { margin: 6px 8px 6px 0; }
+.dose-workspace .check input { flex: 0 0 20px; }
+.dose-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 720px) { .dose-columns { grid-template-columns: 1fr; } }
+.information-picker { margin-bottom: 24px; }
+.information-columns { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.information-columns > div > .card { margin-bottom: 24px; }
+.information-columns > * { min-width: 0; }
+.information-workspace button { margin: 6px 8px 6px 0; }
+.information-workspace p, .information-workspace a, .information-workspace li { overflow-wrap: anywhere; }
+.information-workspace .check input { flex: 0 0 20px; }
+.label-passages { max-height: 540px; overflow-y: auto; padding-right: 10px; }
+.label-passages blockquote { white-space: pre-wrap; overflow-wrap: anywhere; margin: 12px 0; padding-left: 14px; border-left: 3px solid #d4c8e2; }
+.label-passages h4 { text-transform: capitalize; }
+.personal-note { background: #faf7ff; }
+@media (max-width: 720px) { .information-columns { grid-template-columns: 1fr; } }
+.schedule-workspace { align-items: start; }
+.schedule-workspace button { margin: 6px 8px 6px 0; }
+.schedule-workspace .check input { flex: 0 0 20px; }
+.schedule-workspace > .card { min-width: 0; }
+.schedule-workspace p, .schedule-workspace small, .schedule-preview li { overflow-wrap: anywhere; }
+.schedule-preview { border: 1px solid #d4c8e2; border-radius: 8px; padding: 16px; margin-top: 20px; }
+.schedule-preview ol { max-height: 360px; overflow-y: auto; padding-left: 24px; }
+.schedule-preview li { padding: 8px 0; }
+.source-summary { background: #f5f1fa; border-radius: 6px; padding: 12px; margin: 12px 0; }
 @media (max-width: 720px) {
   header {
     gap: 12px;

@@ -1,0 +1,69 @@
+{
+  "runAt": "2026-11-21T08:40:33.431Z",
+  "files": [
+    {
+      "path": "server/v1/sos.js",
+      "sha256": "27427f053413782de3ad8677fea93e82e57df72bffb6a6fd6227a8910dab71d8"
+    },
+    {
+      "path": "server/test/failure-audit.test.js",
+      "sha256": "e371543f3dcd7bc485105524df674712ebe4ffd9b8eae704a3c05487519fa559"
+    },
+    {
+      "path": "verification/step18/api.mjs",
+      "sha256": "8dd9b5b0a931617f55ec1c3ebdb560e5965c559784c2d59f5cdb6acebd334451"
+    },
+    {
+      "path": "verification/step38/ocr.mjs",
+      "sha256": "b97b8de98807ee686cf37a2193ef5c8ef1e04e93f0be4a2238655804352225aa"
+    },
+    {
+      "path": "verification/step38/record-evidence.mjs",
+      "sha256": "5b56d4012ad8c56199288ef4f94ce940593e95f6503f9e3d9b1e6e209cf7645d"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "089503d050e805135f24505d6a2e7d189fdc1f6496dbf4eb484bb0c38667ed02"
+    },
+    {
+      "path": "docs/STEP_38_FAILURE_PERMISSION_AUDIT.md",
+      "sha256": "5abb95cddeecbb0c085d96e7c5b51fe7b512970368e8d9bb7866c4cee700969a"
+    },
+    {
+      "path": "docs/evidence/step38-before.txt",
+      "sha256": "2ecb4dfe3f92802c341c77625b1054065f4928229110af2c3b969269b8c3ccb2"
+    },
+    {
+      "path": "docs/evidence/step38-targeted.txt",
+      "sha256": "ae559cf8e02a0f91c98c8237b08b7d96ab8d62c8add8d6d8341b154b8fc21051"
+    },
+    {
+      "path": "docs/evidence/step38-regression.txt",
+      "sha256": "bdba7cbb557b09f0aca97d9be07f2577cd4a24c0d3db0e3426b50b8ec42326e9"
+    },
+    {
+      "path": "docs/evidence/step38-audit.json",
+      "sha256": "e3e37e3d63652f679d4c9d12837bd4d3b862eb126a31c2f016a821978412074a"
+    },
+    {
+      "path": "docs/evidence/step38-ocr.json",
+      "sha256": "787bfbf5067f0a42e5ad23afa202ae1c8af7baf18bae208e248331a334c24dad"
+    },
+    {
+      "path": "docs/evidence/step38-matrix.json",
+      "sha256": "c3e4776f9f5c78acacfd9a0b8465bad38a63a2cda52278106805d70f676d8bee"
+    },
+    {
+      "path": "docs/evidence/step38-matrix.md",
+      "sha256": "2b6d5c1101ca48fd83b9a68ea4875fe7b93e2ea5fd7effdd22783eca5cd6ca9c"
+    },
+    {
+      "path": "output/step38/clear.png",
+      "sha256": "d6c7e0c0c8d14cc0478f7e7f07d3261af8aa6eddb23d7d18546a1af828178229"
+    },
+    {
+      "path": "output/step38/blurred.png",
+      "sha256": "4b15ee1d73b529d6a2d8b2e0e82b2470552dc2247793e126a0fd40a2921e5a6b"
+    }
+  ]
+}

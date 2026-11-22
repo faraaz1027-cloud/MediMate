@@ -1,0 +1,57 @@
+name: Verify integration
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  integration:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, windows-2022]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    env:
+      TELEGRAM_BOT_TOKEN: ''
+      TELEGRAM_BOT_USERNAME: ''
+      MONGOMS_VERSION: '7.0.24'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            verification/step18/package-lock.json
+      - name: Verify the exact published revision
+        env:
+          EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          node -e "const actual=require('node:child_process').execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(); if(actual!==process.env.EXPECTED_SHA)process.exit(1); console.log('Verified source revision: '+actual);"
+      - name: Install locked workspaces
+        run: npm ci --include=dev
+      - name: Install isolated test tools
+        run: npm ci --prefix verification/step18
+      - name: Check indexed source for private files and credentials
+        run: npm run check:publication
+      - name: Build and verify API database workers and UI
+        run: npm run verify
+      - name: Retain diagnostics even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-${{ matrix.os }}
+          path: .local-data/verification/
+          include-hidden-files: true
+          if-no-files-found: warn
+          retention-days: 7

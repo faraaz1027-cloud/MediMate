@@ -1,0 +1,825 @@
+{
+  "recordedAt": "2026-11-21T10:16:42.916Z",
+  "synthetic": true,
+  "exchanges": [
+    {
+      "phase": "seed",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 13.96,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "seed",
+      "method": "POST",
+      "path": "/api/v1/auth/register",
+      "status": 201,
+      "durationMs": 66.03,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "seed",
+      "method": "POST",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 201,
+      "durationMs": 13.88,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "seed",
+      "method": "POST",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 201,
+      "durationMs": 10.95,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "seed",
+      "method": "POST",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 201,
+      "durationMs": 11.37,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "seed",
+      "method": "POST",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 201,
+      "durationMs": 11.69,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 2.33,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 4.05,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 5.6,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 5.89,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.52,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 3.09,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 4.12,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 4.23,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.46,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 4.12,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 5.22,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 5.36,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.71,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 3.34,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 3.29,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 3.06,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.46,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 2.93,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 3.34,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 3.59,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.92,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 4.37,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 4.05,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 4.12,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.54,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 2.82,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 3.73,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 3.96,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.84,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 4.54,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 4.5,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 4.8,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.74,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 3.11,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 3.35,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 3.55,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.92,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 4.44,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 4.49,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 4.51,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.62,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 3.37,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 3.48,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 3.49,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.48,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 3.05,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 3.14,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 3.42,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.98,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 3.28,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 3.09,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 2.98,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.63,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 2.8,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 3.23,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 3.59,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 2.74,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 3.89,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 3.53,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 3.7,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 3.54,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.62,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 3.82,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 3.58,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 3.82,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 2.13,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 3.94,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 3.21,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 3.39,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.4,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 2.71,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 3.08,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 3.42,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.42,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 3.09,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 3.18,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 3.46,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.42,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 2.91,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 2.96,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 3.35,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/csrf",
+      "status": 200,
+      "durationMs": 1.93,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/auth/me",
+      "status": 200,
+      "durationMs": 5.11,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions",
+      "status": 200,
+      "durationMs": 4.35,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    },
+    {
+      "phase": "browser",
+      "method": "GET",
+      "path": "/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items",
+      "status": 200,
+      "durationMs": 4.45,
+      "contentType": "application/json; charset=utf-8",
+      "cacheControl": "no-store"
+    }
+  ]
+}

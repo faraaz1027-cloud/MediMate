@@ -1,0 +1,6 @@
+{
+  "schemaUrl": "https://render.com/schema/render.yaml.json",
+  "sha256": "8a3fb8da6b4f55fe686fbefa790e011d3dd7895f013f355953c572a21ab6494a",
+  "checkedOn": "2026-11-04",
+  "validation": "AJV 2020 structural pass; Render CLI unavailable"
+}

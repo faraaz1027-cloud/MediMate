@@ -1,0 +1,16 @@
+{
+  "runner": "Node v26.13.0 on Windows, Express and disposable MongoDB 7.0.24",
+  "build": "npm run build passed",
+  "command": "node verification/step18/api.mjs",
+  "totals": { "tests": 122, "passed": 122, "failed": 0 },
+  "stockScenarios": [
+    "Opening count, coverage, decimal validation and patient-scoped reads",
+    "Fault after debit rolls back balance, ledger and dose",
+    "Concurrent distinct doses and duplicate submissions deduct once per action",
+    "Insufficient stock preserves the dose and explicit retry uses the current action",
+    "Threshold checklist collection and completion have zero stock effect",
+    "Fractional refills, concurrent negative corrections and schedule pause",
+    "Legacy and incompatible doses preserve history, and archived items are excluded from low-stock lists"
+  ],
+  "environmentNote": "The standalone MongoDB fixture used a disposable workspace directory because the Windows sandbox denied a WiredTiger file rename in its default temporary directory."
+}

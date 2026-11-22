@@ -1,0 +1,19 @@
+{
+  "reviewDate": "2026-11-04",
+  "reviewTimezone": "Asia/Dhaka",
+  "baseCommit": "3b46c9d4a270136a07824a3cc952a9e34af0c6fa",
+  "scope": "Deployment preparation and local Module 2 rehearsal; course deployment gate open",
+  "api": {"tests":114,"passed":114,"failed":0,"skipped":0},
+  "productionEntrypointTests": {"passed":4,"includesActualProcessRestart":true,"includesStandaloneMongoRejection":true},
+  "productionViteBuildPassed":true,
+  "productionBundleDomPassed":true,
+  "module2": {"stages":8,"controlledPassed":true,"realPublicSourcePassed":true,"publicRequests":3,"savedSourcePassages":5,"doses":12,"doseActions":3,"taken":1,"skipped":1,"pending":10,"disabledReminderJobs":3,"reminderAttempts":0,"stockTransactions":0},
+  "browser": {"localOnly":true,"compiledSameOriginBuild":true,"verified":["A2 saved source/version/events","B2 original source link/passages","B2 browser note save and reload persistence","C2 taken/skipped/snooze and 1/1/10 counts"],"viewports":[{"width":1440,"height":1000,"documentWidth":1425},{"width":390,"height":844,"documentWidth":375}],"capturedConsoleErrors":0},
+  "render": {"workspaceConfirmedByUser":"My Workspace","inventoryReadOnly":true,"medimateServiceFound":false,"resourcesCreatedOrModified":false,"blueprint":"render.yaml","freeWebOnly":true,"officialJsonSchemaValidationPassed":true,"platformAwareCliValidationPerformed":false},
+  "userConfirmed": {"facultyRequirement":"unconfirmed","cloudMongoDB":"none yet","telegramBotAndConsentingRecipient":"none available"},
+  "publicDeploymentVerified":false,
+  "realTelegramSendOrReceiptVerified":false,
+  "facultyLocalAlternativeApproved":false,
+  "individualStudentContributionOrSubmissionClaimed":false,
+  "limits":"Local production process tests use HTTP with a synthetic HTTPS Origin and manually returned cookies; public TLS/browser behavior remains to verify after deployment. The local rehearsal uses a controlled clock/disposable database and explicit disabled Telegram. Source outage is deliberately injected. A free Render web service is not an always-running reminder worker. Render CLI was unavailable; Blueprint validation was structural only."
+}

@@ -1,0 +1,170 @@
+{
+  "runAt": "2026-11-02T01:24:13.108Z",
+  "patientId": "6ae7df32fb047e1aee0aa072",
+  "versions": [
+    {
+      "id": "6ae7e5bdfb047e1aee0aa2f8",
+      "prescriptionId": "6ae7e5bdfb047e1aee0aa2f7",
+      "status": "confirmed",
+      "source": {
+        "fileName": "step21-synthetic-prescription.png",
+        "mimeType": "image/png",
+        "sizeBytes": 40425,
+        "sha256": "6519bad582b066051fdcbd36a8172ff669414028ba6c2ec43104dfca0dff99be",
+        "ocrText": "SYNTHETIC PRESCRIPTION\nDemo medicine\n\nQuantity 1 tablet\n\nTiming: synthetic morning\nDuration: synthetic seven days\nFor software testing only\n",
+        "ocrStatus": "succeeded",
+        "confidence": 95
+      }
+    },
+    {
+      "id": "6ae7df35fb047e1aee0aa284",
+      "prescriptionId": "6ae7df35fb047e1aee0aa0c8",
+      "status": "confirmed",
+      "source": null
+    },
+    {
+      "id": "6ae7df35fb047e1aee0aa16d",
+      "prescriptionId": "6ae7df35fb047e1aee0aa0c8",
+      "status": "confirmed",
+      "source": null
+    },
+    {
+      "id": "6ae7df35fb047e1aee0aa104",
+      "prescriptionId": "6ae7df35fb047e1aee0aa103",
+      "status": "confirmed",
+      "source": {
+        "fileName": "synthetic-api-source.png",
+        "mimeType": "image/png",
+        "sizeBytes": 100,
+        "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "ocrText": "Synthetic API metadata fixture; not engine output",
+        "ocrStatus": "succeeded"
+      }
+    },
+    {
+      "id": "6ae7df35fb047e1aee0aa0c9",
+      "prescriptionId": "6ae7df35fb047e1aee0aa0c8",
+      "status": "confirmed",
+      "source": null
+    }
+  ],
+  "instructions": [
+    {
+      "id": "6ae7e5bdfb047e1aee0aa2ff",
+      "versionId": "6ae7e5bdfb047e1aee0aa2f8",
+      "cabinetItemId": "6ae7df35fb047e1aee0aa0b0",
+      "medicineText": "Demo medicine",
+      "doseQuantity": "1"
+    },
+    {
+      "id": "6ae7df35fb047e1aee0aa2a4",
+      "versionId": "6ae7df35fb047e1aee0aa284",
+      "cabinetItemId": "6ae7df35fb047e1aee0aa0b0",
+      "medicineText": "Demo medicine",
+      "doseQuantity": "2"
+    },
+    {
+      "id": "6ae7df35fb047e1aee0aa19b",
+      "versionId": "6ae7df35fb047e1aee0aa16d",
+      "cabinetItemId": "6ae7df35fb047e1aee0aa0a2",
+      "medicineText": "duloxetine 20 MG Delayed Release Oral Capsule [Cymbalta]",
+      "doseQuantity": "2"
+    },
+    {
+      "id": "6ae7df35fb047e1aee0aa10b",
+      "versionId": "6ae7df35fb047e1aee0aa104",
+      "cabinetItemId": "6ae7df35fb047e1aee0aa0b0",
+      "medicineText": "Demo medicine",
+      "doseQuantity": "1"
+    },
+    {
+      "id": "6ae7df35fb047e1aee0aa0e9",
+      "versionId": "6ae7df35fb047e1aee0aa0c9",
+      "cabinetItemId": "6ae7df35fb047e1aee0aa0a2",
+      "medicineText": "duloxetine 20 MG Delayed Release Oral Capsule [Cymbalta]",
+      "doseQuantity": "1"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "6ae7df35fb047e1aee0aa1c3",
+      "patientId": "6ae7df32fb047e1aee0aa072",
+      "assigneeUserId": "6ae7df33fb047e1aee0aa07a",
+      "status": "open",
+      "acknowledgedAt": "2026-11-02T01:22:37.486Z"
+    }
+  ],
+  "expectedPrintedFixtureSha256": "6519bad582b066051fdcbd36a8172ff669414028ba6c2ec43104dfca0dff99be",
+  "externalRequests": [
+    {
+      "at": "2026-11-02T00:54:12.876Z",
+      "url": "https://rxnav.nlm.nih.gov/REST/drugs.json?name=cymbalta",
+      "status": 200,
+      "payload": {
+        "drugGroup": {
+          "name": null,
+          "conceptGroup": [
+            {
+              "tty": "BPCK"
+            },
+            {
+              "tty": "SBD",
+              "conceptProperties": [
+                {
+                  "rxcui": "596928",
+                  "name": "duloxetine 20 MG Delayed Release Oral Capsule [Cymbalta]",
+                  "synonym": "Cymbalta 20 MG Delayed Release Oral Capsule",
+                  "tty": "SBD",
+                  "language": "ENG",
+                  "suppress": "N",
+                  "umlscui": ""
+                },
+                {
+                  "rxcui": "596932",
+                  "name": "duloxetine 30 MG Delayed Release Oral Capsule [Cymbalta]",
+                  "synonym": "Cymbalta 30 MG Delayed Release Oral Capsule",
+                  "tty": "SBD",
+                  "language": "ENG",
+                  "suppress": "N",
+                  "umlscui": ""
+                },
+                {
+                  "rxcui": "615186",
+                  "name": "duloxetine 60 MG Delayed Release Oral Capsule [Cymbalta]",
+                  "synonym": "Cymbalta 60 MG (as duloxetine HCl 67.3 MG) Delayed Release Oral Capsule",
+                  "tty": "SBD",
+                  "language": "ENG",
+                  "suppress": "N",
+                  "umlscui": ""
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "at": "2026-11-02T00:54:13.165Z",
+      "url": "https://rxnav.nlm.nih.gov/REST/rxcui/596928/properties.json",
+      "status": 200,
+      "payload": {
+        "properties": {
+          "rxcui": "596928",
+          "name": "duloxetine 20 MG Delayed Release Oral Capsule [Cymbalta]",
+          "synonym": "Cymbalta 20 MG Delayed Release Oral Capsule",
+          "tty": "SBD",
+          "language": "ENG",
+          "suppress": "N",
+          "umlscui": ""
+        }
+      }
+    }
+  ],
+  "browserOcrReadback": {
+    "cabinetItemId": "6ae7df35fb047e1aee0aa0b0",
+    "data": "synthetic only",
+    "sourceHashMatchesFixture": true,
+    "confirmedVersionId": "6ae7e5bdfb047e1aee0aa2f8",
+    "doseQuantity": "1"
+  }
+}

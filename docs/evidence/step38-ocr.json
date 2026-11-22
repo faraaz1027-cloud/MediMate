@@ -1,0 +1,26 @@
+{
+  "runAt": "2026-11-21T08:29:44.348Z",
+  "engine": "installed tesseract.js",
+  "context": "Node/WASM engine, synthetic locally generated PNGs; no browser upload or real prescription",
+  "status": "passed",
+  "recognitions": [
+    {
+      "kind": "clear",
+      "file": "output/step38/clear.png",
+      "sha256": "d6c7e0c0c8d14cc0478f7e7f07d3261af8aa6eddb23d7d18546a1af828178229",
+      "sizeBytes": 17199,
+      "text": "SYNTHETIC OCR CHECK\nALPHA TEST 12345\nNO MEDICAL DIRECTIONS\n",
+      "confidence": 77
+    },
+    {
+      "kind": "blurred",
+      "file": "output/step38/blurred.png",
+      "sha256": "4b15ee1d73b529d6a2d8b2e0e82b2470552dc2247793e126a0fd40a2921e5a6b",
+      "sizeBytes": 42025,
+      "text": "",
+      "confidence": 0
+    }
+  ],
+  "clearControlRecognized": true,
+  "blurDegraded": true
+}

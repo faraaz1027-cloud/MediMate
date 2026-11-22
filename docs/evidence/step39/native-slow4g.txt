@@ -1,0 +1,23 @@
+													603 combo box (settable, string) Throttling Value: Presets: Slow 4G
+												620 group Show only/hide requests dropdown
+													621 button Show only/hide requests Description: Show only/hide requests
+																	1284 data item (item) Fetch csrf Description: http://127.0.0.1:17339/api/v1/auth/csrf
+																	1288 data item (item) requests.js:1
+																		1289 hyperlink (link) requests.js:1 Description: chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/libs/requests.js:1
+																	1385 data item (item) Fetch me Description: http://127.0.0.1:17339/api/v1/auth/me
+																	1389 data item (item) requests.js:1
+																		1390 hyperlink (link) requests.js:1 Description: chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/libs/requests.js:1
+																	1441 data item (item) Fetch prescriptions?limit=20 Description: http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/prescriptions?limit=20
+																	1445 data item (item) requests.js:1
+																		1446 hyperlink (link) requests.js:1 Description: chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/libs/requests.js:1
+																	1449 data item (item) Fetch cabinet-items?status=active&limit=100 Description: http://127.0.0.1:17339/api/v1/patients/6b016b8368c285fc3eaf1c9a/cabinet-items?status=active&limit=100
+																	1453 data item (item) requests.js:1
+																		1454 hyperlink (link) requests.js:1 Description: chrome-extension://eppiocemhmnlbhjplcgkofciiegomcon/libs/requests.js:1
+														1457 group 4 / 11 requests Description: 4 / 11 requests
+															1458 text 4 / 11 requests
+														1463 group Finish: 5.25 s Description: Finish: 5.25 s
+															1464 text Finish: 5.25 s
+														1465 group DOMContentLoaded: 3.46 s Description: DOMContentLoaded: 3.46 s
+															1466 text DOMContentLoaded: 3.46 s
+														1467 group Load: 3.50 s Description: Load: 3.50 s
+															1468 text Load: 3.50 s

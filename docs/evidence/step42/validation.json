@@ -1,0 +1,30 @@
+{
+  "date": "2026-11-21 Asia/Dhaka",
+  "branch": "feature/step42-viva-rehearsal",
+  "actor": "Codex reference rehearsal only",
+  "baselineCasesPassed": 3,
+  "modifiedBackendTestsPassed": 190,
+  "modifiedBackendFailed": 0,
+  "buildPassed": true,
+  "compiledUiPassed": true,
+  "typed81Observed80Fields": [
+    "Prescription title",
+    "Task title",
+    "Strength (optional)"
+  ],
+  "referencePatchesReverseChecked": 3,
+  "canonicalApplicationFilesUnchanged": 103,
+  "humanVivaStatus": {
+    "Sadat": "NOT_RUN",
+    "Faraaz": "NOT_RUN",
+    "Sahir": "NOT_RUN"
+  },
+  "noIndividualCommitsOrJiraActionsPerformed": true,
+  "limitations": [
+    "DOM checks are not native browser demonstrations.",
+    "Schema insert validation does not apply universally to update/raw database writes.",
+    "Shared model producers and legacy data require review before production changes.",
+    "No real Telegram, provider or clinical actions were performed."
+  ],
+  "unmodifiedStudentStarterCheck": "Expected 80 case fails before implementation; original 200 case passes. Assistant check only."
+}

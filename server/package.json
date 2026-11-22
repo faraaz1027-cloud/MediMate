@@ -1,1 +1,21 @@
-{"name":"medimate-server","private":true,"version":"0.1.0","type":"module","scripts":{"dev":"node --env-file=.env --watch index.js","start":"node --env-file=.env index.js"},"dependencies":{"express":"^5.0.0","mongoose":"^8.0.0"}}
+{
+  "name": "medimate-server",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --env-file=.env --watch index.js",
+    "start": "node --env-file-if-exists=.env index.js",
+    "worker": "node --env-file-if-exists=.env worker.js",
+    "dose-worker": "node --env-file-if-exists=.env dose-worker.js",
+    "followup-worker": "node --env-file-if-exists=.env followup-worker.js",
+    "sos-worker": "node --env-file-if-exists=.env sos-worker.js"
+  },
+  "dependencies": {
+    "@js-temporal/polyfill": "0.5.1",
+    "express": "^5.0.0",
+    "fontkit": "3.0.0",
+    "mongoose": "^8.0.0",
+    "pdfkit": "0.21.0"
+  }
+}

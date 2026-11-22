@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-21T17:40:33.903Z",
+  "botUsername": "Medi911_bot",
+  "tokenValidatedByGetMe": true,
+  "webhookConfigured": false,
+  "pendingUpdateCount": 0,
+  "pollingReady": true,
+  "actualMessageDelivery": false,
+  "transport": "Actual Telegram HTTPS API; read-only getMe/getWebhookInfo only"
+}

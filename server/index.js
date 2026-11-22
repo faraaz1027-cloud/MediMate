@@ -4,7 +4,8 @@ import { fileURLToPath } from "node:url";
 import express from "express";
 import mongoose from "mongoose";
 import { db } from "./v1/store.js";
-import { createV1 } from "./v1/app.js";
+import { createHttpApp } from "./http-app.js";
+import { runtimeConfig, requireTransactions } from "./runtime-config.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -26,24 +27,22 @@ if (!process.env.MONGODB_URI) {
   }
 }
 
-const PORT = Number(process.env.PORT) || 3001;
-const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/medimate_demo";
-
-const app = express();
-app.disable("x-powered-by");
-app.use(
-  "/api/v1",
-  createV1({
-    db,
-    origins: (
-      process.env.ALLOWED_ORIGINS ||
-      "http://localhost:5173,http://127.0.0.1:5173"
-    )
-      .split(",")
-      .map((s) => s.trim()),
-  }),
-);
+let config;
+try {
+  config = runtimeConfig();
+} catch (error) {
+  console.error("[Configuration] " + error.message);
+  process.exit(1);
+}
+const { app, finish } = createHttpApp({
+  db,
+  config,
+  readiness: async () => {
+    if (mongoose.connection.readyState !== 1) return false;
+    await mongoose.connection.db.command({ ping: 1 }, { timeoutMS: 1500 });
+    return true;
+  },
+});
 app.use(express.json({ limit: "2kb" }));
 
 // Share the 'notes' collection for both DemoRecord and Note queries
@@ -61,14 +60,6 @@ const recordSchema = new mongoose.Schema(
 
 const Record =
   mongoose.models.DemoRecord || mongoose.model("DemoRecord", recordSchema);
-
-// ─── Health check ─────────────────────────────────────────────────────────────
-app.get("/api/health", (_req, res) => {
-  const isConnected = mongoose.connection.readyState === 1;
-  res.status(isConnected ? 200 : 503).json({
-    database: isConnected ? "connected" : "unavailable",
-  });
-});
 
 // ─── Shared Handlers for /api/notes and /api/demo-records ─────────────────────
 const getRecords = async (_req, res, next) => {
@@ -119,40 +110,47 @@ if (process.env.NODE_ENV !== "production") {
   app.post("/api/demo-records", postRecord);
 }
 
-// ─── Error handling middleware ────────────────────────────────────────────────
-app.use((error, _req, res, _next) => {
-  if (error.type === "entity.parse.failed") {
-    return res.status(400).json({ error: "Invalid JSON." });
-  }
-  if (error.type === "entity.too.large") {
-    return res.status(413).json({ error: "Request is too large." });
-  }
-  res.status(503).json({
-    error: "Database request failed. Check the connection and retry.",
-  });
-});
-
 // ─── Database connection & Server initialization ──────────────────────────────
 try {
-  await mongoose.connect(MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
+  finish();
+  await mongoose.connect(config.mongoUri, {
+    serverSelectionTimeoutMS: 5000,
+    maxPoolSize: 20,
+  });
+  if (config.production) await requireTransactions(mongoose.connection);
   await db.init();
   console.log("[MongoDB] Connected; API indexes ready.");
-  const server = app.listen(PORT, "127.0.0.1", () => {
-    console.log(`[Express] Listening on http://127.0.0.1:${PORT}`);
+  const server = app.listen(config.port, config.host);
+  await new Promise((resolve, reject) => {
+    server.once("listening", resolve);
+    server.once("error", reject);
   });
+  console.log(
+    `[Express] Listening on ${config.host}:${config.port}; Vite client ${config.serveClient ? "served" : "disabled"}.`,
+  );
 
-  const stop = async () => {
+  let stopping = false;
+  const stop = () => {
+    if (stopping) return;
+    stopping = true;
+    const deadline = setTimeout(() => {
+      server.closeAllConnections();
+      process.exit(1);
+    }, 10000);
+    deadline.unref();
     server.close(async () => {
       await mongoose.disconnect();
+      clearTimeout(deadline);
       process.exit(0);
     });
+    server.closeIdleConnections();
   };
   process.on("SIGINT", stop);
   process.on("SIGTERM", stop);
-} catch (err) {
+} catch {
   console.error(
-    "[MongoDB] Connection failed. Check server/.env and ensure MongoDB is running:",
-    "Connection or index initialization failed.",
+    "[Startup] Unavailable. Check configuration, compiled client, transaction-capable database and port.",
   );
+  await mongoose.disconnect();
   process.exit(1);
 }

@@ -1,0 +1,18 @@
+▶ Step 34 overdue-unconfirmed follow-up and caregiver escalation
+  ✔ owner consent and eligible caregiver required; default off (58.1078ms)
+  ✔ boundary creates one task/job/follow-up, restart and concurrent scans deduplicate (74.8082ms)
+  ✔ assigned acknowledgement, outcome and replay never infer skipped (58.3937ms)
+  ✔ failed job insert rolls back dose link, follow-up and task (44.9157ms)
+  ✔ revocation suppresses queued delivery and denies follow-up access (53.9805ms)
+  ✔ terminal recording suppresses before reconciliation; scan resolves without second dose write (97.7968ms)
+  ✔ opt-out suppresses queued notice and disabled Telegram records zero delivery (105.5824ms)
+  ✔ actual worker process restart preserves existing rows with settings disabled (383.974ms)
+✔ Step 34 overdue-unconfirmed follow-up and caregiver escalation (2274.7973ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2583.9052

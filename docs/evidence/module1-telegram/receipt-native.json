@@ -1,0 +1,14 @@
+{
+  "observedAt": "2026-11-21T17:51:44.053Z",
+  "date": "2026-11-21 Asia/Dhaka",
+  "botUsername": "Medi911_bot",
+  "application": "Telegram Desktop",
+  "evidenceType": "Actual native accessibility state; no simulated UI",
+  "windowTitle": "‎MediMate Lab Test – (280)",
+  "messageText": "MediMate: an assigned task has an update. Sign in to review your caregiver tasks.",
+  "nativeReceipt": "37 list item (selectable, settable, string) MediMate Lab Test MediMate: an assigned task has an update. Sign in to review your caregiver tasks. Received at 11:50 PM",
+  "actualReceiptVerified": true,
+  "recipient": "User-authorized account signed in on the PC, linked to the synthetic caregiver",
+  "studentDemonstration": false,
+  "privateSidebarAndLinkCodeExcluded": true
+}

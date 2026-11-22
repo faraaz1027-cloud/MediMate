@@ -1,0 +1,32 @@
+{
+  "reviewDate": "2026-11-04",
+  "reviewTimezone": "Asia/Dhaka",
+  "baseCommit": "401da09855e4924c73f3fe271eaf95dc0d13c795",
+  "syntheticOnly": true,
+  "environment": {"os": "Windows", "node": "26.13.0", "mongodb": "7.0.24 replica set"},
+  "api": {"tests": 109, "passed": 109, "failed": 0, "skipped": 0},
+  "newRestartSuite": {"scenarios": 12, "reportedTestsIncludingParent": 13, "passed": 13},
+  "productionViteBuildPassed": true,
+  "productionBundleDomPassed": true,
+  "domDoseActions": 4,
+  "verifiedBoundaries": [
+    "Asia/Dhaka midnight: 12 saved events partition 1/11, with no duplicate ID",
+    "UTC calendar versus local calendar and ambiguous DST rejection",
+    "Express recreate and Mongoose reconnect retain saved event projections",
+    "Actual worker process killed after queue insert inside an uncommitted transaction",
+    "Actual worker process killed after queue commit; another process sends once across host TZ changes",
+    "Actual worker processes killed before provider and after controlled acceptance; unknown prevents resend",
+    "At first due +60 minutes: oldest expires, six newer controlled acceptances, 12 doses still pending",
+    "Previously pending work becomes disabled/expired without added attempts on a disabled restart",
+    "One disabled pass recovers two actual interrupted claims",
+    "Definite rejection persists across restart; concurrent explicit retry returns 200/409 with two retained attempts",
+    "Clock rollback does not send early or duplicate after catch-up",
+    "Replacement/pause/resume preserve due history; snoozed suppressed notices need explicit retry",
+    "Midnight snooze preserves original due-day membership; taken replay after API restart returns same action ID",
+    "No stockTransactions or stockSyncJobs created"
+  ],
+  "realTelegramSendOrReceiptVerified": false,
+  "newBrowserLayoutOrPerformanceMeasurementClaimed": false,
+  "individualStudentContributionOrFacultyAcceptanceClaimed": false,
+  "limits": "Child adapter acceptance is a controlled IPC fixture with no public HTTP request. The Mongo server remains running during connection/API/worker restart tests; a full Mongo server/disk restart is not claimed. Disposable test replica has a five-second transaction lifetime to bound abandoned crash-fixture transactions. Production settings are unchanged. Stock deduction, C3 follow-up, deployment and human/live acceptance remain open."
+}

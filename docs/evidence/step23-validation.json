@@ -1,0 +1,13 @@
+{
+  "step": 23,
+  "date": "2026-11-02",
+  "owner": "Sahir Jawad Chowdhury",
+  "branch": "feature/step23-caregiver-tasks",
+  "basePullRequest": "https://github.com/faraaz1027-cloud/MediMate/pull/5",
+  "api": {"reportedTests": 54, "failed": 0, "skipped": 0, "telegram": "controlled adapter/worker fixtures; no live recipient"},
+  "dom": {"passed": true, "evidence": "step18-dom.json", "includes": ["task handover and explicit acknowledgement", "accept/complete/reopen/edit", "history after remount", "Telegram disabled status", "earlier account/A1/B1 regressions"]},
+  "newman": {"requests": 28, "assertions": 37, "failed": 0, "evidence": "step23-newman.txt", "telegram": "disabled; no external sends"},
+  "browser": {"engine": "Chromium", "accounts": "separate synthetic organizer and caregiver", "passed": ["assign", "caregiver acknowledge/accept/note/complete", "organizer reopen", "reload preserves history and resets current acknowledgement", "Telegram disabled with zero attempts", "desktop/mobile inspection"], "desktop": [1440,1000], "mobile": [390,844], "mobileDocumentWidth": 375},
+  "openGate": {"realTelegramSent": false, "realTelegramReceiptVerified": false, "reason": "User has no bot or consenting test account", "required": "dedicated test bot, private configuration, recipient linking/consent and actual redacted receipt evidence"},
+  "limits": ["one dedicated bot/database and one poller", "no webhook/public ingress", "no always-on deployment", "no exactly-once external delivery promise", "no individual student contribution/faculty acceptance claim", "C1 external demonstration and full Module 1 gate remain open"]
+}

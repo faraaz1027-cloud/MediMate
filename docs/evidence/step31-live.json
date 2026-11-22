@@ -1,0 +1,7 @@
+{
+  "attemptedAt": "2026-11-05T23:17:47.182Z",
+  "center": { "latitude": 23.7465, "longitude": 90.376, "radiusMeters": 700 },
+  "sourceUrl": "https://overpass-api.de/api/interpreter",
+  "httpStatus": null,
+  "outcome": "timeout"
+}

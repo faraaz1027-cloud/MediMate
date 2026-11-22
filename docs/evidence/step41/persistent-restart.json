@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-21T11:20:34.320Z",
+  "node": "v24.22.3",
+  "isolatedPorts": {
+    "mongo": 27041,
+    "http": 17441
+  },
+  "mongoAndApiRestarted": true,
+  "sameIdentifiersAfterSeedReplayAndRestart": true,
+  "counts": {
+    "users": 2,
+    "patients": 2,
+    "cabinetItems": 3,
+    "prescriptions": 1,
+    "careTasks": 1,
+    "taskNotes": 1,
+    "accessGrants": 1,
+    "doseOccurrences": 0,
+    "notificationAttempts": 0
+  },
+  "telegramDisabled": true,
+  "clinicalSchedulesCreated": 0
+}

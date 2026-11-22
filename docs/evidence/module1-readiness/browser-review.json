@@ -1,0 +1,33 @@
+{
+  "at": "2026-11-21T17:18:44.415Z",
+  "status": "REVIEWED_SELECTED_MODULE1_DESKTOP_CONTROLS",
+  "actor": "Codex; not a student demonstration",
+  "synthetic": true,
+  "earlierEscapeInterruptionRecovered": true,
+  "checks": [
+    {
+      "feature": "A1",
+      "coverage": "Earlier native captures: saved draft/history and disabled confirmation for unresolved clarification; no new OCR engine run."
+    },
+    {
+      "feature": "B1",
+      "file": "B1-filter.jpg",
+      "coverage": "Native name filter medicine B shows only Synthetic handover medicine B; source/status filters visible."
+    },
+    {
+      "feature": "C1",
+      "file": "C1-owner-notes.jpg",
+      "coverage": "Owner-authored note exposes Edit/Delete; retained task history and Not configured/Attempts 0 are visible. No deletion or Telegram send performed."
+    },
+    {
+      "feature": "C1",
+      "file": "C1-caregiver-notes.jpg",
+      "coverage": "Separate caregiver selected the shared owner patient; can acknowledge/accept and append a note, but owner-authored note has no Edit/Delete controls. Task editing submit is disabled for this actor."
+    }
+  ],
+  "limitations": [
+    "Selected desktop controls only; not a complete native end-to-end demonstration",
+    "No new OCR-engine, mobile-device or performance run",
+    "No real Telegram delivery or student/evaluator pass"
+  ]
+}

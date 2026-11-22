@@ -1,0 +1,13 @@
+{
+  "step": 22,
+  "date": "2026-11-02",
+  "owner": "Faraaz Jamil Chowdhury",
+  "branch": "feature/step22-medicine-cabinet",
+  "basePullRequest": "https://github.com/faraaz1027-cloud/MediMate/pull/4",
+  "api": {"reportedTests": 39, "failed": 0, "skipped": 0, "upstream": "controlled fixtures for repeatable automated tests"},
+  "dom": {"passed": true, "evidence": "step18-dom.json", "includes": ["explicit selection/review", "edit/archive/filter", "outage and no-match fallback", "archived history after remount", "earlier shared/A1 regressions"]},
+  "newman": {"requests": 17, "assertions": 27, "failed": 0, "evidence": "step22-newman.txt"},
+  "liveUpstream": {"evidence": "step22-live-rxnorm.jsonl", "queries": ["cymbalta", "medimate-no-match-synthetic"], "selectedRxCui": "596928", "privatePatientData": false},
+  "browser": {"engine": "Chromium", "passed": ["live alternative candidates and explicit save", "source and revisions after edit/archive/reload", "manual save during deliberate outage", "real no-match", "desktop/mobile layout"], "desktop": [1440,1000], "mobile": [390,844], "mobileDocumentWidth": 375},
+  "limits": ["SCD/SBD only; packs excluded", "strength/form are user transcription", "not clinical/ingredient verification", "in-memory per-process cache/pacing", "no deployment, faculty acceptance or individual contribution claim", "Module 1 integration remains open"]
+}

@@ -1,0 +1,13 @@
+Final C5 acceptance excerpt from the full 174/174 passing regression run. Hospital and Telegram adapter tests also passed in that transcript.
+▶ Step 36 C5 recipient consent, SOS incidents and durable notifications
+  ✔ owner cannot assert recipient consent; unconsented incident has no recipients (126.578ms)
+  ✔ deliberate activation, denied location and concurrent presses create one durable alert (68.1937ms)
+  ✔ controlled channel acceptance is separate from recipient acknowledgement and provider simulation (179.4684ms)
+  ✔ location validation, active incident privacy and hospital outage are independent (30.7492ms)
+  ✔ revocation suppresses pending alert and a later consent cannot expose the old incident (130.6456ms)
+  ✔ uncertain send and interrupted lease stay unknown through worker restart; never auto-resend (1011.4088ms)
+  ✔ definite failure retries once with durable attempts; cancellation stops queued alerts (358.2977ms)
+  ✔ failed alert insertion rolls back incident; disabled configuration retains zero-attempt notices (88.3171ms)
+  ✔ invitation/acknowledgement expire and activation limits give explicit retry guidance (316.0605ms)
+  ✔ production does not mount classroom provider simulation (6.761ms)
+✔ Step 36 C5 recipient consent, SOS incidents and durable notifications (3771.4877ms)

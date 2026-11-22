@@ -1,0 +1,23 @@
+{
+  "at": "2026-11-22T11:56:58.659Z",
+  "node": "v24.22.3",
+  "platform": "win32",
+  "controlledProviders": true,
+  "results": [
+    {
+      "name": "build",
+      "exitCode": 0,
+      "elapsedMs": 983
+    },
+    {
+      "name": "api",
+      "exitCode": 0,
+      "elapsedMs": 66123
+    },
+    {
+      "name": "ui",
+      "exitCode": 0,
+      "elapsedMs": 38579
+    }
+  ]
+}

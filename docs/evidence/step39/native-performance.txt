@@ -1,0 +1,18 @@
+													2055 button LCP: 0.16s good score Description: LCP: 0.16s good score
+													2057 button CLS: 0 good score Description: CLS: 0 good score
+													2070 text 0 ms
+													2071 text 1,958 ms
+													2072 text 3,958 ms
+													2073 text 5,958 ms
+														2098 tab item (selectable) Summary ID: tab-details
+													2102 text Range: 0 ms – 5.17 s
+													2103 text Scripting
+													2104 text 145 ms
+													2106 text 66 ms
+													2107 text Rendering
+													2108 text 5 ms
+													2109 text Painting
+													2110 text 5 ms
+													2112 text 1 ms
+													2114 text 0 ms
+													2116 text 5,169 ms

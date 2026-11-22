@@ -37,37 +37,44 @@ Prescription version numbers are unique per prescription. Instructions are separ
 | Collection | Core fields |
 |---|---|
 | sourceRecords | provider: rxnorm/openfda/overpass, externalId, sourceUrl, retrievedAt, contentHash, snapshot, matchStatus: selected/unverified; optional sourceVersion |
-| medicineCards | patientId, cabinetItemId, sourceRecordId?, availability: available/unavailable, selectedPassages[], personalNote?, revisedAt |
+| medicineCards | patientId, cabinetItemId, sourceRecordId?, availability: available/unavailable, reason?, selectedPassages[{key,index,text}], personalNote, itemSnapshot (cabinet revision/identity/strength/form), applicabilityConfirmedBy/At?, revisedAt; common revision for CAS |
 | ingredientReviews | patientId, cabinetItemIds[], ingredientSnapshots[], evidenceRefs[], result: overlap/no_overlap_in_confirmed_ingredients/insufficient_information, acknowledgedAt?, acknowledgedByUserId?, note? |
 | assistantConversations | patientId, createdByUserId, title?, deletedAt? |
 | assistantMessages | patientId, conversationId, role: user/assistant, text, evidenceRefs[], outcome: answered/insufficient_evidence/error, feedback? |
 
 Evidence references contain sourceRecordId and a passage key plus immutable passage text snapshot. Snapshots preserve the evidence used even after a later retrieval. Source records contain public external information only; personal notes belong to patient-scoped cards. No-overlap is limited to compared confirmed ingredient identities and never claims overall safety. Manual items remain unverified until explicit ingredient confirmation. Conversation deletion removes message text and evidence payloads; retain only a minimal deletion audit event. No model training dataset is required by this design.
 
+**Step 26 B2 implementation:** one card per patient+cabinet item, separate note writes and immutable openFDA SourceRecord receipts. sourceVersion is the provider label version; externalId is its immutable record UUID, while snapshot retains setId, effectiveTime, exact RxCUI, product metadata and verbatim selected passages. contentHash is SHA-256 of JSON.stringify of the complete original raw label record (not a clinical validation). Each successful new selection records its own retrieval receipt; replay reuses the original result. Removing an association retains the public source receipt and personal note. Note-only cards are unavailable/not_selected until an explicit source selection. Archived items remain readable; itemSnapshot revision mismatch is exposed as itemChanged. Cabinet's hidden coordination counter (introduced by A2) also serializes B2 source confirmation/note writes with cabinet edits/archive, without changing its public revision.
+
 ## Schedules, occurrences and dose actions: A2, C2, C3
 | Collection | Core fields |
 |---|---|
-| schedules | patientId, cabinetItemId, currentVersionId?, status: draft/active/paused/ended |
-| scheduleVersions | patientId, scheduleId, versionNumber, prescriptionInstructionId, confirmedByUserId, confirmedAt, effectiveFromUTC, endAtUTC?, timezone, timingMode: fixed_times/interval, localTimes[] or intervalMinutes+anchorAtUTC, doseQuantity, doseUnit |
-| doseOccurrences | patientId, scheduleId, scheduleVersionId, cabinetItemId, dueAtUTC, doseQuantitySnapshot, doseUnitSnapshot, state: pending/taken/skipped/cancelled, reminderDueAtUTC, snoozeCount, actionRevision |
+| schedules | patientId, cabinetItemId, prescriptionInstructionId, currentVersionId, status: active/paused; pausedAt?, pauseReason? |
+| scheduleVersions | patientId, scheduleId, versionNumber, prescriptionInstructionId, confirmedByUserId, confirmedAt, effectiveFromUTC, required endAtUTC, timezone, timingMode: fixed_times/interval, localTimes[] or intervalMinutes+anchorAtUTC, doseQuantity, doseUnit, immutable sourceSnapshot, occurrenceCount |
+| schedulePreviews | patientId, actorUserId, tokenHash, expiresAt, consumedAt?, payload: normalized input, deterministic events, source snapshot/fingerprint, optional scheduleId+expectedRevision |
+| doseOccurrences | patientId, scheduleId, scheduleVersionId, cabinetItemId, dueAtUTC, doseQuantitySnapshot, doseUnitSnapshot, timezoneSnapshot, state: pending/taken/skipped/cancelled, reminderDueAtUTC, snoozeCount, actionRevision, cancelledAt?, cancellationReason? |
 | doseActions | patientId, occurrenceId, revisionNumber, action: taken/skipped/corrected_to_pending/snoozed, actorUserId, recordedAt, effectiveAt?, reason?, clientRequestId |
 | followups | patientId, occurrenceId, status: open/acknowledged/resolved/cancelled, overdueAtUTC, nextAttemptAtUTC?, acknowledgedByUserId?, acknowledgedAt?, outcome?, resolvedAt? |
 
 A pending occurrence past due plus the configured follow-up delay is displayed as overdue-unconfirmed, never automatically skipped. Occurrence state is the current projection; doseActions is immutable history. Snooze only changes reminderDueAtUTC and count; it is not a terminal dose status. First terminal action uses an atomic compare-and-set on pending state and actionRevision. Repeated clientRequestId returns the original result; another terminal action returns conflict. Corrections require expected revision and reason.
 
-Generate a rolling seven-day horizon, extended daily by the worker, bounded by the schedule end. Fixed times follow the saved timezone; intervals follow elapsed minutes from anchor UTC. Reject nonexistent/ambiguous local times unless the user explicitly resolves them. Version edits/timezone changes cancel unacted future occurrences from the old version at the effective boundary and generate replacements. Past and acted occurrences remain unchanged. Pause cancels unacted future occurrences; resume generates only future occurrences without retroactive reminders. Restart scans persisted work; expired reminder jobs are marked expired with a visible reason rather than silently sent late. Default reminder expiry is 60 minutes after due time; overdue follow-up remains a separate job with configurable patient delay.
+**Step 25 implementation decision:** persist the entire finite course atomically, with a required exclusive end, at most 90 elapsed days and 2000 events. This supersedes the proposed rolling seven-day generation horizon: a rolling horizon without its later worker would silently stop on day eight and postpone DST validation. The upcoming read view still covers seven days. Indefinite/longer courses require a separately reviewed extension or later bounded-worker design; do not silently assume an end. All prospective events are reproducible from immutable version rules. Fixed times follow the saved timezone; intervals follow elapsed minutes from anchor UTC. Reject nonexistent/ambiguous local times throughout the course. Version edits cancel pending future occurrences across earlier versions at the effective boundary and generate replacements. Past and acted occurrences remain unchanged. Pause cancels pending future occurrences; resume restores only this version's rows cancelled by pause, at/after the explicit future resume time, without inserting duplicates. A changed source requires a reviewed replacement version; paused versions can be replaced. Source changes do not silently rewrite existing schedules. Historical pending events are unconfirmed, never automatically skipped.
+
+Source parent/cabinet documents have a hidden scheduleFence coordination counter, written during confirmation/resume to conflict with concurrent archive/edit. It does not change their content or public revision. Step 25 did not implement dose actions or reminder execution. Step 27 now adds C2 actions, queue/restart scans and 60-minute expiry after the current reminder time; see the implementation update below. Broader restart/timezone auditing remains Step 28 and caregiver follow-up remains C3.
 
 ## Stock, refill and pharmacy: A3–A4
 | Collection | Core fields |
 |---|---|
-| stockTransactions | patientId, cabinetItemId, delta, unit, reason: opening/refill/correction/dose_deduction/dose_reversal, operationKey, actorUserId?, sourceDoseActionId?, reversesTransactionId?, note? |
-| inventorySettings | patientId, cabinetItemId, stockUnit, lowStockThreshold |
-| refillLists | patientId, status: open/completed/archived, createdByUserId |
-| refillListItems | patientId, refillListId, cabinetItemId, requestedQuantity?, unit, state: needed/collected, collectedAt? |
-| pharmacyPreferences | patientId, externalPlaceKey, listingSnapshot, retrievedAt, sourceUrl, preferred |
-| refillTaskLinks | patientId, refillListId, taskId, pharmacyPreferenceId? |
+| StockTransaction | patientId, cabinetItemId, deltaMicros, unit, reason: opening/refill/correction/dose_deduction/dose_reversal, operationKey, actorUserId, recordedAt, sourceDoseActionId?, reversesTransactionId?, note? |
+| InventorySettings | patientId, cabinetItemId, stockUnit, thresholdMicros, balanceMicros, opened, revision |
+| RefillList | patientId, status: open/completed, createdByUserId, revision, completedAt?, collectionTaskId?, embedded items with id, cabinetItemId, medicineText, requestedQuantity?, unit, state: needed/collected, collectedAt? |
+| PharmacyPreference | unique patientId, externalPlaceKey, listingSnapshot, retrievedAt, dataTimestamp?, sourceUrl, savedByUserId, revision |
 
-Balance is sum of immutable ledger deltas; do not maintain an independent editable balance. One stock unit per cabinet item; changing unit requires a reviewed conversion/migration. Reject negative resulting balances atomically; record dose as taken even if stock deduction cannot proceed, with stock-sync pending/error visible for reconciliation. Unknown conversion means estimate unavailable. Refill list collection and stock addition are separate explicit operations, so task completion alone never invents a refill. Coverage uses future confirmed dose quantities with compatible units and states assumptions.
+The sum of immutable ledger deltas is materialized in `balanceMicros` for transactional revision checks and low-stock queries. Only a ledger append changes this projection. Quantities are integer micro-units stored as Decimal128. Patient and cabinet item uniquely identify settings. The ledger uniquely indexes patient and operation key. The opening entry locks the unit. A low-stock checklist embeds up to 50 items so a revision check protects the entire list and its completion invariant.
+
+Step 30 adds current stock status, issue, source action reference and deduction reference to each affected DoseOccurrence. A new DoseAction keeps the outcome at recording time. A reviewed deduction updates the occurrence and ledger in the same transaction and preserves the immutable action. The debit is unique per source action, and the compensating credit is unique per debit. Existing taken occurrences without stock metadata project `legacy_untracked`. [Step 30 transaction boundaries and coverage](STEP_30_INVENTORY_REFILLS.md).
+
+A4 stores the current preferred public listing per patient. Search centers are kept out of MongoDB and the saved listing keeps its public address, coordinates, optional contact/hours and provenance. A linked Task stores `refillListId`, optional `pharmacyPreferenceId` and the selected public listing snapshot as it was at assignment. Storing the reverse pointer directly on the refill list gives the task and checklist one revision-checked transaction boundary. [Step 31 decisions and tests](STEP_31_PHARMACY_COORDINATION.md).
 
 ## Tasks, notifications and follow-up delivery: C1–C3
 | Collection | Core fields |
@@ -103,7 +110,9 @@ healthNotes: patientId, authorUserId, recordedAt, text, revision. reportExports:
 | prescriptionInstructions | unique prescriptionVersionId+lineNumber |
 | cabinetRevisions | unique cabinetItemId+revisionNumber |
 | scheduleVersions | unique scheduleId+versionNumber |
-| doseOccurrences | unique scheduleVersionId+dueAtUTC; patientId+dueAtUTC; state+reminderDueAtUTC |
+| schedules | unique patientId+current prescriptionInstructionId; edit the existing schedule instead of duplicating the same instruction |
+| schedulePreviews | unique tokenHash; TTL expiresAt; application also checks expiry/actor/patient/single use |
+| doseOccurrences | unique scheduleVersionId+dueAtUTC; patientId+scheduleId+dueAtUTC+id (Step 25); patientId+dueAtUTC+id and patientId+state+reminderDueAtUTC worker indexes installed in Step 27 |
 | doseActions | unique occurrenceId+revisionNumber; unique patientId+clientRequestId |
 | stockTransactions | unique patientId+operationKey; patientId+cabinetItemId+createdAt |
 | inventorySettings | unique patientId+cabinetItemId |
@@ -114,7 +123,8 @@ healthNotes: patientId, authorUserId, recordedAt, text, revision. reportExports:
 | sosIncidents | partial unique patientId where status=active |
 | sosAlerts | unique incidentId+emergencyContactId |
 | providerRequests | unique incidentId+providerKey |
-| sourceRecords | unique provider+externalId+contentHash |
+| sourceRecords | immutable per-selection receipts; provider/externalId/contentHash retained; proposed global composite uniqueness is not installed because separate selection retrieval times must remain identifiable |
+| medicineCards | unique patientId+cabinetItemId (Step 26) |
 | careTasks / taskEvents | patientId+assigneeUserId+status / taskId+occurredAt |
 
 Add patientId+createdAt to patient history collections when needed. Partial indexes apply only to the stated subset; optional unique fields must not accidentally make all missing values collide. Index creation and cross-reference validation belong in schema implementation, not only documentation.
@@ -135,3 +145,49 @@ Within a transaction: validate active access and expected revision; write action
 ## Step 15 completion
 Identifiers, patient ownership, permissions, all 13 feature data dictionaries, lifecycles, timestamps, index constraints and consistency strategy are defined. This is the documented team baseline, subject to implementation feedback; it does not claim team/faculty sign-off or working schemas.
 
+
+## Step 21 implementation update — 2 November 2026
+A1 adds optional PrescriptionVersion.previousVersionId, confirmedAt, confirmedByUserId, reviewCorrections and source metadata, plus PrescriptionInstruction.frequencyText/durationText. Confirmation preserves version/instruction identities; replacement creates new records and changes only the parent's current pointer. No destructive migration or rewrite of confirmed history is performed. Existing drafts need complete reviewed timing/duration before confirmation. Browser-local OCR replaces the planned server asset/job storage for this slice: no image bytes are retained and source metadata is untrusted. See [Step 21 contract and rationale](STEP_21_PRESCRIPTION_REVIEW.md) and the amended A1 section of Step 16. Other asset/domain models remain planned, not implemented by A1.
+
+## Step 22 implementation update — 2 November 2026
+B1 adds CabinetItem.sourceRecordId and implements public SourceRecord snapshots plus immutable patient-scoped CabinetRevision records (unique cabinetItemId+revisionNumber). Creates start at revision 0; edits/archive append snapshots transactionally. Existing items gain a baseline on their first change with unknown prior actor, without fabricating earlier revisions. External RxCUIs are resolved by the server; client sourceRecordId/ingredient claims are rejected. Display names allow 500 characters for canonical compound names. Strength/form remain user transcription, and ingredients/cards are later steps. No destructive migration or deletion occurs; archived IDs/source/history remain readable. See [Step 22 contracts, rationale and evidence](STEP_22_MEDICINE_CABINET.md).
+
+## Step 23 implementation update — 2 November 2026
+C1 adds Task assignment generation and acknowledgement projection, plus immutable TaskEvent snapshots/transition/time metadata. New ChannelLink/ChannelChallenge (hashed code, expiry), TelegramReceipt, WorkerState, task-specific NotificationJob/NotificationAttempt and Acknowledgement collections implement consent, durable outbox, delivery attempts and app acknowledgement separately. Domain unique indexes prevent duplicate job/attempt/ack/update records. Existing tasks/events are retained without invented snapshots/jobs/acknowledgements. No destructive backfill is required. Later C2/C3/C5 work must extend the task-specific job subject contract and obtain relevant contact/location consent; C1 generic notices do not grant that consent. A separate long-polling process replaces the earlier webhook proposal for this local slice. Real Telegram delivery remains unverified because no test bot/recipient was available. See [Step 23 implementation, API details and remaining gate](STEP_23_CAREGIVER_TASKS.md).
+
+## Step 24 implementation update — 2 November 2026
+The planned optional PrescriptionInstruction.cabinetItemId is implemented. New links require cabinet.read and an active item in the same patient; retained historical links grant no cabinet access. Confirmed instruction text/IDs/references are immutable after cabinet edit/archive. A replacement draft may retain its old archived reference for correction, but confirmation requires active references or clearing/replacing them. Existing unlinked records need no backfill. C1 uses the same patient/caregiver IDs; example handover description IDs are text, not new structured task foreign keys. [Step 24 integration and evidence](STEP_24_MODULE_1_INTEGRATION.md) keeps real Telegram and student/faculty acceptance gates open.
+
+## Step 27 implementation update — 3 November 2026
+C2 adds immutable DoseAction with previousState/newState, isCorrection, actorUserId, recordedAt/effectiveAt, reason, reminderDueAtUTC and stockSyncStatus:not_implemented, in addition to revisionNumber/action/clientRequestId. Unique occurrenceId+revisionNumber and patientId+clientRequestId enforce ordered history and cross-route deduplication; patientId+occurrenceId+createdAt/id indexes history. Only transactions update the occurrence/action/audit/idempotency projection. The earlier stock-ledger atomicity paragraph remains a future A3 design; C2 does not create stock or reconciliation records.
+
+DoseOccurrence.reminderQueuedRevision tracks the last action revision queued, separately from public actionRevision and internal schema revision. Missing markers on existing A2 rows are eligible for scanning; there is no destructive backfill or fabricated historical action. WorkerState adds an optional settings-scan cursor for round-robin batches. New collections are separate from C1 task notifications because that worker has task-specific subjects and consent:
+
+| Collection | Implemented fields/indexes |
+|---|---|
+| doseReminderSettings | patientId,ownerUserId,enabled,consentedAt,revision; unique patientId, enabled+id scan |
+| doseReminderJobs | patientId,occurrenceId,recipientId,actionRevision,settingsRevision,channelLinkId?,channelRevision?,status,errorCode?,attemptCount,runAtUTC,expiresAtUTC,leaseUntil?; unique occurrenceId+actionRevision+recipientId; status+runAtUTC and patientId+occurrenceId+createdAt/id |
+| doseReminderAttempts | patientId,jobId,attemptNumber,attemptedAt,providerCallAt?,status,externalMessageId?,errorCode?; unique jobId+attemptNumber |
+
+Owner opt-in defaults off and is distinct from private ChannelLink consent. Queue insertion and occurrence marker commit together; lease claim/attempt creation and completion also transact. Each claim rechecks current eligibility before the external call, which cannot participate in a Mongo transaction. Interrupted/uncertain outcomes remain unknown, never automatically resent. No reminder outcome changes dose state. Snapshot quantity/unit/timezone/source text remain the saved A2 prescription values. [Step 27 evidence, policy and owner review](STEP_27_DOSE_REMINDERS.md).
+
+## Step 28 implementation update — 4 November 2026
+Add the DoseReminderJob status+leaseUntil+id index for oldest-interrupted-lease recovery. Existing pending jobs are reconciled through revision/status CAS even with Telegram disabled: expired at expiresAtUTC equality, otherwise disabled/NOT_CONFIGURED. Reconciliation adds no attempt and changes no occurrence/action/snapshot; retained attempt counts from earlier work remain intact. Recovering a lease reports worker progress so bounded drains continue through multiple interrupted jobs. No destructive migration or backfill. UTC instants and prescribed timezone snapshots survive the tested API/connection/process restarts and calendar changes. [Step 28 audit and limits](STEP_28_TIMEZONE_RESTARTS.md) distinguishes notification uncertainty, later A3 stock work and the open live/human gates.
+
+## Step 29 deployment preparation — 4 November 2026
+No data model/index migration is introduced. Production API/C1/C2 worker startup checks MongoDB replica-set/mongos session capability before running transaction-dependent work. Same-origin frontend/API and bounded health ping use the existing persistent database. The Module 2 rehearsal uses disposable synthetic records and an explicitly controlled clock, never a new production fixture mode. No cloud database is provisioned. A3 stock and C3 follow-up remain later models. [Preparation and open deployment/human gates](STEP_29_DEPLOYMENT_MODULE2.md).
+
+## Step 32 implemented ingredient records
+ingredientConfirmations are unique by patientId/cabinetItemId and store cabinetRevision, productId, sourceRecordId, complete canonical ingredients, confirmedBy/At and revision. ingredientReviews store cabinetItemIds, ingredientSnapshots, evidenceRefs, overlaps, result and one-time acknowledgement (acknowledgedAt/By, note). Public ingredient evidence is immutable in SourceRecord with provider rxnorm_ingredients, retrieval time, source URL, content hash and product/ingredient snapshot. Current saved B2 passages and source metadata are copied into each review; private notes are excluded. See STEP_32_INGREDIENT_REVIEW.md.
+
+## Step 33 educationalAnswers
+Patient-scoped educationalAnswers store cabinetItemId/revision, medicineName, question, outcome/reason, immutable citation snapshots, creator, rating/comment and deletion timestamp. Revision guards feedback/deletion. Deleted payload fields are cleared; source-record evidence remains shared with B2. Creation/feedback idempotency receipts contain only the answer ID, preventing text disclosure after deletion. See STEP_33_EDUCATIONAL_ASSISTANT.md.
+
+## Step 34 C3 records
+followupSettings: unique patientId, ownerUserId, caregiverUserId, enabled (default off), delayMinutes and revision. doseFollowups: unique occurrenceId, patientId, caregiverUserId, taskId, status, dueAtUTC/overdueAt, acknowledgedAt/By, resolvedAt/By, outcome and note. DoseOccurrence.followupId links an escalation without changing state or actionRevision. Task.followupId adds current C3 eligibility to existing C1 notification delivery. Existing C1 job/attempt and task-event records retain evidence. Two persisted worker cursors bound settings scans and terminal-dose reconciliation. See STEP_34_DOSE_FOLLOWUPS.md.
+
+## Step 35 C4 records
+healthNotes store patientId, text, recordedAt, authorUserId and editedAt/revision; healthNoteRevisions preserve noteId/revisionNumber, text, reason, actor and change time with a unique note/revision index. reportExports store patientId, creator, immutable report projection snapshot, PDF bytes, generatedAt and expiresAt/status. Download expiry is checked explicitly at 24 hours; no automatic backup/data purge is claimed. See STEP_35_VISIT_REPORTS.md for report.read projection boundaries and caps.
+
+## Step 36 C5 records
+emergencyContacts bind patient/recipient account with pending/active/declined/revoked status, invitation expiry, consentVersion and revision. sosIncidents have a partial unique active-per-patient index, activator, client-reported location or unavailable marker, optional callback phone and explicit closure fields. sosJobs bind incident/contact/recipient/consent generation and channel revision with kind alert/cancelled/resolved, expiry, attempt/lease state; sosAttempts retain outcomes. sosAcknowledgements are unique by incident/contact. sosEvents preserve activation/acknowledgement/closure history. sosProviderRequests store only classroom simulation requests; no real provider or dispatch confirmation is configured. Patient/contact/incident write fences serialize relevant concurrent transitions. See STEP_36_SOS_MODULE3.md.

@@ -1,0 +1,440 @@
+{
+  "runAt": "2026-11-22T11:55:33.206Z",
+  "synthetic": true,
+  "transport": "Local Express/MongoDB; no real alerts",
+  "checks": [
+    {
+      "name": "resource IDs stay patient-scoped even when the caller owns both patients",
+      "status": "passed"
+    },
+    {
+      "name": "wrong CSRF cannot write a note, activate SOS or revoke recipient consent",
+      "status": "passed"
+    },
+    {
+      "name": "blurred OCR remains an unconfirmed clarification draft",
+      "status": "passed"
+    },
+    {
+      "name": "concurrent health-note revisions commit one winner and preserve history",
+      "status": "passed"
+    },
+    {
+      "name": "forged SOS delivery/provider fields cannot manufacture dispatch or closure",
+      "status": "passed"
+    },
+    {
+      "name": "losing SOS manager access blocks another activator's closure, including receipt replay",
+      "status": "passed"
+    },
+    {
+      "name": "partial caregiver permission loss also protects old follow-up receipts",
+      "status": "passed"
+    },
+    {
+      "name": "consent revoked during acknowledgement cannot commit a stale recipient acknowledgement",
+      "status": "passed"
+    },
+    {
+      "name": "malformed plus placement is rejected consistently with the UI call controls",
+      "status": "passed"
+    },
+    {
+      "name": "expired session rejects old writes, and fresh CSRF/login restores authorized access",
+      "status": "passed"
+    }
+  ],
+  "exchanges": [
+    {
+      "method": "GET",
+      "path": "/auth/csrf",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/auth/register",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/auth/csrf",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/auth/register",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/auth/csrf",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/auth/register",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/access-grants",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/cabinet-items",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/prescriptions",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/prescriptions/6b02d8345f04299b1ff2785a/versions/6b02d8345f04299b1ff2785b/confirm",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/schedule-previews",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/schedules",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff2781e/schedules/6b02d8345f04299b1ff27890/occurrences?view=history&limit=100",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/cabinet-items",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/ingredient-reviews",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/educational-answers",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/health-notes",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/report-exports",
+      "status": 201
+    },
+    {
+      "method": "PUT",
+      "path": "/patients/6b02d8335f04299b1ff2781e/followup-settings",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff2781e/followups",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/emergency-contacts",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/me/emergency-invitations/6b02d8345f04299b1ff2792a/respond",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/sos-incidents",
+      "status": 201
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff27839/cabinet-items/6b02d8345f04299b1ff2784e",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff27839/prescriptions/6b02d8345f04299b1ff2785a",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff27839/schedules/6b02d8345f04299b1ff27890",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff27839/doses/6b02d8345f04299b1ff27895",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff27839/tasks/6b02d8345f04299b1ff27914",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff27839/followups/6b02d8345f04299b1ff27912",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff27839/ingredient-reviews/6b02d8345f04299b1ff278c2",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff27839/educational-answers/6b02d8345f04299b1ff278cf",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff27839/report-exports/6b02d8345f04299b1ff278f0",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff27839/report-exports/6b02d8345f04299b1ff278f0/content",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff27839/sos-incidents/6b02d8345f04299b1ff27942",
+      "status": 404
+    },
+    {
+      "method": "PATCH",
+      "path": "/patients/6b02d8335f04299b1ff27839/health-notes/6b02d8345f04299b1ff278d9",
+      "status": 404
+    },
+    {
+      "method": "PATCH",
+      "path": "/patients/6b02d8335f04299b1ff27839/emergency-contacts/6b02d8345f04299b1ff2792a",
+      "status": 404
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/health-notes",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/sos-incidents",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff2781e/emergency-contacts",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/me/emergency-invitations/6b02d8345f04299b1ff2792a/respond",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/prescriptions",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/prescriptions/6b02d8345f04299b1ff2798a/versions/6b02d8345f04299b1ff2798b/confirm",
+      "status": 422
+    },
+    {
+      "method": "PATCH",
+      "path": "/patients/6b02d8335f04299b1ff2781e/health-notes/6b02d8345f04299b1ff278d9",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/patients/6b02d8335f04299b1ff2781e/health-notes/6b02d8345f04299b1ff278d9",
+      "status": 409
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/sos-incidents",
+      "status": 422
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/sos-incidents/6b02d8345f04299b1ff27942/resolve",
+      "status": 422
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/sos-incidents/6b02d8345f04299b1ff27942/provider-requests",
+      "status": 422
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff2781e/sos-incidents/6b02d8345f04299b1ff27942",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/sos-incidents/6b02d8345f04299b1ff27942/cancel",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/sos-incidents",
+      "status": 201
+    },
+    {
+      "method": "PATCH",
+      "path": "/patients/6b02d8335f04299b1ff2781e/access-grants/6b02d8345f04299b1ff27844",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/sos-incidents/6b02d8345f04299b1ff279e4/cancel",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/sos-incidents/6b02d8345f04299b1ff27942/cancel",
+      "status": 403
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/sos-incidents/6b02d8345f04299b1ff279e4/cancel",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/sos-incidents",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/sos-incidents/6b02d8345f04299b1ff27a27/cancel",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/sos-incidents/6b02d8345f04299b1ff27a27/cancel",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/sos-incidents",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/followups/6b02d8345f04299b1ff27912/acknowledge",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/patients/6b02d8335f04299b1ff2781e/access-grants/6b02d8345f04299b1ff27844",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/followups/6b02d8345f04299b1ff27912/acknowledge",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff2781e/followups/6b02d8345f04299b1ff27912",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff2781e/emergency-contacts",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8335f04299b1ff2781e/emergency-contacts/6b02d8345f04299b1ff2792a/revoke",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/me/sos-incidents/6b02d8345f04299b1ff27a5e/acknowledge",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/me/sos-incidents",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/patients/6b02d8335f04299b1ff2781e/emergency-contacts",
+      "status": 200
+    },
+    {
+      "method": "PATCH",
+      "path": "/patients/6b02d8335f04299b1ff2781e/emergency-contacts/6b02d8345f04299b1ff2792a",
+      "status": 422
+    },
+    {
+      "method": "PATCH",
+      "path": "/patients/6b02d8335f04299b1ff2781e/emergency-contacts/6b02d8345f04299b1ff2792a",
+      "status": 422
+    },
+    {
+      "method": "PATCH",
+      "path": "/patients/6b02d8335f04299b1ff2781e/emergency-contacts/6b02d8345f04299b1ff2792a",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/auth/csrf",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/auth/register",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8355f04299b1ff27ac7/cabinet-items",
+      "status": 201
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8355f04299b1ff27ac7/cabinet-items",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "/auth/csrf",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/auth/login",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/patients/6b02d8355f04299b1ff27ac7/cabinet-items",
+      "status": 200
+    }
+  ],
+  "databaseLifecycle": "Disposable database removed after assertions"
+}
