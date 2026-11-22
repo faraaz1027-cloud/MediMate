@@ -1,0 +1,29 @@
+✖ Step 42 reference exercise for Ihfaz Rashid Sadat (1427.3244ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1865.3478
+
+✖ failing tests:
+
+test at verification\step42\cases.mjs:17:2
+✖ Step 42 reference exercise for Ihfaz Rashid Sadat (1427.3244ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  201 !== 422
+  
+      at TestContext.<anonymous> (file:///C:/Users/jfaar/Documents/Codex/MediMate-A3/Support/Step42_Review/sadat-practice/verification/step42/cases.mjs:39:69)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 201,
+    expected: 422,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

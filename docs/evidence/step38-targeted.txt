@@ -1,0 +1,20 @@
+▶ Step 38 adversarial patient/permission/CSRF/OCR and SOS boundary audit
+  ✔ resource IDs stay patient-scoped even when the caller owns both patients (42.6719ms)
+  ✔ wrong CSRF cannot write a note, activate SOS or revoke recipient consent (13.2887ms)
+  ✔ blurred OCR remains an unconfirmed clarification draft (29.3408ms)
+  ✔ concurrent health-note revisions commit one winner and preserve history (16.979ms)
+  ✔ forged SOS delivery/provider fields cannot manufacture dispatch or closure (14.5138ms)
+  ✔ losing SOS manager access blocks another activator's closure, including receipt replay (134.924ms)
+  ✔ partial caregiver permission loss also protects old follow-up receipts (35.9891ms)
+  ✔ consent revoked during acknowledgement cannot commit a stale recipient acknowledgement (44.5388ms)
+  ✔ malformed plus placement is rejected consistently with the UI call controls (17.7576ms)
+  ✔ expired session rejects old writes, and fresh CSRF/login restores authorized access (129.6935ms)
+✔ Step 38 adversarial patient/permission/CSRF/OCR and SOS boundary audit (2296.9689ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2669.5775

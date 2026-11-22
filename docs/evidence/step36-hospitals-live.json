@@ -1,0 +1,13 @@
+{
+  "runAt": "2026-11-21T04:40:21.660Z",
+  "status": "unavailable",
+  "area": {
+    "latitude": 23.7465,
+    "longitude": 90.376,
+    "radiusMeters": 5000
+  },
+  "limitation": "Configured Overpass endpoint did not return a usable complete response. No live hospital listing is claimed.",
+  "httpStatus": null,
+  "elapsedMs": 10012,
+  "sourceUrl": "https://overpass-api.de/api/interpreter"
+}

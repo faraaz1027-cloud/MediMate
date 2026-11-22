@@ -1,0 +1,21 @@
+{
+  "at": "2026-11-21 Asia/Dhaka",
+  "branch": "feature/step41-reproducible-handover",
+  "freshDependencyInstall": true,
+  "runtime": "v24.22.3",
+  "platform": "win32",
+  "backendPassed": 187,
+  "backendFailed": 0,
+  "backendSkipped": 0,
+  "buildPassed": true,
+  "compiledUiPassed": true,
+  "persistentHelperSeedAndMongoApiRestartPassed": true,
+  "runtimeSourceHashesMatchedTestedExport": 114,
+  "workflowYamlStructurallyParsed": true,
+  "localPowerShellSyntaxChecked": true,
+  "focusedPatchReverseCheckPassed": true,
+  "newHostedWorkflowRun": false,
+  "humanCloneOnAnotherDevice": false,
+  "publicationPending": true,
+  "snapshotIsUncommittedWorkingSource": true
+}

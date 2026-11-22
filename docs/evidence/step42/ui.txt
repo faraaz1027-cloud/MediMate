@@ -1,0 +1,16 @@
+(node:12824) ExperimentalWarning: VM Modules is an experimental feature and might change at any time
+(Use `node --trace-warnings ...` to show where the warning was created)
+Step 42 rendered input passed: Prescription title
+Step 42 rendered input passed: Task title
+Step 42 rendered input passed: Strength (optional)
+DOM integration passed {
+  prescriptions: 1,
+  cabinet: 3,
+  tasks: 3,
+  schedules: 1,
+  medicineCards: 1,
+  doseActions: 4,
+  stockTransactions: 2,
+  refillLists: 1,
+  pharmacyPreferences: 1
+}

@@ -1,0 +1,55 @@
+{
+  "runAt": "2026-11-21T02:37:20.384Z",
+  "source": "NLM RxNorm public API",
+  "products": [
+    {
+      "product": {
+        "externalId": "198440",
+        "displayName": "acetaminophen 500 MG Oral Tablet",
+        "termType": "SCD",
+        "sourceUrl": "https://rxnav.nlm.nih.gov/REST/rxcui/198440/properties.json",
+        "provider": "rxnorm",
+        "retrievedAt": "2026-11-21T02:37:19.531Z"
+      },
+      "evidence": {
+        "externalId": "198440",
+        "ingredients": [
+          {
+            "externalId": "161",
+            "displayName": "acetaminophen"
+          }
+        ],
+        "sourceUrl": "https://rxnav.nlm.nih.gov/REST/rxcui/198440/related.json?tty=IN",
+        "retrievedAt": "2026-11-21T02:37:19.814Z",
+        "provider": "rxnorm_ingredients"
+      }
+    },
+    {
+      "product": {
+        "externalId": "857004",
+        "displayName": "acetaminophen 325 MG / hydrocodone bitartrate 5 MG Oral Tablet [Norco]",
+        "termType": "SBD",
+        "sourceUrl": "https://rxnav.nlm.nih.gov/REST/rxcui/857004/properties.json",
+        "provider": "rxnorm",
+        "retrievedAt": "2026-11-21T02:37:20.096Z"
+      },
+      "evidence": {
+        "externalId": "857004",
+        "ingredients": [
+          {
+            "externalId": "161",
+            "displayName": "acetaminophen"
+          },
+          {
+            "externalId": "5489",
+            "displayName": "hydrocodone"
+          }
+        ],
+        "sourceUrl": "https://rxnav.nlm.nih.gov/REST/rxcui/857004/related.json?tty=IN",
+        "retrievedAt": "2026-11-21T02:37:20.378Z",
+        "provider": "rxnorm_ingredients"
+      }
+    }
+  ],
+  "limitation": "Live reference retrieval only; no clinical validation or real patient testing."
+}

@@ -1,5 +1,8 @@
 # MediMate requirements
-Status: agreed planning baseline from the project conversation; implementation pending.
+Status: agreed functional baseline from the project conversation. All 13 local
+technical slices now have controlled test evidence; individual demonstration,
+live integrations and faculty acceptance remain open. See the
+[Step 43 readiness audit](STEP_43_FINAL_READINESS.md); this is not final course sign-off.
 Course: CSE471, Section 01, Fall 2026.
 
 ## Responsibilities and modules

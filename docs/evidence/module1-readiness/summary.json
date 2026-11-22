@@ -1,0 +1,30 @@
+{
+  "at": "2026-11-21T16:59:18.920Z",
+  "node": "v24.22.3",
+  "platform": "win32",
+  "synthetic": true,
+  "actor": "Codex technical preparation, not student demonstration",
+  "telegram": "disabled; no live receipt",
+  "results": [
+    {
+      "name": "build",
+      "exitCode": 0,
+      "elapsedMs": 1147
+    },
+    {
+      "name": "api",
+      "exitCode": 0,
+      "elapsedMs": 14352
+    },
+    {
+      "name": "ui",
+      "exitCode": 0,
+      "elapsedMs": 39832
+    },
+    {
+      "name": "live-rxnorm",
+      "exitCode": 0,
+      "elapsedMs": 6665
+    }
+  ]
+}

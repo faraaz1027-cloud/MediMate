@@ -1,0 +1,6 @@
+{
+  "runtime": "Node 24.22.3",
+  "source": "https://nodejs.org/dist/latest-v24.x/node-v24.22.3-win-x64.zip",
+  "sha256": "e612af99f626ab415ea225af6bce5c971feb448cb5cae250bb1c3fa50c5f7d9f",
+  "checkedAgainstOfficialSHASUMS256AtDownload": true
+}

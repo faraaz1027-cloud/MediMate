@@ -144,18 +144,30 @@ Source receipt, card pointer/passages, source-review actor/time, audit and idemp
 
 Personal notes are patient-scoped, separate from immutable public source records. Selection/removal preserves the saved note, and the UI preserves an unsaved note draft. A source lookup failure never clears saved facts/notes. Explicit null selectedLabelId removes the current association/evidence projection while retaining the note and old public source receipts; it does not claim the provider found no label. GET card does not run a search, so its not_selected state is not evidence of a completed no-match lookup. No local/indefinite offline mutation queue or automatic source replacement is implemented.
 
-B3 ingredient-review routes above remain planned for Step 29. Their result categories are overlap, no_overlap_in_confirmed_ingredients, or insufficient_information; missing identities/evidence never produce a safety guarantee. B2 does not implement ingredient confirmation or interaction checking.
+B3 ingredient-review routes above are implemented in Step 32. Their result categories are overlap, no_overlap_in_confirmed_ingredients, or insufficient_information; missing identities/evidence never produce a safety guarantee. B3 adds explicit ingredient confirmation; overall clinical interaction checking remains outside this comparison. See [Step 32](STEP_32_INGREDIENT_REVIEW.md).
+
+| Step 32 prerequisite/history route | Permission | Request | Success |
+|---|---|---|---|
+| GET /cabinet-items/{id}/ingredient-candidates | cabinet.read | None | 200 cabinetItem, resolved product, complete ingredients, sourceUrl, retrievedAt, contentHash, confirmationRevision; 422 unavailable identity/ingredients, 503 source outage |
+| GET /cabinet-items/{id}/ingredient-confirmation | cabinet.read | None | 200 {confirmation:null/object,itemChanged} |
+| PUT /cabinet-items/{id}/ingredient-confirmation | cabinet.write | {expectedRevision:int/null,expectedCabinetRevision:int,expectedContentHash,reviewed:true} | 200 saved confirmation; 409 stale facts/revisions |
+| GET /ingredient-reviews | cabinet.read | before?:reviewId | 200 {reviews:[up to 20],next:null/id} |
+
+Comparisons and acknowledgements require UUID Idempotency-Key and CSRF. Acknowledgement notes allow 0–2000 characters; a review can be acknowledged once. Comparison IDs must be distinct. Ingredient identity evidence and label passages are frozen separately; missing/outdated confirmations force insufficient_information. GET review adds itemsChanged without rewriting the historical result. Evidence over 1 MiB is rejected rather than truncated.
 
 ## B4 Source-grounded information assistant
+
+**Step 33 implemented refinement:** synchronous extractive search replaces the previously proposed unimplemented conversation/message worker. See [Step 33 rationale and limits](STEP_33_EDUCATIONAL_ASSISTANT.md). No model or external transmission of questions.
+
 | Route | Permission | Request | Success |
 |---|---|---|---|
-| POST /assistant-conversations | cabinet.write | {cabinetItemId,title?} | 201 conversation |
-| POST /assistant-conversations/{id}/messages | cabinet.write | {question} (1–2000 chars) | 202 {jobId,messageId,status:pending} |
-| GET /assistant-conversations/{id}/messages | cabinet.read | cursor?,limit? | 200 messages with outcome, text and EvidenceRef[] |
-| PATCH /assistant-messages/{id}/feedback | cabinet.write | {expectedRevision,rating:helpful/unhelpful,comment?} | 200 feedback |
-| DELETE /assistant-conversations/{id} | cabinet.write | {expectedRevision} | 204; remove message text/evidence payloads; minimal deletion audit |
+| POST /educational-answers | cabinet.write | {cabinetItemId,question:1–2000 chars} | 201 {id}; replay 200 {id} |
+| GET /educational-answers | cabinet.read | before?:answerId | 200 {answers:[up to 20],next:null/id}; deleted records excluded |
+| GET /educational-answers/{id} | cabinet.read | None | 200 saved question/outcome/reason/citations/revision/itemChanged; deleted 404 |
+| PATCH /educational-answers/{id}/feedback | cabinet.write | {expectedRevision,rating:helpful/unhelpful,comment?:0–2000 chars} | 200 {id}; stale revision 409 |
+| DELETE /educational-answers/{id} | cabinet.write | {expectedRevision} | 200 {id,deleted:true}; clears question/citations/feedback payloads, preserves minimal deletion audit |
 
-Worker produces outcome answered/insufficient_evidence/error. Answered requires cited retrieved passages; no source means abstention. API must not synthesize unsupported prescribing/treatment instructions. Unselected model/provider remains an implementation choice constrained by zero cost and grounding checks.
+Writes require CSRF and UUID Idempotency-Key. Receipts retain IDs only. Outcomes are answered (exact cited text), insufficient_evidence (unsupported question, missing/current-label-unavailable, multiple differing passages, or source size limit), and error (saved source unavailable). Only four documented educational questions map to label sections. No treatment instruction or synthesized answer is generated. Evidence is capped at 256 KiB without truncation. History is ordered by descending ID; reopened historical answers flag changed cabinet details. Deletion does not erase the shared B2 source or database backups.
 
 ## C1 Care tasks and channel linking
 **Step 23 implementation update (2 November 2026):** [task implementation, Telegram preparation and open gate](STEP_23_CAREGIVER_TASKS.md). Task workflows and controlled adapter/worker tests are implemented. The user has no bot or consenting test account; **no real Telegram delivery has been verified**, so full C1 and the external-integration demonstration remain open. A separate long-polling worker replaces the earlier proposed webhook for this local slice; no public update/link approval endpoint exists.
@@ -180,7 +192,7 @@ Worker produces outcome answered/insufficient_evidence/error. Answered requires 
 
 Owner may transition assigned tasks; a caregiver needs task.write and must be the assignee to accept/complete. Reopening needs the creator/owner and task.write. Handover notes are append-only for participants. All assignments require owner or active read/write caregiver access. Reopen/reassignment clears the current acknowledgement while retaining history. The dedicated bot poller deduplicates update IDs, requires matching private sender/chat IDs and stores only a hashed challenge. The app account separately confirms consent. Generic notices contain no patient/task/medicine text. Missing configuration is disabled, not delivered; uncertain sends stay unknown with no automatic resend. See Step 23 for dedicated bot/database, queue lease, retry and setup limits. Generic job/notification routes below remain future contracts; C1 implements task-scoped routes above.
 
-## C2 Doses (Step 27 implemented) and C3 follow-up (planned)
+## C2 Doses (Step 27 implemented) and C3 follow-up (Step 34 implemented)
 | Route | Permission | Request | Success |
 |---|---|---|---|
 | GET /doses | dose.read | date?,timezone? OR fromUTC,toUTC; state?,cursor?,limit? | 200 Dose list; half-open range, day summary and serverNow |
@@ -193,9 +205,12 @@ Owner may transition assigned tasks; a caregiver needs task.write and must be th
 | POST /doses/{id}/actions | dose.record | {expectedRevision,action:taken/skipped,clientRequestId,effectiveAt?} | 200 {dose,actionId,stockSyncStatus:not_implemented} |
 | POST /doses/{id}/snoozes | dose.record | {expectedRevision,minutes:10,clientRequestId} | 200 {dose,actionId,stockSyncStatus:not_implemented}; reminderDueAtUTC changes, dueAtUTC unchanged |
 | POST /doses/{id}/corrections | dose.record | {expectedRevision,newState:pending/taken/skipped,reason,clientRequestId} | 200 {dose,actionId,stockSyncStatus:not_implemented}; prior actions retained |
-| GET /followups | dose.read | status?,cursor?,limit? | 200 list follow-up |
-| POST /followups/{id}/acknowledge | dose.record | {expectedRevision} | 200 acknowledged follow-up |
-| POST /followups/{id}/resolve | dose.record | {expectedRevision,outcome,note?} | 200 resolved follow-up; stop pending escalation |
+| GET /followups | dose.read + owner/assigned active caregiver | status?,before?:id | 200 {followups:[up to 20],next:null/id} |
+| GET /followups/{id} | dose.read + owner/assigned active caregiver | None | 200 follow-up, current doseState, notices and attempts |
+| GET /followup-settings | dose.read + owner | None | 200 settings, eligible caregivers, telegramConfigured |
+| PUT /followup-settings | dose.record + owner | {expectedRevision:null/int,enabled,delayMinutes:10–1440,caregiverUserId:null/id,consent:true when enabling} | 200 preference |
+| POST /followups/{id}/acknowledge | dose.record + owner/assigned active caregiver | {expectedRevision} | 200 acknowledged follow-up |
+| POST /followups/{id}/resolve | dose.record + owner/assigned active caregiver | {expectedRevision,outcome,note?} | 200 resolved follow-up; stop pending escalation |
 
 expectedRevision maps to dose.actionRevision for dose routes. Repeated clientRequestId must match Idempotency-Key and returns the original result. Only pending can take a first terminal action; another terminal action returns 409 and requires correction. All actions require dueAtUTC <= server now and reject cancelled events. Optional effectiveAt must be between dueAtUTC and server now; recordedAt is the server time. Correction requires an existing taken/skipped record, a different new state and a nonempty reason; returning to pending preserves the prior reminder time. Snooze requires pending and reminderDueAtUTC <= now, allows at most 3 snoozes, and defers from server now by 10 minutes. It changes neither the prescribed due time nor dose quantity/state. Failed/stale/early actions do not append history. The unique patientId+clientRequestId key also prevents reuse across action routes. Operations recheck current permission on replay.
 
@@ -203,7 +218,7 @@ The list defaults to today in the patient's IANA timezone; date is YYYY-MM-DD an
 
 Reminder consent belongs only to the patient owner and is separate from C1's task-channel consent. Enable requires consent:true even with no bot/link; configured/channelLinked are shown separately and no delivery is implied. Changing the enabled value suppresses pending jobs; saving an unchanged value is a no-op. Settings use their revision, null before first save. Retry needs the current pending dose/action revision, enabled consent, current active private link, configured adapter, an unexpired 60-minute window and fewer than 3 processing attempts; only failed/disabled/suppressed jobs qualify. Sent/unknown/processing/expired jobs cannot retry. The worker checks active patient/schedule/cabinet, dose revision/time, consent and link revision immediately before calling the provider. This is a point-in-time check, not cancellation of an already in-flight send. Reminder projections include actionRevision, status, errorCode, attemptCount, runAtUTC, expiresAtUTC and bounded attempts with attemptedAt/providerCallAt/status/errorCode. Attempts count processing claims, so a suppressed claim may have no provider call.
 
-Jobs are pending/processing/sent/failed/unknown/disabled/suppressed/expired. Sent means Telegram accepted a message, never receipt or reading. Unknown outcomes and interrupted leases are never blindly resent. Telegram disabled produces disabled/NOT_CONFIGURED with zero attempts for newly queued work. Expiry is 60 minutes after the current reminder time (including a snooze); expired reminders leave doses pending. Dedicated C2 collections/worker prevent the C1 task poller from claiming dose jobs. Step 30 connects C2 recording and correction to the A3 stock ledger. C3 follow-up routes in the table remain unimplemented: owner may resolve; caregivers will additionally need active assigned follow-up access. Silence is never automatically skipped.
+Jobs are pending/processing/sent/failed/unknown/disabled/suppressed/expired. Sent means Telegram accepted a message, never receipt or reading. Unknown outcomes and interrupted leases are never blindly resent. Telegram disabled produces disabled/NOT_CONFIGURED with zero attempts for newly queued work. Expiry is 60 minutes after the current reminder time (including a snooze); expired reminders leave doses pending. Dedicated C2 collections/worker prevent the C1 task poller from claiming dose jobs. Step 30 connects C2 recording and correction to the A3 stock ledger. C3 follow-up routes are implemented in Step 34: owner or active assigned caregiver may acknowledge/resolve. Caregivers require dose.read, dose.record, task.read and task.write. Silence is never automatically skipped.
 
 ## A3 Inventory and A4 refill coordination
 | Route | Permission | Request | Success |
@@ -228,36 +243,54 @@ Use decimal strings with up to six fractional digits. An opening count can be ze
 
 A4 validates the search bounds and sends rounded coordinates and radius to Overpass. A preference save requires the same patient, user and returned listing key as the ten-minute token. A saved listing becomes stale after 24 hours and requires a new search before linking it to a task. An open checklist allows one linked collection task. A task with a selected pharmacy requires the current preference revision. [Step 31 review and provider evidence](STEP_31_PHARMACY_COORDINATION.md).
 
-## C4 Analytics and visit reports
-Add report.write as an explicit permission for health-note writes; report.read alone never authorizes mutation. This extends Step 15's permission vocabulary.
+## C4 Analytics and visit reports (Step 35 implemented)
+
+[Implementation, metric definitions and limits](STEP_35_VISIT_REPORTS.md). report.write separately authorizes note writes. All writes require CSRF and UUID Idempotency-Key; note editing requires the current expectedRevision.
+
 | Route | Permission | Request | Success |
 |---|---|---|---|
-| GET /analytics | report.read | fromUTC,toUTC,timezone | 200 {taken,skipped,pending,overdueUnconfirmed,dataCutoffUTC,metricDefinitionVersion} |
-| POST /health-notes | report.write | {text,recordedAt} | 201 note |
-| PATCH /health-notes/{id} | report.write | {expectedRevision,text,reason} | 200 new note revision |
-| POST /report-exports | report.read | {fromUTC,toUTC,displayTimezone} | 202 report export job |
-| GET /report-exports/{id} | report.read | None | 200 {status,countsSnapshot?,generatedAt?,expiresAt?} |
-| GET /report-exports/{id}/content | report.read | None | 200 private PDF when ready; 409 if pending; 410 if expired |
+| GET /analytics | report.read | fromUTC,toUTC,timezone | 200 taken/skipped/pending/overdueUnconfirmed/cancelled/scheduled, range, displayTimezone, dataCutoffUTC, metricDefinitionVersion, delayMinutes/Source, followupEnabled, coverage |
+| GET /health-notes | report.read | fromUTC,toUTC,timezone | 200 up to 200 notes; larger range rejected |
+| POST /health-notes | report.write | {text:1–2000 chars,recordedAt:UTC} | 201 note; future time rejected |
+| PATCH /health-notes/{id} | report.write | {expectedRevision,text,reason:1–500 chars} | 200 revised note; prior revision retained; stale 409 |
+| POST /report-exports | report.read | {fromUTC,toUTC,displayTimezone} | 201 {id,status:ready}; successful replay 200 |
+| GET /report-exports | report.read | before?:id | 200 {exports:[up to 20 metadata records],next:null/id}; expired metadata marked |
+| GET /report-exports/{id} | report.read | None | 200 {id,status,snapshot,generatedAt,expiresAt}; expired 410 |
+| GET /report-exports/{id}/content | report.read | None | 200 private PDF attachment, no-store; expired 410; current access rechecked |
 
-Initial maximum range is 366 days. Counts use occurrence due time in [from,to), excluding cancelled events; pending is not-yet-overdue pending, overdueUnconfirmed is past configured follow-up threshold pending. They are disjoint. Recheck access on download; PDF expires after 24 hours. Report permission authorizes the defined report projection only, not unrestricted record browsing.
+The proposed pending-job 202 contract is refined to bounded synchronous 201 generation. Range is [from,to), positive and at most 366 elapsed days. Cancelled doses are excluded; pending and overdue-unconfirmed are disjoint. Overdue uses current C3 delay (labelled 30-minute default if absent), deferred to a later snooze time, at the saved cutoff. A zero indicates recorded dataset counts only. Snapshots freeze counts, source versions, exact refill quantities, task metadata and health-note text; private domain notes/contact data are excluded. Prescription sources for selected doses may predate the range and are explicitly labelled as context. No arbitrary historical cutoff or adherence score is inferred. Analytics cap: 20,000 occurrences. Export caps: 500 per detail collection, 200 notes, 1,000 detail entries, 1 MiB snapshot, 60 pages, 4 MiB PDF. Oversized data is rejected without partial export. Download expires after 24 hours; expiry does not purge database backups. Unsupported PDF glyphs fail explicitly. Regenerate for later state or note changes.
 
-## C5 Emergency SOS and assistance coordination
+## C5 Emergency SOS (Step 36 local implementation)
+
+[Workflow, consent rationale, worker and open evidence](STEP_36_SOS_MODULE3.md). All writes use CSRF/UUID Idempotency-Key. Recipient routes require their own authenticated account; no chart grant is created. Revision guards apply where shown.
+
 | Route | Permission | Request | Success |
 |---|---|---|---|
-| POST /emergency-contacts | Owner + sos.manage | {displayName,contactPhone?,channelLinkId?} | 201 contact with pending consent |
-| GET /emergency-contacts | Owner + sos.manage | cursor?,limit? | 200 contacts |
-| PATCH /emergency-contacts/{id} | Owner + sos.manage | {expectedRevision,displayName?,contactPhone?} | 200 contact; consent cannot be asserted by owner |
-| POST /emergency-contacts/{id}/revoke | Owner + sos.manage | {expectedRevision} | 200 revoked contact; stop future sends |
-| POST /sos-incidents | sos.activate | {confirmed:true,locationStatus:available/denied/unavailable,location?,callbackPhone?} | 201 Incident or 200 existing active incident; do not create duplicates |
-| GET /sos-incidents/{id} | sos.activate OR sos.manage | None | 200 authorized incident projection |
-| POST /sos-incidents/{id}/cancel | sos.manage OR originating activator with sos.activate | {expectedRevision,reason} | 200 cancelled Incident + closure jobs |
-| POST /sos-incidents/{id}/resolve | sos.manage OR originating activator with sos.activate | {expectedRevision,outcome} | 200 resolved Incident + closure jobs |
-| POST /sos-incidents/{id}/provider-requests | sos.manage | {providerKey,providerMode:simulated/verified_partner} | 202 ProviderRequest; verified mode requires configured partner |
-| GET /hospitals | sos.activate OR sos.manage | latitude,longitude,radiusMeters | 200 source listings, never ambulance availability |
+| POST /emergency-contacts | owner + sos.manage | {displayName,recipientUserId,contactPhone?} | 201 pending contact/invitation, 24-hour expiry; no owner consent assertion |
+| GET /emergency-contacts | owner + sos.manage | None | 200 contact history; explicit limit 100 |
+| PATCH /emergency-contacts/{id} | owner + sos.manage | {expectedRevision,displayName?,contactPhone?} | 200 contact |
+| POST /emergency-contacts/{id}/revoke | owner + sos.manage | {expectedRevision} | 200 revoked contact/new consent generation |
+| POST /sos-incidents | sos.activate | {confirmed:true,locationStatus:available/denied/unavailable,location?,callbackPhone?} | 201 {id,existing}; successful replay 200; a different key while active returns its existing ID without another alert |
+| GET /sos-incidents | sos.activate OR sos.manage | before?:id | 200 {incidents:[up to 20],next:null/id} |
+| GET /sos-incidents/{id} | sos.activate OR sos.manage | None | 200 incident, jobs/attempts, acknowledgements/events, providerRequests, dispatchConfirmed:false, simulationAvailable, telegramConfigured |
+| POST /sos-incidents/{id}/cancel | sos.manage OR originating activator with sos.activate | {expectedRevision,reason:1–500 chars} | 200 {id,status:cancelled}; pending alert suppression/closure jobs atomic |
+| POST /sos-incidents/{id}/resolve | same as cancellation | {expectedRevision,outcome:1–500 chars} | 200 {id,status:resolved}; outcome is user reported, never provider confirmation |
+| POST /sos-incidents/{id}/provider-requests | owner + sos.manage, development/test only | {providerKey:classroom_demo,providerMode:simulated} | 201 simulated_request_only; duplicate returns existing request; not mounted in production |
+| POST /sos-incidents/{id}/jobs/{jobId}/retry | sos.manage | {expectedRevision} | 200 definitely unsent current job queued; max three attempts; unknown/sent not retried |
+| GET /hospitals | sos.activate OR sos.manage | latitude,longitude,radiusMeters:100–5000 | 200 public source listings/retrieval/limited; 503 source unavailable |
 
-Consent/acknowledgement callbacks are separate recipient-scoped routes: POST /api/v1/recipient-actions accepts {token,action:consent/acknowledge/decline} with a one-time opaque token from the linked channel. Hash tokens at rest; token binds patient, recipient, operation and incident if relevant. Expire consent tokens after 24 hours and incident acknowledgement tokens after 30 minutes or incident closure, whichever occurs first. Callback checks current contact consent/revocation and incident state. Response contains minimal acknowledgement status and no chart data. Generic expired-token errors reveal no recipient details.
+Recipient-account routes (global /api/v1):
 
-Location requires coordinates plus accuracyMeters >= 0 and capturedAt when available; otherwise omit location. SOS rate limiting must return explicit retry guidance, never silently drop an incident. Provider callbacks use service authentication and operation-bound signatures; verified partner acceptance and dispatch confirmation require separate events/evidence. Classroom simulation routes are available only in development/test to the owner, must not be mounted in production and cannot send real requests.
+| Route | Authorization | Request | Success |
+|---|---|---|---|
+| GET /me/emergency-invitations | authenticated recipient | None | 200 invitations/status and patient display name only; limit 100 |
+| POST /me/emergency-invitations/{id}/respond | same recipient + CSRF/idempotency | {expectedRevision,action:consent/decline/revoke} | 200 {id,status}; pending consent/decline expires at 24 hours |
+| GET /me/sos-incidents | recipient with current bound contact consent | before?:jobId | 200 {incidents:[minimal projection],next:null/id}; no chart fields |
+| POST /me/sos-incidents/{id}/acknowledge | same bound recipient + CSRF/idempotency | {expectedRevision} | 200 {acknowledged:true}; one acknowledgement per incident/contact, 30 minutes or closure, whichever first |
+
+This refines the proposed anonymous recipient-actions token callback into authenticated recipient actions; no raw consent/acknowledgement tokens are issued. A new consent cycle cannot revive an old job/incident share. Existing /me/channel-links and private Telegram challenge routes are available in the recipient inbox, with separate chat ownership proof and consent.
+
+Available location requires finite latitude/longitude, accuracyMeters 0–100000, and a valid capturedAt within five minutes of server time. Otherwise omit location. Coordinates are client reported, not independently verified. Activation never automatically queries hospital listings. Contact snapshot maximum is 20; five new activations per patient per ten minutes yields explicit 429/Retry-After. No consenting contacts still creates an honest incident with no delivery claim. Alert jobs expire at 30 minutes, closure jobs at 24 hours. Suppression/revocation cannot recall already accepted/in-flight messages. Provider simulation sends no external request; verified_partner mode is rejected and no acceptance/dispatch callback exists. No generic route can manufacture a successful delivery or dispatch confirmation.
 
 ## Jobs, notification status and external adapters
 GET /jobs/{id} requires the same permission as its originating feature and current patient scope. GET /notifications?subjectType=&subjectId= requires the originating feature's read permission (prescription.read, cabinet.read, dose.read, task.read, or incident access). Return job and attempt states, never raw channel secrets. No generic user route lets clients mark notification accepted, provider confirmed or job succeeded.
@@ -292,3 +325,10 @@ The combined HTTP entrypoint serves the compiled Vite app and existing /api/v1 r
 
 GET /api/health is public, side-effect-free and no-store: 200 {database:"connected"} after a bounded DB ping, otherwise 503 {database:"unavailable"}, with no URI/error detail. It does not certify worker availability or external delivery. Unknown /api paths and missing assets/dotfiles return JSON 404 rather than the SPA HTML; GET HTML navigation can fall back to the compiled index. Production legacy /api/notes and /api/demo-records remain 404. Session cookies remain HttpOnly, Secure in production, SameSite=Lax and path /api/v1; the chosen same-origin layout avoids introducing cross-site CORS or SameSite=None. No harness endpoint/demo clock is added to the production entrypoint. [Step 29 preparation, verification limits and open deployment gate](STEP_29_DEPLOYMENT_MODULE2.md).
 
+
+## Step 34 C3 refinements
+See [implementation and worker policy](STEP_34_DOSE_FOLLOWUPS.md). C3 uses a separate follow-up status (overdue-unconfirmed/acknowledged/resolved), one unique record per occurrence, and a generic C1 task/job for durable notifications. C2 pending is preserved. Manual outcomes: contacted_patient, unable_to_contact, other; notes 0–2000 chars. Worker outcomes: dose_recorded or schedule_cancelled. Acknowledgement/resolution suppress queued pending notices; resolution never records a taken/skipped dose. All writes require CSRF, UUID Idempotency-Key and revisions. Opt-out, changed recipient, revoked access, acknowledgement, resolution or terminal dose blocks eligibility before sending. Current snooze time defers escalation if later than due time plus delay. Source rows/history survive restart. Configuring a new caregiver affects new follow-ups only; no duplicate escalation for an already linked occurrence.
+C3 detail also includes medicineText from the saved schedule-version source; it does not infer a medicine identity from current cabinet display fields.
+
+## Step 38 current-role and phone validation audit
+SOS cancel/resolve check the caller is a current SOS manager or the originating activator before returning even a successful stored receipt; losing sos.manage while retaining sos.activate cannot replay another activator's closure. The transactional role check remains for new transitions. Contact/callback phone inputs allow 5–30 characters with at least five digits, a leading digit after at most one leading plus, and supported space/parenthesis/hyphen separators. Malformed plus placement returns 422, matching the dial-link format. No schema or assessed-scope change. See STEP_38_FAILURE_PERMISSION_AUDIT.md and its before/final evidence.

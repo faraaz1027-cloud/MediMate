@@ -1,0 +1,46 @@
+{
+  "at": "2026-11-21T11:31:36.429Z",
+  "member": "Faraaz Jamil Chowdhury",
+  "actor": "Codex reference rehearsal, not the student",
+  "mode": "baseline",
+  "field": "strengthText",
+  "expectedLimit": 200,
+  "passed": true,
+  "synthetic": true,
+  "observations": [
+    {
+      "operation": "create",
+      "length": 199,
+      "status": 201
+    },
+    {
+      "operation": "create",
+      "length": 200,
+      "status": 201
+    },
+    {
+      "operation": "create",
+      "length": 201,
+      "status": 422,
+      "noPartialDomainWrites": true
+    },
+    {
+      "operation": "edit",
+      "length": 201,
+      "status": 422,
+      "unchangedRecord": true
+    },
+    {
+      "operation": "Mongoose document insert",
+      "length": 201,
+      "rejectedByFieldValidator": false
+    },
+    {
+      "operation": "after HTTP restart",
+      "persistedLength": 200,
+      "overlongStatus": 422,
+      "anonymousReadStatus": 401
+    }
+  ],
+  "limitation": "Mongoose document validation is not a MongoDB collection validator. Update routes still need explicit validation."
+}

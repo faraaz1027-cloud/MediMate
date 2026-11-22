@@ -1,0 +1,10 @@
+{
+  "runAt": "2026-11-21T08:39:15.116640+00:00",
+  "pages": 2,
+  "countsNotesAndRefillTextPassed": true,
+  "horizontalBoundsPassed": true,
+  "sha256": "6523446272a529989a9b1be4043b871d6572d6e43338532cb9d1d4e6023940e0",
+  "matchesScenarioHash": true,
+  "tools": "Poppler, pypdf, pdfplumber",
+  "limitation": "Synthetic report from Step 38 regression"
+}

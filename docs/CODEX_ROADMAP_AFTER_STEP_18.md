@@ -83,41 +83,59 @@ Use live Overpass lookup for nearby pharmacy listings and explicit location/manu
 The A4 review branch connects Overpass, an explicit area-center fallback, the saved pharmacy, the A3 checklist and C1 task history. Live provider evidence and Ihfaz's individual demonstration are tracked in the [Step 31 guide](STEP_31_PHARMACY_COORDINATION.md).
 
 ### Step 32 — B3 duplicate ingredient and label review (Faraaz)
+Local implementation and evidence: [Step 32 guide](STEP_32_INGREDIENT_REVIEW.md). Student rehearsal and visual browser review remain separate completion evidence.
 Compare confirmed ingredient identities, including combination products, across cabinet items. Distinguish overlap, relevant label evidence and insufficient information, with source passages and acknowledgement notes. Test aliases, duplicates, missing ingredient, wrong strength/form and source outage. **Gate:** insufficient evidence cannot be interpreted as a safe result.
 
 ### Step 33 — B4 source-grounded educational assistant (Faraaz)
+Local extractive implementation: [Step 33 guide](STEP_33_EDUCATIONAL_ASSISTANT.md). Owner rehearsal and browser visual evidence remain separate.
 Choose a feasible local or no-cost grounded approach and test it on known passages before integrating. Retrieve relevant sources, cite passage/URL and retrieval date, constrain response to educational content, abstain when evidence is missing and allow feedback/deletion. A model is optional if a transparent source search/answer workflow meets the approved function. Test invented question, contradictory/absent passages and personal treatment request. **Gate:** answers match their cited passages; no invented citations or prescribing decision.
 
 ### Step 34 — C3 unconfirmed-dose follow-up (Sahir)
+Local implementation: [Step 34 guide](STEP_34_DOSE_FOLLOWUPS.md). Live Telegram, student rehearsal and browser visuals remain separate evidence.
 After the configured delay, mark unanswered C2 occurrence **overdue-unconfirmed**, notify active authorized caregiver and track attempts, acknowledgement and follow-up outcome. Prevent duplicate escalation, cease future notices after resolution/revocation, and never relabel silence as skipped. Test worker restart and revoked caregiver. **Gate:** one traceable escalation with correct status transitions.
 
 ### Step 35 — C4 analytics and visit report (Sahir)
+Local implementation: [Step 35 guide](STEP_35_VISIT_REPORTS.md). Sahir rehearsal and native-browser review remain separate evidence.
 Compute date-filtered taken/skipped/unconfirmed values from stored events, add visit/health notes and generate a PDF that includes history, refills and caregiver activity as permitted. Check report patient and range authorization, compare on-screen/PDF numbers to DB fixtures and define zero versus unavailable. **Gate:** report can be regenerated accurately from a known synthetic dataset.
 
 ### Step 36 — Module 3 and C5 demonstration (Sahir)
+C5 local implementation and seven-feature rehearsal: [Step 36 guide](STEP_36_SOS_MODULE3.md). Live Telegram/map success and individual student demonstration remain separate open evidence.
 The original step named six Module 3 features. The revised demo includes **seven**: A3/A4, B3/B4, C3/C4 and C5. Build C5 before this gate: contact setup/linking, deliberate SOS activation, incident record, permitted location or unavailable marker, Telegram alert attempts, contact acknowledgements, cancellation/resolution notice, call option and nearby hospital information. Only send provider requests to a verified participant; otherwise use an unmistakably labelled simulated provider dashboard. Test accidental cancellation, denied location, failed Telegram, repeated press and no confirmation. **Gate:** no "ambulance dispatched" state without explicit provider confirmation. Also demonstrate taken → one stock deduction → low stock → pharmacy listing → caregiver collection task.
 
 ## Final verification and delivery
 
 ### Step 37 — Complete end-to-end scenario
+Connected technical verification: [Step 37 guide and capture order](STEP_37_COMPLETE_SCENARIO.md). Fourteen checkpoints use one patient and independent caregiver/contact; live/individual evidence remains separate.
 Create a synthetic patient, caregiver and linked test contact. Execute A1 → B1/B2 → A2 → C2 → A3/A4 → C1/C3 → B3/B4 → C4 and a separate C5 branch. Record the input, expected state, actual state and evidence link at each point. Use real DB records, not hardcoded screen fixtures.
 
 ### Step 38 — Failure and permission tests
+Local audit and two confirmed fixes: [Step 38 report](STEP_38_FAILURE_PERMISSION_AUDIT.md). Full backend 186/186 passed; actual synthetic OCR engine check recorded separately. Native-browser/live/student gates remain open.
 Exercise cross-patient IDs, revoked grant, expired session/CSRF, duplicate clicks, concurrent stock updates, blurry OCR, unmatched RxNorm item, openFDA/Overpass/Telegram outages, backend restart, historical versions and SOS status boundaries. Fix concrete failures; record any accepted limitations. Avoid tests that alert real emergency providers.
 
 ### Step 39 — Chrome DevTools and measured performance
+Local measurements and focused layout/favicon fixes: [Step 39 report](STEP_39_BROWSER_PERFORMANCE.md). Reviewed Lighthouse: mobile 92 / LCP 3.312 s / CLS 0.043; desktop 100 / LCP 0.688 s / CLS 0.018. Genuine native DevTools, 360px viewport, Slow 4G and offline/retry captures included. Mobile LCP and wider real-device/live/student gates remain open. Next numbered step: Step 40.
 Use the Lab 02 procedure on MediMate: Elements/Console/Network Fetch/XHR headers and responses, slow-network throttling, empty-cache reload, Performance, Lighthouse and mobile viewports. Record device, date, connection, page, number of requests, load/response timings, LCP/CLS where available and actual improvements. Compare before/after if changed. Do not copy sample report scores or fabricate metrics.
 
 ### Step 40 — Final documentation package
+Local report and evidence package prepared: [Step 40 handoff](STEP_40_FINAL_DOCUMENTATION.md). Both user-supplied Lab 7 samples share 12 core chapters; the 19-page MediMate PDF and editable Markdown follow that structure. Original member reports/collections and 59 captures are indexed with verified hashes (19/16/24). Deployment/live/student/faculty gates remain explicit; this is not a course submission. Next: Step 41.
 Write the report using the Lab 07 **sample structure**, with MediMate facts only: system request and feasibility; approved functional requirements and ownership; architecture/data/API; Figma and implementation; user manual with real synthetic screenshots; Postman evidence; observed network/performance analysis; repository/deployment links; contributions; limitations and references. Check whether faculty supplied a newer template or rubric. Explain the provider simulation and zero-cash deployment limitations prominently.
 
 ### Step 41 — CI/CD and reproducible handover
+Local handover prepared and fresh-install tested: [Step 41 report](STEP_41_REPRODUCIBLE_HANDOVER.md). Node 24.22.3 build, 187 backend tests and compiled UI passed; portable helper/seed retained IDs after MongoDB and API restart. Windows/Linux CI and retained logs are prepared locally; remote main remains behind the draft PR stack, so publication, hosted runs and another member's actual clone remain open. Next numbered step: Step 42.
 Add GitHub Actions build and meaningful API/unit/integration checks, with secrets supplied through secure CI settings where needed. Include `.env.example`, scripts and synthetic seed data; verify another member can clone, install, configure local DB, run tests and demonstrate. Do not treat a green frontend build as proof of backend/worker function.
 
 ### Step 42 — Individual viva and live modifications
+Rehearsal preparation: [Step 42 pack](STEP_42_INDIVIDUAL_VIVA.md). Three member sheets and isolated frontend/API/Mongoose reference changes were tested (3 baseline cases; 190 modified backend tests; compiled inputs/UI and build passed). Canonical application behavior is unchanged. Human viva/live-edit, individual commits/Jira and live external evidence remain NOT_RUN or open; this is not a student pass. Next numbered step: Step 43 readiness audit.
 Each owner explains their own UI, API, database updates, external integration and failure cases. Practice a real frontend field/change, backend validation, model/schema change and regression run. Review any AI-assisted code until each member can explain and modify it without Codex. Keep individual contributions identifiable in Git and Jira.
 
 ### Step 43 — Final readiness and submission
+Audit preparation: [Step 43 findings and final demonstration order](STEP_43_FINAL_READINESS.md).
+Current source regression, course matrix and local backup are recorded in the
+Step 43 evidence/delivery package. Final submission remains NOT READY: personal
+demonstrations/live edits, genuine Git/Jira evidence, live integrations, current
+hosted CI/another-member clone and faculty logistics/deployment decision are open.
+Do not treat the end of the numbered roadmap as course completion.
+
 Audit all 13 IDs and any faculty additions against Step 11 criteria, real demo evidence, per-member external API call and four-feature minimum, Git history, Jira, responsive UI, six API assignment evidence, report, deployment/faculty exception and backup. Rehearse the final demo with synthetic data and record links/deadline. Mark done only what is verifiably done.
 
 ## Suggested Codex task format

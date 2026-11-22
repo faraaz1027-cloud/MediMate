@@ -80,3 +80,12 @@ Earlier entries below describe the state at those checkpoints and are superseded
 - Inspected the A1 Figma screenshot and rendered Word layout; checked prototype JavaScript syntax.
 - Recorded the remaining Figma interaction/export verification block caused by the Starter tool allowance. Step 14 is not marked fully verified.
 
+# Completed implementation publication review — 22 November 2026
+
+- Consolidate remaining ingredient/educational evidence, follow-up, report and SOS
+  workflows, Assignment 03 behavior corrections and refined Module 1 interface.
+- Add reproducible startup/verification tooling and an indexed-file publication
+  check; keep private configuration, full-window captures and generated caches local.
+- Preserve dated evidence and outstanding individual/live/deployment/course gates.
+  Current PR and exact-revision validation: [publication record](docs/PUBLICATION_REVIEW.md).
+

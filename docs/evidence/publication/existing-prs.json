@@ -1,0 +1,145 @@
+{
+  "observedDate": "2026-11-22",
+  "prs": [
+    {
+      "number": 1,
+      "url": "https://github.com/faraaz1027-cloud/MediMate/pull/1",
+      "base": "main",
+      "base_sha": "c2d7bf9c96cc607e07d1580b15065c65c34b83a3",
+      "head": "review/session-recovery-and-verification",
+      "head_sha": "353bdd7fa2ebcdfa1b44452d712a7a9b43649130",
+      "draft": true,
+      "state": "open"
+    },
+    {
+      "number": 2,
+      "url": "https://github.com/faraaz1027-cloud/MediMate/pull/2",
+      "base": "main",
+      "base_sha": "21f5053eb6f2111bd28973e6d54ed0a67f1edf37",
+      "head": "feature/step19-account-access",
+      "head_sha": "3e0b1ce5f740f5ef9d743d0f0df67cb9c43ea368",
+      "draft": true,
+      "state": "open"
+    },
+    {
+      "number": 3,
+      "url": "https://github.com/faraaz1027-cloud/MediMate/pull/3",
+      "base": "feature/step19-account-access",
+      "base_sha": "3e0b1ce5f740f5ef9d743d0f0df67cb9c43ea368",
+      "head": "feature/step20-shared-ui",
+      "head_sha": "1a9a1c7638d41873bc7b7e6bf8566d0d0f09cf24",
+      "draft": true,
+      "state": "open"
+    },
+    {
+      "number": 4,
+      "url": "https://github.com/faraaz1027-cloud/MediMate/pull/4",
+      "base": "feature/step20-shared-ui",
+      "base_sha": "1a9a1c7638d41873bc7b7e6bf8566d0d0f09cf24",
+      "head": "feature/step21-prescription-review",
+      "head_sha": "5e3e5b8e950bbb33f77652dfc684cc24b30bce6b",
+      "draft": true,
+      "state": "open"
+    },
+    {
+      "number": 5,
+      "url": "https://github.com/faraaz1027-cloud/MediMate/pull/5",
+      "base": "feature/step21-prescription-review",
+      "base_sha": "5e3e5b8e950bbb33f77652dfc684cc24b30bce6b",
+      "head": "feature/step22-medicine-cabinet",
+      "head_sha": "e78a90f85d6a9ed8aed0de86ff44598321ad2e2f",
+      "draft": true,
+      "state": "open"
+    },
+    {
+      "number": 6,
+      "url": "https://github.com/faraaz1027-cloud/MediMate/pull/6",
+      "base": "feature/step22-medicine-cabinet",
+      "base_sha": "e78a90f85d6a9ed8aed0de86ff44598321ad2e2f",
+      "head": "feature/step23-caregiver-tasks",
+      "head_sha": "e1c714883952702358aa30ee7f0df569ddcb59d5",
+      "draft": true,
+      "state": "open"
+    },
+    {
+      "number": 7,
+      "url": "https://github.com/faraaz1027-cloud/MediMate/pull/7",
+      "base": "feature/step23-caregiver-tasks",
+      "base_sha": "e1c714883952702358aa30ee7f0df569ddcb59d5",
+      "head": "feature/step24-module1-integration",
+      "head_sha": "9a0d44a136c030350a3b667fef776221418dd17b",
+      "draft": true,
+      "state": "open"
+    },
+    {
+      "number": 8,
+      "url": "https://github.com/faraaz1027-cloud/MediMate/pull/8",
+      "base": "feature/step24-module1-integration",
+      "base_sha": "9a0d44a136c030350a3b667fef776221418dd17b",
+      "head": "feature/step25-confirmed-schedules",
+      "head_sha": "3e486023e6ca65a27c4f6ba6e7e54f39c34e1190",
+      "draft": true,
+      "state": "open"
+    },
+    {
+      "number": 9,
+      "url": "https://github.com/faraaz1027-cloud/MediMate/pull/9",
+      "base": "feature/step25-confirmed-schedules",
+      "base_sha": "3e486023e6ca65a27c4f6ba6e7e54f39c34e1190",
+      "head": "feature/step26-medicine-information",
+      "head_sha": "ebd4a120d8bcb6d45fca6cdc7987df81b20b87b2",
+      "draft": true,
+      "state": "open"
+    },
+    {
+      "number": 10,
+      "url": "https://github.com/faraaz1027-cloud/MediMate/pull/10",
+      "base": "feature/step26-medicine-information",
+      "base_sha": "ebd4a120d8bcb6d45fca6cdc7987df81b20b87b2",
+      "head": "feature/step27-dose-reminders",
+      "head_sha": "401da09855e4924c73f3fe271eaf95dc0d13c795",
+      "draft": true,
+      "state": "open"
+    },
+    {
+      "number": 11,
+      "url": "https://github.com/faraaz1027-cloud/MediMate/pull/11",
+      "base": "feature/step27-dose-reminders",
+      "base_sha": "401da09855e4924c73f3fe271eaf95dc0d13c795",
+      "head": "feature/step28-timezone-restarts",
+      "head_sha": "3b46c9d4a270136a07824a3cc952a9e34af0c6fa",
+      "draft": true,
+      "state": "open"
+    },
+    {
+      "number": 12,
+      "url": "https://github.com/faraaz1027-cloud/MediMate/pull/12",
+      "base": "feature/step28-timezone-restarts",
+      "base_sha": "3b46c9d4a270136a07824a3cc952a9e34af0c6fa",
+      "head": "feature/step29-deployment-demo",
+      "head_sha": "b8956d6eafaf74aaf138edfb716b687d2d6942a5",
+      "draft": true,
+      "state": "open"
+    },
+    {
+      "number": 13,
+      "url": "https://github.com/faraaz1027-cloud/MediMate/pull/13",
+      "base": "feature/step29-deployment-demo",
+      "base_sha": "b8956d6eafaf74aaf138edfb716b687d2d6942a5",
+      "head": "feature/step30-inventory",
+      "head_sha": "d6e73caae76d1f5cfd4f4723280d2b431dfacabe",
+      "draft": true,
+      "state": "open"
+    },
+    {
+      "number": 14,
+      "url": "https://github.com/faraaz1027-cloud/MediMate/pull/14",
+      "base": "feature/step30-inventory",
+      "base_sha": "d6e73caae76d1f5cfd4f4723280d2b431dfacabe",
+      "head": "feature/step31-pharmacy",
+      "head_sha": "5a920e455a4d7651cc515d34a30206bedad4c49c",
+      "draft": true,
+      "state": "open"
+    }
+  ]
+}

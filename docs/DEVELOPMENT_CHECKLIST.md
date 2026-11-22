@@ -1,6 +1,11 @@
 # Development checklist
 Unchecked items are pending or unverified, not completed. Course milestones below come from the previous project review; confirm exact calendar dates and faculty amendments.
 
+Latest review: [Step 43 readiness audit](STEP_43_FINAL_READINESS.md), 21 November
+2026. Local technical preparation is evidenced; final submission remains NOT READY.
+Use the generated `Final_Readiness/Course_Gates.csv` and submission checklist for
+current open gates. Prior module entries distinguish code from human acceptance.
+
 ## 1. Confirm and organize
 - [x] Create shared GitHub repository.
 - [x] Owner reports invitations sent to Sadat and Sahir.
@@ -38,7 +43,7 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 - [x] A1 implemented slice: manual/printed-image OCR review, confirmation, immutable history, replacement comparison and archive; [Step 21 scope and evidence](STEP_21_PRESCRIPTION_REVIEW.md). Individual owner review and faculty acceptance remain open.
 - [x] B1 implemented slice: live RxNorm search, explicit candidate review, manual fallback, persistent cabinet edit/filter/archive and history; [Step 22 evidence](STEP_22_MEDICINE_CABINET.md). Individual owner review and faculty acceptance remain open.
 - [x] C1 prepared code: task assignment/edit/transitions, handover/acknowledgement history, Telegram consent/linking and persisted delivery worker; [Step 23 tests and limits](STEP_23_CAREGIVER_TASKS.md). Owner review/personal contribution remain open.
-- [ ] C1 real Telegram demonstration: configure a dedicated bot, link a consenting test recipient and record actual receipt. No bot was available; controlled fixtures and CI do not satisfy this gate.
+- [x] C1 technical real Telegram receipt: @Medi911_bot linked with consent; one actual notice received in Telegram Desktop and separately acknowledged in-app on21 November. [Live evidence](MODULE_1_TELEGRAM_DELIVERY.md). This user-authorized PC test does not replace Sahir's personal demonstration.
 - [x] Verify A1/B1/C1 technical integration using shared patient/caregiver IDs and a persisted instruction-to-cabinet reference; [Step 24 evidence](STEP_24_MODULE_1_INTEGRATION.md). Full Module 1 acceptance remains open.
 - [x] Module 1 technical tests: persistence after API restart, invalid/cross-patient references, controlled RxNorm outage/manual fallback, and revocation across A1/B1/C1; see Step 24. Real Telegram receipt is still pending.
 - [ ] Update Jira and collect individual contribution evidence.
@@ -62,26 +67,27 @@ Unchecked items are pending or unverified, not completed. Course milestones belo
 - [ ] Ihfaz personally reviews and contributes to A3, demonstrates ledger reconciliation and checklist creation, and performs frontend and backend edits.
 - [x] A4 technical slice prepared with area search, pharmacy preference and a linked C1 collection task. [Step 31](STEP_31_PHARMACY_COORDINATION.md).
 - [ ] Ihfaz records a successful live Overpass listing from the deployed or lab environment, contributes under his Git identity, and demonstrates the A3 → A4 → C1 workflow and frontend/backend edits.
-- [ ] B3: ingredient comparison and evidence review.
-- [ ] B4: grounded educational assistant with insufficient-evidence handling.
-- [ ] C3: overdue–unconfirmed follow-up and escalation cancellation.
-- [ ] C4: analytics and PDF export with verified totals.
-- [ ] C5: SOS contacts, incidents, acknowledgements and simulated provider workflow.
+- [x] B3 technical slice: ingredient comparison and evidence review (Step 32); individual demonstration remains open.
+- [x] B4 technical slice: grounded educational retrieval with insufficient-evidence handling (Step 33); individual demonstration remains open.
+- [x] C3 technical slice: overdue–unconfirmed follow-up and escalation cancellation (Step 34); live delivery and individual demonstration remain open.
+- [x] C4 technical slice: analytics and PDF export with verified totals (Step 35); individual demonstration remains open.
+- [x] C5 technical slice: consented contacts, incidents, acknowledgements and explicitly simulated provider workflow (Step 36); faculty treatment/live delivery/individual demonstration remain open.
 - [ ] Demonstrate the seven Module 3 functions and their connections.
 
 ## 7. Final validation and submission — Labs 8–9
-- [ ] Run the complete prescription-to-report scenario with synthetic data.
-- [ ] Check cross-patient access, revoked permissions and simultaneous updates.
-- [ ] Check unreadable OCR, unmatched medicines and external API outages.
-- [ ] Check SOS location failure, accidental cancellation and provider status wording.
-- [ ] Measure actual network/performance behaviour using DevTools.
-- [ ] Prepare system request, user manual, feasibility and performance/network analysis.
-- [ ] Add architecture, database/API documentation, test evidence and limitations.
-- [ ] Configure appropriate GitHub Actions checks once application code exists.
+- [x] Run the complete synthetic technical scenario (Step 37; repeated in Step 43 candidate); human final demonstration remains open.
+- [x] Controlled API checks cover cross-patient access, revoked permissions and simultaneous updates (Steps 38/41/43).
+- [x] Actual synthetic OCR clear/blur checks and controlled unmatched-medicine/provider-outage checks recorded (Step 38 and regression).
+- [x] Controlled SOS location/cancellation/provider wording tests recorded (Steps 36–38); no real dispatch claimed.
+- [x] Measure actual DevTools/network and Lighthouse behavior (Step 39); mobile LCP and remaining device checks stay open.
+- [x] Prepare system request, user manual, feasibility and performance/network analysis (Step 40); faculty/user acceptance remains open.
+- [x] Prepare architecture, database/API documentation, test evidence and limitations (Step 40 plus Steps 41–43 addenda).
+- [x] Configure current Windows/Linux GitHub Actions checks (Step 41); hosted execution of unpublished changes remains open.
 - [ ] Verify clean-clone setup on another member's machine.
 - [ ] Practise individual viva and live code modifications.
 - [ ] Verify all 13 functions, required integrations and individual commits.
 - [ ] Submit final report and demonstration materials; keep a tested backup.
+- [x] Prepare a local working-source/documentation backup and verify file hashes/ZIP CRC (Step 43); off-device copy/restore and actual submission remain open.
 
 ## Course milestones to confirm against faculty announcements
 | Milestone | Deliverable |

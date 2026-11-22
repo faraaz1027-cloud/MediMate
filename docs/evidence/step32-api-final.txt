@@ -1,0 +1,22 @@
+▶ Step 32 ingredient identity, combinations, incomplete evidence, immutable reviews and access
+  ✔ unconfirmed and manual identities remain insufficient (40.0645ms)
+  ✔ alias names use canonical IDs and combination ingredients are retained (49.9962ms)
+  ✔ label passages preserve source text and exclude personal notes (28.9261ms)
+  ✔ changed strength/form invalidates confirmation and flags historical result (71.8465ms)
+  ✔ tampering, stale revisions, acknowledgements and scoped access (42.8906ms)
+  ✔ confirmation write failure rolls back source and audit; concurrent review replay creates once (35.3542ms)
+  ✔ source outage leaves saved reviews readable and new identities unconfirmed (37.2359ms)
+✔ Step 32 ingredient identity, combinations, incomplete evidence, immutable reviews and access (1599.3639ms)
+✔ ingredient relation validates completeness, canonical IDs and malformed responses (18.3197ms)
+✔ RxNorm adapter coalesces, caches for 12 hours and constructs only fixed upstream URLs (0.7499ms)
+✔ RxNorm no-match differs from outage, invalid JSON and malformed provider data (1.4538ms)
+✔ RxNorm resolves only active SCD/SBD identities and bounds response bodies (1.1599ms)
+✔ RxNorm timeout aborts the upstream request and failed lookups are retryable (20.8468ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1920.1666

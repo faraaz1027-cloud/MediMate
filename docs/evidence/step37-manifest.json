@@ -1,0 +1,298 @@
+{
+  "createdAt": "2026-11-21T08:39:15.189Z",
+  "branch": "feature/step38-failure-audit",
+  "gitHead": "5a920e455a4d7651cc515d34a30206bedad4c49c",
+  "workingTreeDirty": true,
+  "redactionCheckPassed": true,
+  "files": [
+    {
+      "path": "server/test/end-to-end.test.js",
+      "sha256": "0160f76f91b1aa8ef569e7512e01594a31f0afe20d8d9d4f5da8ad5b4282f398"
+    },
+    {
+      "path": "verification/step18/api.mjs",
+      "sha256": "8dd9b5b0a931617f55ec1c3ebdb560e5965c559784c2d59f5cdb6acebd334451"
+    },
+    {
+      "path": "verification/step37/run.ps1",
+      "sha256": "1bf2f1d7dccfb8baa1ba91a24a1dfac2b6bf9f6506a42f81f52060c702f25339"
+    },
+    {
+      "path": "verification/step37/record-evidence.mjs",
+      "sha256": "acd1fa63a0f47e1cdd51cd807ffd61c898d49560b597996be5ba8d89d61fa043"
+    },
+    {
+      "path": "package.json",
+      "sha256": "66ee2271bc08d08aaca7e076dd869c28320821c81869773e1c5566a1df8c5a52"
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "089503d050e805135f24505d6a2e7d189fdc1f6496dbf4eb484bb0c38667ed02"
+    },
+    {
+      "path": "server/package.json",
+      "sha256": "846fd973da9f3466eff6058d4ae2b112f91b55e9be334608fba2e9ad95bbb506"
+    },
+    {
+      "path": "client/package.json",
+      "sha256": "3882b6426bdeb6cd219ada1229dbccd524ade0cc16d8909d0a08c4cf05b526a5"
+    },
+    {
+      "path": "server/assets/fonts/NotoSansBengali.ttf",
+      "sha256": "dcd42978094e584a849c84a51450eeac40c8826057d566ea6d4b9627a403a05a"
+    },
+    {
+      "path": "docs/evidence/step37-api.txt",
+      "sha256": "4f8cd2a86510aaf63a920c40b8be1edfbe9e9ff4e394e79676ea55a817f92ab0"
+    },
+    {
+      "path": "docs/evidence/step37-scenario.json",
+      "sha256": "68407f7ca372e7e5ad237c940c14bbd00e856aeee64bcbfcd1ad9098df787aec"
+    },
+    {
+      "path": "docs/evidence/step37-exchanges.json",
+      "sha256": "ac7aaf67a4d4fdfb60d4e504a05a91b1136a6e2246466de898eef387d74b7a4d"
+    },
+    {
+      "path": "docs/evidence/step37-checkpoints.md",
+      "sha256": "288acdf819be94fc331434df7224d1f59b8c48ad2d8fd58c97c51d2b7fe826dd"
+    },
+    {
+      "path": "docs/evidence/step36-dom.json",
+      "sha256": "48ef1d992bf49e3e8505231badb1297e8942ee82bef32e4a75399cd66a87771e"
+    },
+    {
+      "path": "docs/evidence/step36-regression.txt",
+      "sha256": "504f4e34a77c502bf779ffb8fcfd30b3927e9b303ff7535835969cafce6b85b5"
+    },
+    {
+      "path": "output/pdf/step37-synthetic-visit.pdf",
+      "sha256": "6523446272a529989a9b1be4043b871d6572d6e43338532cb9d1d4e6023940e0"
+    },
+    {
+      "path": "client/dist/index.html",
+      "sha256": "bb1c6febf58ca75599fcdd10b45cedeabf9a32d6f00fd4e5ddbe1b0febd2c1cb"
+    },
+    {
+      "path": "client/dist/assets/index-EdpnbTAT.js",
+      "sha256": "5cf81f1f82c8c1c6d1dd9df15dd95bafb365d53f5215ee716e5ef32fcfe3ab26"
+    },
+    {
+      "path": "docs/STEP_37_COMPLETE_SCENARIO.md",
+      "sha256": "57a23c39d99caeba36832939f4d54dab677bb6d0eddbaf6427114d401646170a"
+    },
+    {
+      "path": "docs/evidence/step37-pdf-qa.json",
+      "sha256": "01a4d6efb36f7057b2af856ba752eea2092ad44f0a476459d48d5428181913f9"
+    },
+    {
+      "path": "server/v1/app.js",
+      "sha256": "cf87fa13c648a6bc5ffed229a1ae559f847c266c49a1515c056641fe3a4387da"
+    },
+    {
+      "path": "server/v1/cabinet.js",
+      "sha256": "b514eab7eaaa36b2e79dfec4ffb07787081b54ab077f228c7e5c60a80f7910a3"
+    },
+    {
+      "path": "server/v1/channels.js",
+      "sha256": "3872b8e8e2f02e6fac5d1dd1b8afde7559b06ffa9f9bb0ac568263c5f8c23656"
+    },
+    {
+      "path": "server/v1/doseReminders.js",
+      "sha256": "39e09ea0c45d08a33227d0c334a9911295651340a74b9dc7dab79cd61717c50b"
+    },
+    {
+      "path": "server/v1/doses.js",
+      "sha256": "0b7ad0051a1373718c2a65adb36e5b87a7a512b6c07a1e6362be5ffa1e4f3e39"
+    },
+    {
+      "path": "server/v1/educational-answers.js",
+      "sha256": "09a100716c9750ed7bdb66d6ff1a1468d41490c3c7e105da6902f6bb9bf3e886"
+    },
+    {
+      "path": "server/v1/followup-policy.js",
+      "sha256": "02845bb8e8edbf8c8b6ab0014a023b8d5fe8f151f3ff73d54342ffe9ddd9d89e"
+    },
+    {
+      "path": "server/v1/followup-worker.js",
+      "sha256": "7d605bb2de9fc5957aa3dc8555c9fa5919be274db9cbbac08c826d037ec1a08a"
+    },
+    {
+      "path": "server/v1/followups.js",
+      "sha256": "7efe16e8caf30f4698e17dd55ffcdfa0119af554b778e9295b7379c550e8d7c5"
+    },
+    {
+      "path": "server/v1/information-cards.js",
+      "sha256": "301b678faa6290dfa7ddbfd166d236cf6822fc1094ebaa966f10be46df00047e"
+    },
+    {
+      "path": "server/v1/ingredient-reviews.js",
+      "sha256": "36e49791051f8d8e7c0c34488ad35dce643ab9c5e5ab46e9c60ac90e7b7f6567"
+    },
+    {
+      "path": "server/v1/inventory.js",
+      "sha256": "7a117245cba746ab6b1047735ea9b519d706a57e0986eda27d7a575065cc1ba6"
+    },
+    {
+      "path": "server/v1/openfda.js",
+      "sha256": "26d6720e1ce05289268e445c9a2ecab7c4f70fc0e484bb1e7c21172b44106b23"
+    },
+    {
+      "path": "server/v1/overpass.js",
+      "sha256": "059bc47a7551b6e05a8891d4ac4561e39187482e93982ac14afca8f4fef9061b"
+    },
+    {
+      "path": "server/v1/pharmacies.js",
+      "sha256": "e7febdab4a677c228916fdaf378cd073b136881346415165cb3211324ac426d2"
+    },
+    {
+      "path": "server/v1/prescriptions.js",
+      "sha256": "4e0d261ad07b74be70e1f771e8f292f70e9ae4bb511b436ce010c8f9d3f07921"
+    },
+    {
+      "path": "server/v1/report-pdf.js",
+      "sha256": "ac2d61bb31f07dcbb1443480b31037e060ccf6c514e5536270e76a07e843dea0"
+    },
+    {
+      "path": "server/v1/reports.js",
+      "sha256": "349020b1f8e6585e7ae3cebc52f2002bd186d13d43273a8a73357806e9b5bc78"
+    },
+    {
+      "path": "server/v1/rxnorm.js",
+      "sha256": "40c2ef626f039fb7909c857799933639683869d96b417cf24bff087c1e274a2f"
+    },
+    {
+      "path": "server/v1/schedule-time.js",
+      "sha256": "4178fc5fef524248e5df526f153170ba856729e42a596d11634ff4aa0de5b291"
+    },
+    {
+      "path": "server/v1/schedules.js",
+      "sha256": "89d13107dee3e73d7645f3fcee030cd2fe58a186f389ad579afe18f3ffbc100b"
+    },
+    {
+      "path": "server/v1/sos-worker.js",
+      "sha256": "02e886f831c5c3fd777a0ff1e5b7a9452d0ed1ae066b11155814ad426539de22"
+    },
+    {
+      "path": "server/v1/sos.js",
+      "sha256": "27427f053413782de3ad8677fea93e82e57df72bffb6a6fd6227a8910dab71d8"
+    },
+    {
+      "path": "server/v1/stockLedger.js",
+      "sha256": "ec309991f999afb225f5f8aa0f0e288b5ca19e12096b61580c1323f08cb772d0"
+    },
+    {
+      "path": "server/v1/store.js",
+      "sha256": "e740d8513bd7a5442a34907690530c805f28c5b9b8a284a0d54be11f93e9b9f8"
+    },
+    {
+      "path": "server/v1/taskNotifications.js",
+      "sha256": "510d710782d4e2d864bc2869e26dabdce445385d9aecf76ff5b67b8f4de9cc27"
+    },
+    {
+      "path": "server/v1/tasks.js",
+      "sha256": "d66338aeab1c8c3a5e233ea92a7220dd415855db001aa2ee611174517af8adab"
+    },
+    {
+      "path": "server/v1/telegram.js",
+      "sha256": "651f6678a3bc746d765aae5be0b7fc8bf4010e20cc8975b251fb88eb16f8decf"
+    },
+    {
+      "path": "client/src/AccountAccess.jsx",
+      "sha256": "a651a1e347ec7b7802b9325c4af13d0f1083b5258be3b1398f8b7572042caed9"
+    },
+    {
+      "path": "client/src/App.css",
+      "sha256": "195c5d3b1a92ee38a945671f543cd2699cd5dccd3ba3ded7ab182645e189f563"
+    },
+    {
+      "path": "client/src/App.jsx",
+      "sha256": "9343f379fc45580e8bdb30e947c3e419f8f4ad6839bf1336824e8c28d100f496"
+    },
+    {
+      "path": "client/src/ConfirmAction.jsx",
+      "sha256": "04632f53f62d7dd05969862fc12a630056a0bf60a516561a1d32a0e0d16b54f2"
+    },
+    {
+      "path": "client/src/DoseBoard.jsx",
+      "sha256": "6068220d0eefb16498269bd660f555e836e89fdfd5870ca7075012845d12c95b"
+    },
+    {
+      "path": "client/src/EducationalAssistant.jsx",
+      "sha256": "fff336e4b1d8eefd7cb3df0f50c2cbcdcfeb5a2ff0ada5d8e04fe12206208434"
+    },
+    {
+      "path": "client/src/EmergencyInbox.jsx",
+      "sha256": "64498ae1f5a635a3ec7a6b1cae5cfe6c89d0a735365d5bcac10bf96ed121febd"
+    },
+    {
+      "path": "client/src/FollowupBoard.jsx",
+      "sha256": "960c757d6cad28daa750bc2ca046c324eeddaf7ddff8d211215d1aae1c530c85"
+    },
+    {
+      "path": "client/src/index.css",
+      "sha256": "6309f642187fa055cbc63143a4d5bb5844e886f0dd81fa99cf067b04cc96df7c"
+    },
+    {
+      "path": "client/src/IngredientReview.jsx",
+      "sha256": "3bfcc9afe1a3bfa43fe1a00091ee16221f2188bf4e9e6a853e7925bd37605010"
+    },
+    {
+      "path": "client/src/InventoryBoard.jsx",
+      "sha256": "685c019db79bbbfa1e66916b09a55e9e2e0768aaa4c99f49739835ffde3da22b"
+    },
+    {
+      "path": "client/src/main.jsx",
+      "sha256": "932c9a9bd02e1d76f0f2f4effc0a6af9bc27f9273b1fe0b2eed07a7bee63c760"
+    },
+    {
+      "path": "client/src/MedicineCabinet.jsx",
+      "sha256": "9e5cce0f2c30139670d7ef97b5155438e04ee3405f56d85c2df24d891301d495"
+    },
+    {
+      "path": "client/src/MedicineInformation.jsx",
+      "sha256": "b74f9227f9fe8a776d2d45b48e361c20444475e2bc0715c905f4388819983638"
+    },
+    {
+      "path": "client/src/PharmacyCoordination.jsx",
+      "sha256": "863002fb1e6c6e97ed9b42d3959e88a9e746180942b9d0cf8d17b16d32b9df0c"
+    },
+    {
+      "path": "client/src/PrescriptionReview.jsx",
+      "sha256": "4bb448777f1498a39cc14d381c9829ee1da0f547971ffae05f165b6208269818"
+    },
+    {
+      "path": "client/src/request.js",
+      "sha256": "9fc13e9cd8e32a217bd7338131d214f4d3574082f4cb9eee5ee3e989b158a577"
+    },
+    {
+      "path": "client/src/ScheduleBuilder.jsx",
+      "sha256": "830cb7dc9ebbb751b41b1817989b10be1f63552d84bde8d68e0d234ab807135c"
+    },
+    {
+      "path": "client/src/SosBoard.jsx",
+      "sha256": "336b68b1fda7c4c8309b9fe281a05870ef1b7357699a743d2b6a061ef5cb4a28"
+    },
+    {
+      "path": "client/src/style.css",
+      "sha256": "3c0da0f8470b6896d73b0747a024b85eec3aed73e7d64e470934b4f003952802"
+    },
+    {
+      "path": "client/src/TaskBoard.jsx",
+      "sha256": "1c80e097d8b9f6d5fbad48bebe007cff9d521daf43cc3f4e5a5085d6a5258845"
+    },
+    {
+      "path": "client/src/ValidatedForm.jsx",
+      "sha256": "38c4df2c4d7b58d7adb2673d8d481457e6f0b6c1d42a01993f68edf1fe5bba36"
+    },
+    {
+      "path": "client/src/VisitReports.jsx",
+      "sha256": "67a55ea832adcdba9435b07c44f1f32f7a5a6f245a58545fb8eb780ead45eb2e"
+    }
+  ],
+  "pdfQa": {
+    "path": "docs/evidence/step37-pdf-qa.json",
+    "available": true,
+    "matchesCurrentPdf": true
+  }
+}

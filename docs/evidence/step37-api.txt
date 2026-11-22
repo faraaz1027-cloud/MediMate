@@ -1,0 +1,2 @@
+Latest connected scenario excerpt from the full Step 38 regression (186/186 passed).
+✔ Step 37 one-patient complete scenario with independent linked caregiver/contact and restart (2422.0674ms)

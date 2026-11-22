@@ -1,0 +1,11 @@
+{
+  "runAt": "2026-11-21T04:18:54.139545+00:00",
+  "sample": "output/pdf/step35-synthetic-visit.pdf",
+  "sha256": "6efca80cea69c7704922fc2d4a3d5edeb7beffe226cf9ccd9b02eb283756c284",
+  "pages": 2,
+  "pageBoundsPassed": true,
+  "countsRefillAndBengaliTextPassed": true,
+  "renderer": "Poppler pdftoppm; page PNGs visually inspected",
+  "textCheck": "pypdf and pdfplumber",
+  "limitation": "Synthetic fixture only; does not establish student rehearsal or browser UX"
+}

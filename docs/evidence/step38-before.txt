@@ -1,0 +1,68 @@
+▶ Step 38 adversarial patient/permission/CSRF/OCR and SOS boundary audit
+  ✔ resource IDs stay patient-scoped even when the caller owns both patients (36.9368ms)
+  ✔ wrong CSRF cannot write a note, activate SOS or revoke recipient consent (10.9006ms)
+  ✔ blurred OCR remains an unconfirmed clarification draft (20.2442ms)
+  ✔ concurrent health-note revisions commit one winner and preserve history (17.2192ms)
+  ✔ forged SOS delivery/provider fields cannot manufacture dispatch or closure (12.1164ms)
+  ✖ losing SOS manager access blocks another activator's closure, including receipt replay (61.9339ms)
+  ✔ partial caregiver permission loss also protects old follow-up receipts (29.6943ms)
+  ✔ consent revoked during acknowledgement cannot commit a stale recipient acknowledgement (31.6002ms)
+  ✖ malformed plus placement is rejected consistently with the UI call controls (12.9652ms)
+  ✔ expired session rejects old writes, and fresh CSRF/login restores authorized access (130.5498ms)
+✖ Step 38 adversarial patient/permission/CSRF/OCR and SOS boundary audit (2173.3512ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 8
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2570.5286
+
+✖ failing tests:
+
+test at server\test\failure-audit.test.js:24:41
+✖ losing SOS manager access blocks another activator's closure, including receipt replay (61.9339ms)
+  AssertionError [ERR_ASSERTION]: {"data":{"id":"6b015706d9224e8aacf24a6d","status":"cancelled"},"meta":{"requestId":"6e392bab-11e6-4b1b-bc28-8c29db43e5b5"}}
+  
+  200 !== 403
+  
+      at expectStatus (file:///C:/Users/jfaar/Documents/Codex/MediMate-A3/Source/verification/step27/fixture.mjs:4:10)
+      at file:///C:/Users/jfaar/Documents/Codex/MediMate-A3/Source/server/test/failure-audit.test.js:75:5
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///C:/Users/jfaar/Documents/Codex/MediMate-A3/Source/server/test/failure-audit.test.js:24:65)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async check (file:///C:/Users/jfaar/Documents/Codex/MediMate-A3/Source/server/test/failure-audit.test.js:24:33)
+      at async TestContext.<anonymous> (file:///C:/Users/jfaar/Documents/Codex/MediMate-A3/Source/server/test/failure-audit.test.js:70:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 403,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at server\test\failure-audit.test.js:24:41
+✖ malformed plus placement is rejected consistently with the UI call controls (12.9652ms)
+  AssertionError [ERR_ASSERTION]: {"data":{"patientId":"6b015706d9224e8aacf24949","recipientUserId":"6b015706d9224e8aacf2495b","displayName":"Synthetic consenting contact","contactPhone":"++8801700000000","status":"revoked","consentVersion":3,"invitedAt":"2026-11-21T00:11:00.000Z","expiresAt":"2026-11-22T00:11:00.000Z","consentedAt":"2026-11-21T00:11:00.000Z","revokedAt":"2026-11-21T00:11:00.000Z","schemaVersion":1,"revision":3,"createdAt":"2026-11-21T08:32:06.796Z","updatedAt":"2026-11-21T08:32:07.057Z","id":"6b015706d9224e8aacf24a55"},"meta":{"requestId":"cd9465a7-19d2-42a8-88a4-a6004f9696d6"}}
+  
+  200 !== 422
+  
+      at expectStatus (file:///C:/Users/jfaar/Documents/Codex/MediMate-A3/Source/verification/step27/fixture.mjs:4:10)
+      at file:///C:/Users/jfaar/Documents/Codex/MediMate-A3/Source/server/test/failure-audit.test.js:93:5
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///C:/Users/jfaar/Documents/Codex/MediMate-A3/Source/server/test/failure-audit.test.js:24:65)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async check (file:///C:/Users/jfaar/Documents/Codex/MediMate-A3/Source/server/test/failure-audit.test.js:24:33)
+      at async TestContext.<anonymous> (file:///C:/Users/jfaar/Documents/Codex/MediMate-A3/Source/server/test/failure-audit.test.js:91:3)
+      at async Test.run (node:internal/test_runner/test:1409:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 200,
+    expected: 422,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

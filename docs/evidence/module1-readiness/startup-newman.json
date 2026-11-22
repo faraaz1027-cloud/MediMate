@@ -1,0 +1,55 @@
+{
+  "at": "2026-11-21T17:01:27.731Z",
+  "synthetic": true,
+  "realTelegramRequests": 0,
+  "privateFileContainsOnlySyntheticFixture": true,
+  "checks": [
+    {
+      "name": "PowerShell private Telegram config check",
+      "passed": true,
+      "liveValidation": false
+    },
+    {
+      "name": "Default real helper clears inherited Telegram credentials",
+      "passed": true
+    },
+    {
+      "name": "Opt-in real helper loads private Telegram-only file; no worker or send",
+      "passed": true
+    }
+  ],
+  "collections": [
+    {
+      "member": "Sadat",
+      "id": "A1",
+      "port": 1499,
+      "requests": 20,
+      "assertions": 30,
+      "failures": [],
+      "telegram": "disabled; no actual receipt",
+      "provider": "No live external credit claimed"
+    },
+    {
+      "member": "Faraaz",
+      "id": "B1",
+      "port": 1205,
+      "requests": 23,
+      "assertions": 37,
+      "failures": [],
+      "telegram": "disabled; no actual receipt",
+      "provider": "Actual public RxNorm requests through real server"
+    },
+    {
+      "member": "Sahir",
+      "id": "C1",
+      "port": 1212,
+      "requests": 41,
+      "assertions": 60,
+      "failures": [],
+      "telegram": "disabled; no actual receipt",
+      "provider": "No live external credit claimed"
+    }
+  ],
+  "passed": true,
+  "servicesStopped": true
+}

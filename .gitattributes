@@ -1,0 +1,4 @@
+# Markdown uses two trailing spaces for intentional hard line breaks.
+*.md whitespace=-blank-at-eol
+# Preserve captured diagnostic bytes; do not rewrite dated evidence for formatting.
+docs/evidence/** whitespace=-blank-at-eol,-blank-at-eof

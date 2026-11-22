@@ -1,9 +1,73 @@
 # MediMate
 Medication management and caregiver coordination — CSE471, Section 01, Fall 2026.
 
-MediMate is a planned web application for reviewing prescriptions, organizing medicine schedules, recording doses, tracking stock and coordinating caregivers. Its 13th function adds emergency contact alerts and assistance coordination.
+Module 1 review pack: [current setup, tests, member demonstrations and remaining
+acceptance gates](docs/MODULE_1_SUBMISSION_GUIDE.md). Run `npm run verify:module1`
+for the scoped technical checks. Local Telegram remains disabled by default;
+explicit private opt-in and the task-worker helper are documented in that guide.
 
-**Status:** local account/access, prescription review/history, RxNorm cabinet and caregiver task workflows are implemented for owner review. Step 23 Telegram code is prepared, but no bot/test recipient is configured and real delivery is unverified. Other feature workflows, full Module 1 acceptance and deployment remain pending. The repository is not a working medical or emergency service.
+[C1 real Telegram receipt is now verified](docs/MODULE_1_TELEGRAM_DELIVERY.md) with
+@Medi911_bot on the user's PC, including separate app acknowledgement. Other live
+channel flows and individual student demonstrations remain separate open gates.
+
+MediMate is a classroom web application for reviewing prescriptions, organizing medicine schedules, recording doses, tracking stock and coordinating caregivers. Its 13th function adds emergency contact alerts and assistance coordination.
+
+**Status:** all 13 function paths are implemented, with connected synthetic scenarios,
+backend regressions and dated browser evidence. The refined Module 1 interface is
+integrated. [The publication record](docs/PUBLICATION_REVIEW.md) identifies the
+review branch, PR and exact-revision checks; `main` remains subject to team merge.
+C1 actual Telegram receipt is verified; other live channel flows, successful live
+Overpass scenarios, student demonstrations, deployment and faculty acceptance
+remain open. This is a classroom prototype.
+
+[Complete project handoff](docs/MEDIMATE_COMPLETE_PROJECT_HANDOFF.md) covers features,
+architecture, setup, report/collection locations and the remaining acceptance work.
+
+Full-window native captures and duplicate generated reports are retained locally
+and ignored for publication. Safe summaries and reviewed Lighthouse JSON retain
+their original dates; they are not fresh results for later source revisions.
+
+## Install and verify
+
+Use Node 24, Git and a compatible MongoDB 7 binary. For the automatic verification
+runner, the test library obtains MongoDB 7.0.24 when no `MONGOMS_SYSTEM_BINARY`
+override is set. It creates an isolated replica set; no cloud database or provider
+secret is required. Package installation and a first binary download need network.
+
+```powershell
+npm ci --include=dev
+npm ci --prefix verification/step18
+npm run verify
+```
+
+This builds Vite, runs the database/API/worker tests, then the compiled UI integration.
+Logs and the exit summary are in ignored `.local-data/verification`. A frontend build
+alone does not verify reminders, transactions or access control.
+
+For a persistent local rehearsal, use the repository-contained helper in separate
+terminals, with MongoDB installed or `MONGOMS_SYSTEM_BINARY` pointing to `mongod`:
+
+```powershell
+./scripts/local.ps1 -Mode Mongo
+# Terminal 2:
+./scripts/local.ps1 -Mode Initialize
+./scripts/local.ps1 -Mode Server -Port 1499
+# Terminal 3:
+npm run seed:demo -- http://127.0.0.1:1499
+```
+
+Open http://127.0.0.1:1499. The labelled fixture accounts are
+`handover-owner@example.test` and `handover-caregiver@example.test`, with the
+synthetic password `Synthetic-handover-123!`. These are local test credentials,
+not production secrets. Seed twice without duplicating records; no database is
+cleared, password reset or existing grant silently changed. Separate profiles are
+needed for owner/caregiver sessions. Use port 1205 or 1212 for the other member's
+separate database, or use the same server for interacting accounts.
+
+For a disposable rehearsal with controlled public-source fixtures and Telegram
+disabled, run `npm run demo:module2 -- --serve`. Its synthetic clock and fixtures
+are explicit, and its data is removed on exit. See the handover guide for workers,
+Linux/macOS startup, actual clone/release status and outstanding gates.
 
 ## Project documents
 - [13 functional requirements and acceptance criteria](docs/REQUIREMENTS.md)
@@ -21,7 +85,7 @@ MediMate is a planned web application for reviewing prescriptions, organizing me
 The original 12 functions remain unchanged; C5 is additional. Invitations were reported sent; acceptance is not yet verified.
 
 ## Proposed stack
-- Frontend: React, JavaScript, Tailwind CSS.
+- Frontend: React, JavaScript and native CSS; Vite build.
 - Backend: Node.js and Express.
 - Data: MongoDB and Mongoose.
 - OCR: local Tesseract.js with manual review.
@@ -33,8 +97,12 @@ The project has a zero-cost constraint. Integration terms and deployment options
 ## Emergency SOS scope
 Notify linked, consenting contacts and track acknowledgements. Use a clearly labelled simulated hospital/provider dashboard for classroom demonstrations until a participating provider is secured. A notification does not establish ambulance dispatch.
 
-## Next implementation milestone
-Next planned implementation is Step 25, the A2 confirmed schedule builder. [Step 24 technical integration](docs/STEP_24_MODULE_1_INTEGRATION.md) is verified; real Telegram receipt, individual contribution/rehearsal, Jira and faculty acceptance remain open, so Module 1 is not marked fully demonstrated. See [API setup](docs/STEP_17_API_IMPLEMENTATION.md).
+## Next milestone
+After Step 41 technical handover validation, Step 42 is each member's individual viva
+and live modifications, followed by Step 43 final audit/submission. Earlier numbered
+sections below are historical milestone records; use the current step guides for
+implemented behavior. Individual contribution, live integration and faculty gates
+are not closed by automation.
 
 ## Links to add
 - Jira project: pending.
